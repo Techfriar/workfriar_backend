@@ -1,7 +1,7 @@
 {
   "name": "workfriar_backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "repository": "git@github.com:Techfriar/workfriar_backend.git",
   "author": "Karthik K <karthik.p@techfriar.com>",
   "license": "MIT",
