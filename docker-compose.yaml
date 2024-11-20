@@ -14,6 +14,10 @@ services:
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     ports:
       - "3002:3002"
+    volumes:
+      - .:/app                  # Mount project directory into the container
+      - /app/node_modules       # Prevent overwriting node_modules inside the container
+    command: yarn server        # Run the nodemon script
     depends_on:
       - mongo
       - redis
