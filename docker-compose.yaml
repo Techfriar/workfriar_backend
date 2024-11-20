@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Express app
+  workfriar-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - REDIS_HOST=${REDIS_HOST}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo
+      - redis
+      - minio
+    networks:
+      - workfriar-network
+
+  # MongoDB service
+  mongo:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
+    ports:
+      - "${MONGO_PORT}:${MONGO_INTERNAL_PORT}"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - workfriar-network
+
+  # Redis service
+  redis:
+    image: redis:latest
+    ports:
+      - "${REDIS_PORT}:${REDIS_INTERNAL_PORT}"
+    networks:
+      - workfriar-network
+
+  # MinIO service
+  minio:
+    image: minio/minio:latest
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    command: server /data
+    ports:
+      - "${MINIO_PORT}:${MINIO_INTERNAL_PORT}"
+      - "${MINIO_CONSOLE_PORT}:${MINIO_CONSOLE_INTERNAL_PORT}"
+    volumes:
+      - minio_data:/data
+    networks:
+      - workfriar-network
+
+networks:
+  workfriar-network:
+
+volumes:
+  mongo_data:
+  minio_data:
