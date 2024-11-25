@@ -1,12 +1,12 @@
 import fs from 'fs'
 import minioConfig from '../config/minio.js'
-import awsConfig from '../config/aws.js'
+// import awsConfig from '../config/aws.js'
 
 /**
  * Deletes a file from the file system.
  * @param {string} filePath - The path of the file to be deleted.
  */
-export const deleteFile = (filePath) => {
+const deleteFile = (filePath) => {
     // Use the 'fs.unlink' method to delete the file at the specified 'filePath'.
     // The 'fs.unlink' method deletes a file asynchronously.
 
@@ -44,3 +44,4 @@ export const deleteFile = (filePath) => {
         }
     }
 }
+export default deleteFile;

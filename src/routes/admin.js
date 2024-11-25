@@ -1,12 +1,12 @@
 import express from 'express'
 import multer from 'multer'
 
-import {
-    checkAnyPermissions,
-    checkPermissions,
-} from '../middlewares/checkPermission.js'
-import { authenticateAdmin } from '../middlewares/authenticateEmployee.js'
-import uploadCsv from '../utils/uploadCsv.js'
+// import {
+//     checkAnyPermissions,
+//     checkPermissions,
+// } from '../middlewares/check-permission.js'
+// import { authenticateAdmin } from '../middlewares/authenticate-employee.js'
+// import uploadCsv from '../utils/uploadCsv.js'
 
 
 const upload = multer()
@@ -21,7 +21,7 @@ const multerMiddleware = multer().single('file')
 |
 */
 
-// const adminRouter = express.Router()
+const adminRouter = express.Router()
 
 // const auth = new AuthController()
 
