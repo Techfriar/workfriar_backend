@@ -6,7 +6,8 @@
   "author": "Karthik K <karthik.p@techfriar.com>",
   "license": "MIT",
   "scripts": {
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "stage": "next start -p 5003"
   },
   "dependencies": {
     "body-parser": "1.20.3",
