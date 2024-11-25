@@ -28,6 +28,7 @@ services:
   # MongoDB service
   mongo:
     image: mongo:latest
+    container_name: mongo-container
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
     ports:

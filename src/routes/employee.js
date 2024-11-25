@@ -1,7 +1,7 @@
 import express from 'express'
-import multer from 'multer'
+/*import multer from 'multer'
 
-/*
+
 |--------------------------------------------------------------------------
 | Employee API Routes
 |--------------------------------------------------------------------------
@@ -11,10 +11,10 @@ import multer from 'multer'
 */
 
 const employeeRouter = express.Router()
-const multerMiddleware = multer().single('file')
+/* const multerMiddleware = multer().single('file')
 const upload = multer()
 
-const employee = new EmployeeController()
+const employee = new EmployeeController() */
 
 /**
  * Employee Signup Routes

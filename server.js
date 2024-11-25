@@ -5,12 +5,12 @@ import swaggerJsdoc from 'swagger-jsdoc'
 // import { dbErrorHandler } from './src/middlewares/dbErrorHandler.js'
 // import { requestNotFoundCheck } from './src/middlewares/requestNotFoundCheck.js'
 import connectDB from './src/config/db.js'
-// import swagger from './src/config/swagger.js'
+ import swagger from './src/config/swagger.js'
 import session from 'express-session'
 import bodyParser from 'body-parser'
 import morgan from 'morgan'
 import cors from 'cors'
-// import configureRoutes from './src/routes/routes.js'
+ import configureRoutes from './src/routes/routes.js'
 
 
 // Load environment variables from .env file
@@ -84,10 +84,10 @@ app.use('/storage/uploads', express.static('storage/uploads'))
 app.use('/public', express.static('public'))
 
 // Middleware to handle 404 Not Found errors
-app.use(requestNotFoundCheck)
+//app.use(requestNotFoundCheck)
 
 // Middleware to handle database-related errors
-app.use(dbErrorHandler)
+//app.use(dbErrorHandler)
 
 // Start the server and listen on the specified port and hostname
 app.listen(port, hostname, () => {

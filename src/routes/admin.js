@@ -1,16 +1,18 @@
 import express from 'express'
-import multer from 'multer'
+/* import multer from 'multer'
 
 import {
     checkAnyPermissions,
     checkPermissions,
 } from '../middlewares/checkPermission.js'
 import { authenticateAdmin } from '../middlewares/authenticateEmployee.js'
-import uploadCsv from '../utils/uploadCsv.js'
+import uploadCsv from '../utils/uploadCsv.js' */
+import CategoryController from '../controllers/category-controller.js'
+const categoryController = new CategoryController();
 
-
-const upload = multer()
-const multerMiddleware = multer().single('file')
+const adminRouter=express.Router()
+/* const upload = multer()
+const multerMiddleware = multer().single('file') */
 
 /*
 |--------------------------------------------------------------------------
@@ -41,5 +43,15 @@ const multerMiddleware = multer().single('file')
 //         checkPermissions('role-read'),
 //         role.listPermission,
 //     )
+adminRouter.post("/admin/addcategory",categoryController.addCategory.bind(categoryController));
+
+// Route to get all categories
+adminRouter.get("/admin/getcategories",categoryController.getCategories.bind(categoryController));
+
+//Route for updating time entry
+
+// Route for updating time entry
+adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategories.bind(categoryController));
+
 
 export default adminRouter
