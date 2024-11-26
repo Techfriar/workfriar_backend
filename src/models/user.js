@@ -7,7 +7,7 @@ import mongoosePaginate from 'mongoose-paginate'
  */
 const userSchema = mongoose.Schema(
     {
-        name: {
+        full_name: {
             type: String,
             required: true,
         },
@@ -16,29 +16,16 @@ const userSchema = mongoose.Schema(
             required: true,
             unique: true,
         },
-        country_code: {
+        location: {
             type: String,
             required: true,
         },
-        country_unicode: {
-            type: String,
-            required: true,
-        },
-        phone: {
-            type: String,
-            required: true, 
-        },
-        role_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Role',
-            required: true,
-        },
-        status: {
+        isAdmin: {
             type: Boolean,
-            default: true,
+            default: false,
             required: true,
         },
-        profile_pic_path: {
+        profile_pic: {
             type: String,
             required: false,
         },
@@ -48,6 +35,8 @@ const userSchema = mongoose.Schema(
     },
 )
 
+
+// userSchema
 //compare the hashed password with the password that the user sends in the request.
 
 userSchema.methods.matchPassword = async function (enteredPassword) {

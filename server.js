@@ -2,16 +2,15 @@ import express from 'express'
 import dotenv from 'dotenv'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
-// import { dbErrorHandler } from './src/middlewares/dbErrorHandler.js'
-// import { requestNotFoundCheck } from './src/middlewares/requestNotFoundCheck.js'
+import { dbErrorHandler } from './src/middlewares/db-error-handler.js'
+import { requestNotFoundCheck } from './src/middlewares/request-not-found-check.js'
 import connectDB from './src/config/db.js'
-// import swagger from './src/config/swagger.js'
+import swagger from './src/config/swagger.js'
 import session from 'express-session'
 import bodyParser from 'body-parser'
 import morgan from 'morgan'
 import cors from 'cors'
-// import configureRoutes from './src/routes/routes.js'
-
+import configureRoutes from './src/routes/routes.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -36,6 +35,9 @@ app.set('view engine', 'ejs')
 
 // Set view path
 app.set('views', './src/views')
+
+
+console.log('ensure the error in connectingDB')
 
 // Import MongoDB connection and establish the database connection
 connectDB()
@@ -63,6 +65,7 @@ app.use(
 // Rendering index page when accessing the root URL
 app.get('/', (req, res) => {
     res.render('index')
+    // res.send("joooo")
 })
 
 // Set up Swagger API documentation
