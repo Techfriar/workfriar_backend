@@ -33,18 +33,18 @@ export default class CategoryRepository{
  }
 
  //Update the time entry for category
- async updateCategory(timeentry,id)
- {
-    try
-    {
+ async updateCategory(updateFields, id) {
+    try {
         const updatedCategory = await Category.findByIdAndUpdate(
             id,
-            { time_entry: timeentry },
-            { runValidators: true })
-            return updatedCategory
-    }catch(error)
-    {
-        throw new Error(error)
+            { $set: updateFields },
+            { new: true } // Return the updated document
+        );
+
+        return updatedCategory;
+    } catch (error) {
+        throw new Error(error);
     }
- }
+}
+
 }

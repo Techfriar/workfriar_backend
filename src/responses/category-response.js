@@ -1,18 +1,20 @@
 
 export default class CategoryResponse{
-    async sendSuccessResponse  (res, data,message) {
-        return res.status(200).json({
-            success: true,
-            message,
-            data : data
+    async formattedResponse  (category) {
+        return ({
+            id:category.id,
+            category:category.category,
+            timeentry:category.time_entry
         });
     };   
-    async sendErrorResponse(res,message)
+
+    async formatCategorySet(categories)
     {
-        return res.status(500).json({
-            success: false,
-            message:message,
-            data : null
-        });
+        return categories.map(category => ({
+            id: category.id,
+            category: category.category,
+            timeentry: category.time_entry
+        }));
     }
+    
 }

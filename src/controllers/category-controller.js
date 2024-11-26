@@ -47,7 +47,7 @@ export default class CategoryController {
      *                   type: string
      *                 category:
      *                   type: string
-     *                 time_entry:
+     *                 timeentry:
      *                   type: string
      *                 createdAt:
      *                   type: string
@@ -64,15 +64,41 @@ export default class CategoryController {
             const { category, timeentry } = req.body
             const validationResult = await createCategoryRequest.validateCategory(category,timeentry);
             if (!validationResult.isValid) {
-                await categoryResponse.sendErrorResponse(res, validationResult.message);
-                return
+                 res.status(400).json({
+                    status:false,
+                    message:validationResult.message,
+                    data:[],
+                })
+               return
             }
-            console.log("category and timeentry",category,timeentry)
-            const data = await categoryRepo.createCategory(category, timeentry);
-            await categoryResponse.sendSuccessResponse(res, data, "Category Created Successfully");
+            const newCategory = await categoryRepo.createCategory(category, timeentry);
+            if(newCategory)
+            {
+                const  data=await categoryResponse.formattedResponse(newCategory)
+                res.status(200).json(
+                    {
+                        status:true,
+                        message:"Category Added Successfully",
+                        data:data,
+                    })
+            }
+            else
+            {
+                res.status(422).json(
+                    {
+                        status:false,
+                        message:"Failed to Add Category",
+                        data:[],
+                    })
+            }
+          
         } catch (error) {
-            console.error("Error in addCategory:", error);
-            await categoryResponse.sendErrorResponse(res, null, "Server Error");
+            res.status(500).json(
+                {
+                    status:false,
+                    message:"Internal Server Error",
+                    data:[],
+                })
         }
     }
 
@@ -98,7 +124,7 @@ export default class CategoryController {
      *                     type: string
      *                   category:
      *                     type: string
-     *                   time_entry:
+     *                   timeentry:
      *                     type: string
      *                   createdAt:
      *                     type: string
@@ -113,21 +139,38 @@ export default class CategoryController {
         try {
             const data = await categoryRepo.getAllCategories()
             if (data.length === 0) {
-                return categoryResponse.sendSuccessResponse(res, data, "No categories found");
+                res.json(422).json({
+                    status:false,
+                    message:"No Category Found",
+                    data:[],
+                })
+                return
             }
-            await categoryResponse.sendSuccessResponse(res, data, "Categories retrieved successfully");
+            else
+            {
+                const formattedData=await categoryResponse.formatCategorySet(data)  
+                res.status(200).json({
+                    status:true,
+                    message:"Categories",
+                    data:formattedData,
+                })
+            }
         } catch (error) {
-            console.error("Error in getCategories:", error);
-            await categoryResponse.sendErrorResponse(res, null, "Server Error");
+                res.status(500).json(
+                {
+                    status:false,
+                    message:"Internal Server Error",
+                    data:[],
+                })
         }
     }
 /**
- * Update time entry for each category
+ * Update category details (time entry or category)
  * 
  * @swagger
  * /admin/updatecategories/{id}:
- *   put:  # Use 'put' instead of 'post'
- *     summary: Update a category's time entry
+ *   put:
+ *     summary: Update a category's time entry, category name, or both
  *     tags: [Categories]
  *     parameters:
  *       - in: path
@@ -143,10 +186,18 @@ export default class CategoryController {
  *           schema:
  *             type: object
  *             properties:
+ *               category:
+ *                 type: string
+ *                 description: The name of the category
+ *                 example: Work
  *               timeentry:
  *                 type: string
  *                 enum: [Open Entry, Close Entry]
+ *                 description: The time entry type for the category
  *                 example: Open Entry
+ *             oneOf:
+ *               - required: [category]
+ *               - required: [timeentry]
  *     responses:
  *       200:
  *         description: Successfully updated the category
@@ -155,7 +206,7 @@ export default class CategoryController {
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   example: true
  *                 message:
@@ -166,18 +217,55 @@ export default class CategoryController {
  *                   properties:
  *                     _id:
  *                       type: string
+ *                       example: "637a9b6c1234567890abcdef"
  *                     category:
  *                       type: string
- *                     time_entry:
+ *                       example: "Work"
+ *                     timeentry:
  *                       type: string
+ *                       example: "Open Entry"
  *                     createdAt:
  *                       type: string
+ *                       format: date-time
+ *                       example: "2023-11-20T12:00:00.000Z"
  *                     updatedAt:
  *                       type: string
+ *                       format: date-time
+ *                       example: "2023-11-25T12:00:00.000Z"
  *       400:
- *         description: Invalid request or validation error
+ *         description: Invalid request or validation error (e.g., empty payload)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No data provided for update"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
  *       404:
  *         description: Category not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Category not found"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
  *       500:
  *         description: Server error
  *         content:
@@ -185,25 +273,59 @@ export default class CategoryController {
  *             schema:
  *               type: object
  *               properties:
- *                 success:
+ *                 status:
  *                   type: boolean
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: "Server error"
+ *                   example: "Internal Server Error"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
  */
-    async updateCategories(req,res)
-    {
-        try
-        {
-            const {timeentry}=req.body
-            const {id}=req.params
-            const updatedData=await categoryRepo.updateCategory(timeentry,id)
-            await categoryResponse.sendSuccessResponse(res,updatedData,"Category Updated")
-        }catch(error)
-        {
-            await categoryResponse.sendErrorResponse(res,"Server Error")
 
+async updateCategories(req, res) {
+    try {
+        const { id } = req.params; 
+        const updateFields = req.body; 
+        const validationResult = await createCategoryRequest.validateUpdateCategory(updateFields);
+        if (!validationResult.isValid) {
+             res.status(400).json({
+                status:false,
+                message:validationResult.message,
+                data:[],
+            })
+           return
         }
+        if (updateFields.timeentry) {
+            updateFields.time_entry = updateFields.timeentry;
+            delete updateFields.timeentry; 
+        }
+        const updatedData = await categoryRepo.updateCategory(updateFields, id);
+
+        if (updatedData) {
+            const data = await categoryResponse.formattedResponse(updatedData);
+            return res.status(200).json({
+                status: true,
+                message: "Category updated successfully",
+                data: data,
+            });
+        } else {
+            return res.status(404).json({
+                status: false,
+                message: "Category not found or update failed",
+                data: [],
+            });
+        }
+    } catch (error) {
+        console.error("Error updating category:", error);
+        return res.status(500).json({
+            status: false,
+            message: "Internal Server Error",
+            data: [],
+        });
     }
+}
+
 }
