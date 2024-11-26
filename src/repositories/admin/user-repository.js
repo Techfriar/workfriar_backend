@@ -67,7 +67,6 @@ export default class UserRepository {
             customerData,
             { new: true },
         )
-
         return updatedUser
     }
 

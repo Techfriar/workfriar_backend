@@ -3,3 +3,5 @@ yarn.lock
 package-lock.json
 .DS_Store
 .env
+seed-employee.js
+employee.js
