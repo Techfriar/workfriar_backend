@@ -29,7 +29,7 @@ adminRouter
 adminRouter
     .route('/timesheet/add-timesheet')
     .post(
-        authenticateAdmin,
+        // authenticateAdmin,
         // checkPermissions('timesheet', 'add'),
         timesheet.addTimesheet
     )
