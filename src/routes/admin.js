@@ -4,6 +4,8 @@ import CategoryController from '../controllers/category-controller.js'
 const categoryController = new CategoryController();
 
 
+const adminRouter = express.Router()
+
 
 //Route for adding category
 adminRouter.post("/admin/addcategory",categoryController.addCategory.bind(categoryController));
@@ -42,22 +44,33 @@ import ClientController from '../controllers/admin/client-controller.js'
 
 // const auth = new AuthController()
 
+import passport from '../config/passport-config.js'
+import AuthController from '../controllers/admin/auth-controller.js'
+import TimesheetController from '../controllers/admin/timesheet-controller.js'
+import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
+
+
+
+const auth = new AuthController()
+const timesheet = new TimesheetController()
+const client = new ClientController()
+
 
 /*
  * Auth Routes
  */
-// adminRouter.route('/login').post(auth.login)
 
-/**
- * Permission Routes
- */
-// adminRouter
-//     .route('/permission/list')
-//     .post(
-//         authenticateEmployee,
-//         checkPermissions('role-read'),
-//         role.listPermission,
-//     )
+adminRouter.route('/google-login').get(passport.authenticate('google', { scope: ['email'] }))
+adminRouter.route('/google-callback').get(passport.authenticate('google', { session: false }), auth.googleCallback)
+adminRouter.route('/google-fallback').get(auth.googleFallback)
+
+adminRouter
+    .route('/timesheet/add-timesheet')
+    .post(
+        authenticateAdmin,
+        // checkPermissions('timesheet', 'add'),
+        timesheet.addTimesheet
+    )
 
 /* 
 * Client Routes

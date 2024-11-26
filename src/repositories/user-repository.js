@@ -1,4 +1,5 @@
-import User from "../../models/user.js"
+import User from '../models/user.js'
+
 export default class UserRepository {
 
     /**
@@ -70,4 +71,17 @@ export default class UserRepository {
         return updatedUser
     }
 
+     /**
+     * Check if a user exists by email and is an admin.
+     * @param {string} email - The user's email address.
+     * @returns {Promise<boolean>} - Returns true if the user exists and is an admin, otherwise false.
+     */
+     async isAdminByEmail(email) {
+        try {
+            const user = await User.findOne({ email }).exec();
+            return user ? user.isAdmin : false;
+        } catch (error) {
+            throw new Error('Error checking user admin status');
+        }
+    }
 }
