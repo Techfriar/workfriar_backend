@@ -16,49 +16,12 @@ export default class ProjectRepository {
     }
 
     /**
-     * Get all projects with pagination using POST
-     * @param {Object} options - Pagination options
-     * @param {Object} filters - Query filters from request body
-     * @return {Promise<Object>} - Paginated projects
+     * Get all projects
+     * @return {Promise<Project[]>} - All projects
      */
-    async getAllProjects(options, filters = {}) {
+    async getAllProjects() {
         try {
-            const query = {};
-
-            // Apply filters from request body
-            if (filters.status) {
-                query.status = filters.status;
-            }
-            if (filters.clientName) {
-                query.clientName = new RegExp(filters.clientName, "i");
-            }
-            if (filters.projectName) {
-                query.projectName = new RegExp(filters.projectName, "i");
-            }
-
-            // Extract pagination options
-            const page = options.page || 1;
-            const limit = options.limit || 10;
-            const skip = (page - 1) * limit;
-
-            // Fetch total count for pagination
-            const total = await Project.countDocuments(query);
-
-            // Fetch paginated data
-            const projects = await Project.find(query)
-                .populate("projectLead")
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit);
-
-            // Return paginated result
-            return {
-                docs: projects,
-                total,
-                page,
-                pages: Math.ceil(total / limit),
-                limit
-            };
+            return await Project.find().populate("projectLead").sort({ createdAt: -1 });
         } catch (error) {
             throw new Error(`Failed to get projects: ${error.message}`);
         }
@@ -67,19 +30,11 @@ export default class ProjectRepository {
     /**
      * Get project by id
      * @param {String} projectId - The project id
-     * @param {Object} filters - Additional filters from request body
      * @return {Promise<Project>} - The project
      */
-    async getProjectById(projectId, filters = {}) {
+    async getProjectById(projectId) {
         try {
-            const query = { _id: projectId };
-
-            // Apply additional filters if needed
-            if (filters.status) {
-                query.status = filters.status;
-            }
-
-            const project = await Project.findOne(query).populate("projectLead");
+            const project = await Project.findOne().populate("projectLead");
             if (!project) {
                 throw new Error(`Project with ID ${projectId} not found`);
             }

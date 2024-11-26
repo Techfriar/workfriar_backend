@@ -95,14 +95,12 @@ export default class ProjectController {
 
         return res.status(200).json({
           status: true,
-          statusCode: 200,
           message: "Project added successfully.",
           data: projectData,
         });
       } else {
         return res.status(422).json({
           status: false,
-          statusCode: 422,
           message: "Failed to add project.",
           data: [],
         });
@@ -110,7 +108,6 @@ export default class ProjectController {
     } catch (error) {
       return res.status(500).json({
         status: false,
-        statusCode: 500,
         message: "Failed to add project.",
         errors: error,
       });
@@ -159,43 +156,24 @@ export default class ProjectController {
    */
   async getAllProjects(req, res) {
     try {
-      const options = {
-        page: parseInt(req.body.page) || 1,
-        limit: parseInt(req.body.limit) || 10,
-      };
-
-      const filters = {
-        status: req.body.status,
-        clientName: req.body.clientName,
-        projectName: req.body.projectName,
-      };
-
-      const projects = await projectRepo.getAllProjects(options, filters);
+      const projects = await projectRepo.getAllProjects();
 
       const formattedProjects = await Promise.all(
-        projects.docs.map(
+        projects.map(
           async (project) => await ProjectResponse.format(project)
         )
       );
 
       return res.status(200).json({
         status: true,
-        statusCode: 200,
         message: "Projects retrieved successfully.",
         data: {
           projects: formattedProjects,
-          pagination: {
-            total: projects.total,
-            page: projects.page,
-            pages: projects.pages,
-            limit: projects.limit,
-          },
         },
       });
     } catch (error) {
       return res.status(500).json({
         status: false,
-        statusCode: 500,
         message: "Failed to retrieve projects.",
         errors: error,
       });
@@ -239,16 +217,11 @@ export default class ProjectController {
    */
   async getProjectById(req, res) {
     try {
-      const filters = {
-        status: req.body.status,
-      };
-
       const project = await projectRepo.getProjectById(req.params.id, filters);
 
       if (!project) {
         return res.status(404).json({
           status: false,
-          statusCode: 404,
           message: "Project not found.",
           data: null,
         });
@@ -258,14 +231,12 @@ export default class ProjectController {
 
       return res.status(200).json({
         status: true,
-        statusCode: 200,
         message: "Project retrieved successfully.",
         data: projectData,
       });
     } catch (error) {
       return res.status(500).json({
         status: false,
-        statusCode: 500,
         message: "Failed to retrieve project.",
         errors: error,
       });
@@ -377,14 +348,12 @@ export default class ProjectController {
 
         return res.status(200).json({
           status: true,
-          statusCode: 200,
           message: "Project updated successfully.",
           data: projectData,
         });
       } else {
         return res.status(404).json({
           status: false,
-          statusCode: 404,
           message: "Project not found.",
           data: null,
         });
@@ -392,7 +361,6 @@ export default class ProjectController {
     } catch (error) {
       return res.status(500).json({
         status: false,
-        statusCode: 500,
         message: "Failed to update project.",
         errors: error,
       });
@@ -432,7 +400,6 @@ export default class ProjectController {
       if (!project) {
         return res.status(404).json({
           status: false,
-          statusCode: 404,
           message: "Project not found.",
           data: null,
         });
@@ -446,14 +413,12 @@ export default class ProjectController {
 
       return res.status(200).json({
         status: true,
-        statusCode: 200,
         message: "Project deleted successfully.",
         data: null,
       });
     } catch (error) {
       return res.status(500).json({
         status: false,
-        statusCode: 500,
         message: "Failed to delete project.",
         errors: error,
       });
