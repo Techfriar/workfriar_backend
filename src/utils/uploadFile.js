@@ -1,7 +1,6 @@
 import fs from 'fs'
 import { Readable } from 'stream'
 import minioConfig from '../config/minio.js'
-// import awsConfig from '../config/aws.js'
 
 // Set upload bucket minio
 const uploadBucket = process.env.AWS_BUCKET_NAME

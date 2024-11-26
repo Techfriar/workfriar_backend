@@ -1,6 +1,5 @@
 import fs from 'fs'
 import minioConfig from '../config/minio.js'
-// import awsConfig from '../config/aws.js'
 
 /**
  * Deletes a file from the file system.

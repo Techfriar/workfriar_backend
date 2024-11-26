@@ -71,7 +71,6 @@ export default class ProjectController {
     try {
       const validatedData = await new AddProjectRequest(req).validate();
 
-      // Handle file upload if present
       for (const fieldName in req.files) {
         if (Object.hasOwnProperty.call(req.files, fieldName)) {
           const fileArray = req.files[fieldName];
@@ -94,21 +93,24 @@ export default class ProjectController {
       if (projectDetails) {
         const projectData = await ProjectResponse.format(projectDetails);
 
-        res.status(200).json({
+        return res.status(200).json({
           status: true,
+          statusCode: 200,
           message: "Project added successfully.",
           data: projectData,
         });
       } else {
-        res.status(422).json({
+        return res.status(422).json({
           status: false,
+          statusCode: 422,
           message: "Failed to add project.",
           data: [],
         });
       }
     } catch (error) {
-      res.status(422).json({
+      return res.status(500).json({
         status: false,
+        statusCode: 500,
         message: "Failed to add project.",
         errors: error,
       });
@@ -162,7 +164,6 @@ export default class ProjectController {
         limit: parseInt(req.body.limit) || 10,
       };
 
-      // Get filters from request body
       const filters = {
         status: req.body.status,
         clientName: req.body.clientName,
@@ -177,8 +178,9 @@ export default class ProjectController {
         )
       );
 
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
+        statusCode: 200,
         message: "Projects retrieved successfully.",
         data: {
           projects: formattedProjects,
@@ -191,11 +193,11 @@ export default class ProjectController {
         },
       });
     } catch (error) {
-      console.error("Error in getAllProjects:", error); // Log the error
-      res.status(500).json({
+      return res.status(500).json({
         status: false,
+        statusCode: 500,
         message: "Failed to retrieve projects.",
-        errors: error.message || error, // Add error message for easier debugging
+        errors: error,
       });
     }
   }
@@ -246,6 +248,7 @@ export default class ProjectController {
       if (!project) {
         return res.status(404).json({
           status: false,
+          statusCode: 404,
           message: "Project not found.",
           data: null,
         });
@@ -253,14 +256,16 @@ export default class ProjectController {
 
       const projectData = await ProjectResponse.format(project);
 
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
+        statusCode: 200,
         message: "Project retrieved successfully.",
         data: projectData,
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         status: false,
+        statusCode: 500,
         message: "Failed to retrieve project.",
         errors: error,
       });
@@ -339,7 +344,6 @@ export default class ProjectController {
     try {
       const validatedData = await new UpdateProjectRequest(req).validate();
 
-      // Handle file upload if present
       if (req.files && Object.keys(req.files).length > 0) {
         for (const fieldName in req.files) {
           if (Object.hasOwnProperty.call(req.files, fieldName)) {
@@ -348,7 +352,6 @@ export default class ProjectController {
               const folderName = "projects";
               const uploadedFile = await uploadFile(file, folderName);
               if (uploadedFile.path) {
-                // Delete old logo if exists
                 const oldProject = await projectRepo.getProjectById(
                   req.params.id
                 );
@@ -362,7 +365,7 @@ export default class ProjectController {
         }
       }
 
-      delete validatedData.projectId; // Remove projectId from update data
+      delete validatedData.projectId;
 
       const projectDetails = await projectRepo.updateProject(
         req.params.id,
@@ -372,23 +375,24 @@ export default class ProjectController {
       if (projectDetails) {
         const projectData = await ProjectResponse.format(projectDetails);
 
-
-        res.status(200).json({
+        return res.status(200).json({
           status: true,
+          statusCode: 200,
           message: "Project updated successfully.",
           data: projectData,
         });
       } else {
-        res.status(404).json({
+        return res.status(404).json({
           status: false,
+          statusCode: 404,
           message: "Project not found.",
           data: null,
         });
       }
     } catch (error) {
-        console.error("Error in updateProject:", error);
-      res.status(422).json({
+      return res.status(500).json({
         status: false,
+        statusCode: 500,
         message: "Failed to update project.",
         errors: error,
       });
@@ -428,28 +432,28 @@ export default class ProjectController {
       if (!project) {
         return res.status(404).json({
           status: false,
+          statusCode: 404,
           message: "Project not found.",
           data: null,
         });
       }
 
-      // Delete project logo if exists
       if (project.projectLogo) {
         await deleteFile(project.projectLogo);
       }
 
       await projectRepo.deleteProject(req.params.id);
 
-
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
+        statusCode: 200,
         message: "Project deleted successfully.",
         data: null,
       });
     } catch (error) {
-        console.log("Error in deleteProject:", error);
-      res.status(500).json({
+      return res.status(500).json({
         status: false,
+        statusCode: 500,
         message: "Failed to delete project.",
         errors: error,
       });
