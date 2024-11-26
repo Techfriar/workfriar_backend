@@ -1,5 +1,3 @@
-import Role from '../models/role.js'
-
 /**
  * Middleware function factory to check user permissions
  * @param Array<String> requiredPermissions

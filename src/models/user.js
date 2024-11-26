@@ -26,7 +26,7 @@ const userSchema = mongoose.Schema(
         },
         phone: {
             type: String,
-            required: true, 
+            required: true,
         },
         role_id: {
             type: mongoose.Schema.Types.ObjectId,
