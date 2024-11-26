@@ -35,6 +35,12 @@ const userSchema = mongoose.Schema(
     },
 )
 
+// Virtual for roles
+userSchema.virtual('roles', {
+    ref: 'Role', // Name of the Role model
+    localField: '_id', // Field in the user schema
+    foreignField: 'users', // Field in the Role schema
+});
 
 // userSchema
 //compare the hashed password with the password that the user sends in the request.

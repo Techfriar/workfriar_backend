@@ -37,7 +37,7 @@ passport.use(
                 // Generate a JWT token
                 const token = jwtService.createToken({
                     email: user.email,
-                    user_id: user._id,
+                    userId: user._id,
                     isAdmin: user.isAdmin,
                 });
 
