@@ -30,7 +30,7 @@ const seedUsers = async () => {
             {
                 full_name: 'John Doe',
                 email: 'john.doe@example.com',
-                location: 'New York',
+                location: 'Dubai',
                 isAdmin: true,  // Admin user
                 profile_pic: 'https://example.com/images/john-doe.jpg',
                 password: 'password123'  // Plain password (will be hashed)
@@ -38,7 +38,7 @@ const seedUsers = async () => {
             {
                 full_name: 'Jane Smith',
                 email: 'jane.smith@example.com',
-                location: 'California',
+                location: 'Kochi',
                 isAdmin: false,  // Regular user
                 profile_pic: 'https://example.com/images/jane-smith.jpg',
                 password: 'password456'  // Plain password (will be hashed)
@@ -46,7 +46,7 @@ const seedUsers = async () => {
             {
                 full_name: 'Robert Johnson',
                 email: 'robert.johnson@example.com',
-                location: 'Texas',
+                location: 'Kochi',
                 isAdmin: false,  // Regular user
                 profile_pic: null,  // No profile picture
                 password: 'password789'  // Plain password (will be hashed)
@@ -54,7 +54,7 @@ const seedUsers = async () => {
             {
                 full_name: 'Alice Green',
                 email: 'alice.green@example.com',
-                location: 'Florida',
+                location: 'Kochi',
                 isAdmin: false,  // Regular user
                 profile_pic: 'https://example.com/images/alice-green.jpg',
                 password: 'password123'  // Plain password (will be hashed)
