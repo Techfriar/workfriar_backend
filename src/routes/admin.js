@@ -1,4 +1,23 @@
 import express from 'express'
+
+import CategoryController from '../controllers/category-controller.js'
+const categoryController = new CategoryController();
+
+
+const adminRouter = express.Router()
+
+
+//Route for adding category
+adminRouter.post("/admin/addcategory",categoryController.addCategory.bind(categoryController));
+
+// Route to get all categories
+adminRouter.get("/admin/getcategories",categoryController.getCategories.bind(categoryController));
+
+
+
+// Route for updating Category
+adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategories.bind(categoryController));
+
 // import multer from 'multer'
 
 // import {
@@ -22,8 +41,7 @@ import ClientController from '../controllers/admin/client-controller.js'
 |
 */
 
-const adminRouter = express.Router()
-const client = new ClientController()
+
 // const auth = new AuthController()
 
 import passport from '../config/passport-config.js'
@@ -35,6 +53,8 @@ import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 
 const auth = new AuthController()
 const timesheet = new TimesheetController()
+const client = new ClientController()
+
 
 /*
  * Auth Routes
