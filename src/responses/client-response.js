@@ -19,7 +19,6 @@ class ClientResponse{
             status: client.status
         }
     }
-    
 }
 
 export default ClientResponse;
