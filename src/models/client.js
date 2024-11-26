@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 const clientSchema = new mongoose.Schema({
-    clientName: {
+    client_name: {
         type: String,
         required: true,
     },
@@ -9,11 +9,11 @@ const clientSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    clientManager: {
+    client_manager: {
         type: String,
         required: true,
     },
-    billingCurrency: {
+    billing_currency: {
         type: String,
         required: true,
     },

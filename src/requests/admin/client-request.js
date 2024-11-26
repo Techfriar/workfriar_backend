@@ -11,7 +11,7 @@ class ClientRequest {
         .messages({
             'string.base': '_id must be a string',
         }),
-        clientName: Joi.string()
+        client_name: Joi.string()
             .min(1)
             .required()
             .messages({
@@ -25,14 +25,14 @@ class ClientRequest {
                 'string.empty': 'Location is required',
                 'any.required': 'Location field is required',
             }),
-        clientManager: Joi.string()
+        client_manager: Joi.string()
             .min(1)
             .required()
             .messages({
                 'string.empty': 'Client manager is required',
                 'any.required': 'Client manager field is required',
             }),
-        billingCurrency: Joi.string()
+        billing_currency: Joi.string()
             .min(1)
             .required()
             .messages({

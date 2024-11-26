@@ -1,27 +1,25 @@
 import client from "../../models/client.js";
 
-class ClientRepository{
+class ClientRepository {
     async createClient(clientDetails) {
         try {
             const newClient = new client(clientDetails);
             return await newClient.save();
         } catch (error) {
-            console.error("Error creating client:", error);
-            throw error; // Re-throw the error to be handled elsewhere
+            throw new Error(error);
         }
     }
 
-    async findExistingClient({ clientName, location, clientManager, billingCurrency }) {
+    async findExistingClient({ client_name, location, client_manager, billing_currency }) {
         try {
             return await client.findOne({
-                clientName,
+                client_name,
                 location,
-                clientManager,
-                billingCurrency,
+                client_manager,
+                billing_currency,
             });
         } catch (error) {
-            console.error("Error finding existing client:", error);
-            throw error;
+            throw new Error(error);
         }
     }
 
@@ -29,8 +27,7 @@ class ClientRepository{
         try {
             return await client.findById({ _id: id });
         } catch (error) {
-            console.error("Error finding client by ID:", error);
-            throw error;
+            throw new Error(error); 
         }
     }
 
@@ -38,8 +35,7 @@ class ClientRepository{
         try {
             return await client.find();
         } catch (error) {
-            console.error("Error fetching all clients:", error);
-            throw error;
+            throw new Error(error); 
         }
     }
 
@@ -51,8 +47,7 @@ class ClientRepository{
             });
             return updatedClient;
         } catch (error) {
-            console.error("Error updating client:", error);
-            throw error;
+            throw new Error(error); 
         }
     }
 }

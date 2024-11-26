@@ -8,14 +8,14 @@ class ClientResponse{
     async addClientResponse(client){
         return{
             id: client._id,
-            name: client.clientName
+            name: client.client_name
         }
     }
     
     async editClientResponse(client){
         return{
             id: client._id,
-            name: client.clientName,
+            name: client.client_name,
             status: client.status
         }
     }

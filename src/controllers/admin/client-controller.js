@@ -1,6 +1,7 @@
 import ClientRequest from '../../requests/admin/client-request.js'
 import ClientRepository from '../../repositories/admin/client-repository.js'
 import ClientResponse from '../../responses/client-response.js';
+import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
 
 const clientRepository = new ClientRepository()
 const clientResponse = new ClientResponse();
@@ -21,13 +22,13 @@ class ClientController {
      *           schema:
      *             type: object
      *             required:
-     *               - clientName
+     *               - client_name
      *               - location
-     *               - clientManager
-     *               - billingCurrency
+     *               - client_manager
+     *               - billing_currency
      *               - status
      *             properties:
-     *               clientName:
+     *               client_name:
      *                 type: string
      *                 description: The name of the client.
      *                 example: Acme Corp
@@ -35,11 +36,11 @@ class ClientController {
      *                 type: string
      *                 description: The location of the client.
      *                 example: New York
-     *               clientManager:
+     *               client_manager:
      *                 type: string
      *                 description: The manager responsible for the client.
      *                 example: John Doe
-     *               billingCurrency:
+     *               billing_currency:
      *                 type: string
      *                 description: The currency used for billing.
      *                 example: USD
@@ -107,21 +108,18 @@ class ClientController {
             const validationResult = await clientRequest.validate();
 
             if (validationResult.error) {
-                // If there are validation errors, return a 400 response with the errors
-                return res.status(400).json({
-                    success: false,
-                    message: 'Validation errors occurred',
-                    errors: validationResult.error,
-                });
+                // If there are validation errors, return a error
+                throw new CustomValidationError(validationResult.error)
+                
             }
 
-            const { clientName, location, clientManager, billingCurrency, status } = validationResult.value
+            const { client_name, location, client_manager, billing_currency, status } = validationResult.value
 
             const newClient = await clientRepository.createClient({
-                clientName,
+                client_name,
                 location,
-                clientManager,
-                billingCurrency,
+                client_manager,
+                billing_currency,
                 status,
             });
 
@@ -144,14 +142,20 @@ class ClientController {
 
         }
         catch (error) {
-            // Handle any unexpected errors
-            console.error('Error adding client:', error);
-            return res.status(500).json({
-                success: false,
-                message: 'An internal server error occurred',
-            });
+            if (error instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: error.errors,
+                });
+            }
+            else{
+                return res.status(500).json({
+                    success: false,
+                    message: 'An internal server error occurred',
+                });
+            }
         }
-
     }
 
     /**
@@ -181,16 +185,16 @@ class ClientController {
      *                   items:
      *                     type: object
      *                     properties:
-     *                       clientName:
+     *                       client_name:
      *                         type: string
      *                         example: "Acme Corporation"
      *                       location:
      *                         type: string
      *                         example: "New York"
-     *                       clientManager:
+     *                       client_manager:
      *                         type: string
      *                         example: "Jane Doe"
-     *                       billingCurrency:
+     *                       billing_currency:
      *                         type: string
      *                         example: "USD"
      *                       status:
@@ -245,7 +249,6 @@ class ClientController {
                 });
             }
         } catch (error) {
-            console.error('Error fetching clients:', error);
             return res.status(500).json({
                 success: false,
                 message: 'An internal server error occurred.',
@@ -275,7 +278,7 @@ class ClientController {
      *                 type: string
      *                 description: The ID of the client to update.
      *                 example: "641b3a5f3c2aee4a9f2d1234"
-     *               clientName:
+     *               client_name:
      *                 type: string
      *                 description: The updated name of the client.
      *                 example: "Updated Acme Corp"
@@ -283,11 +286,11 @@ class ClientController {
      *                 type: string
      *                 description: The updated location of the client.
      *                 example: "San Francisco"
-     *               clientManager:
+     *               client_manager:
      *                 type: string
      *                 description: The updated manager responsible for the client.
      *                 example: "Jane Doe"
-     *               billingCurrency:
+     *               billing_currency:
      *                 type: string
      *                 description: The updated currency used for billing.
      *                 example: "EUR"
@@ -313,16 +316,16 @@ class ClientController {
      *                 data:
      *                   type: object
      *                   properties:
-     *                     clientName:
+     *                     client_name:
      *                       type: string
      *                       example: "Updated Acme Corp"
      *                     location:
      *                       type: string
      *                       example: "San Francisco"
-     *                     clientManager:
+     *                     client_manager:
      *                       type: string
      *                       example: "Jane Doe"
-     *                     billingCurrency:
+     *                     billing_currency:
      *                       type: string
      *                       example: "EUR"
      *                     status:
@@ -379,20 +382,17 @@ class ClientController {
             const validationResult = await clientRequest.validateForEdit();
 
             if (validationResult.error) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Validation errors occurred',
-                    errors: validationResult.error,
-                });
+                // If there are validation errors, return a error
+                throw new CustomValidationError(validationResult.error)
             }
 
-            const { _id, clientName, location, clientManager, billingCurrency, status } = validationResult.value
+            const { _id, client_name, location, client_manager, billing_currency, status } = validationResult.value
 
             const updatedClient = await clientRepository.updateClient(_id, {
-                clientName,
+                client_name,
                 location,
-                clientManager,
-                billingCurrency,
+                client_manager,
+                billing_currency,
                 status,
             })
 
@@ -409,12 +409,21 @@ class ClientController {
                     message: 'Failed to update client.',
                 });
             }
-        } catch (error) {
-            console.error('Error editing client:', error);
-            return res.status(500).json({
-                success: false,
-                message: 'An internal server error occurred',
-            });
+        }
+        catch (error) {
+            if (error instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: error.errors,
+                });
+            }
+            else{
+                return res.status(500).json({
+                    success: false,
+                    message: 'An internal server error occurred',
+                });
+            }
         }
     }
 }
