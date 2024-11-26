@@ -155,7 +155,7 @@ export default class TimesheetController {
 			if(err instanceof CustomValidationError){
 				return res.status(400).json({ 
 					status:false, 
-					message: 'Timesheet added successfully', 
+					message: err.errors, 
 					data: [] 
 				});
 			}

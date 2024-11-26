@@ -86,7 +86,6 @@ export default class UserController {
                     const fileArray = req.files[fieldName]
                     for (const file of fileArray) {
                         const folderName = 'employees'
-
                         const uploadedFile = await uploadFile(file, folderName)
                         if (uploadedFile.path) {
                             req.body.file = uploadedFile.path
@@ -121,7 +120,6 @@ export default class UserController {
                     password,
                 )
                 io.emit('user-add', employeeData)
-
                 res.status(200).json({
                     status: true,
                     message: 'User data added successfully.',
@@ -425,6 +423,7 @@ export default class UserController {
                             await UserResponse.format(user),
                     ),
                 )
+                
 
                 // Filter employees whose role is super admin
                 const emp = employeesData.filter(

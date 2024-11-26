@@ -12,7 +12,7 @@ import morgan from 'morgan'
 import cors from 'cors'
 import configureRoutes from './src/routes/routes.js'
 
-// Load environment variables from .env file
+
 dotenv.config()
 
 // Create Express app
@@ -87,10 +87,10 @@ app.use('/storage/uploads', express.static('storage/uploads'))
 app.use('/public', express.static('public'))
 
 // Middleware to handle 404 Not Found errors
-app.use(requestNotFoundCheck)
+//app.use(requestNotFoundCheck)
 
 // Middleware to handle database-related errors
-app.use(dbErrorHandler)
+//app.use(dbErrorHandler)
 
 // Start the server and listen on the specified port and hostname
 app.listen(port, hostname, () => {
