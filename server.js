@@ -4,6 +4,8 @@ import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
 import { dbErrorHandler } from './src/middlewares/db-error-handler.js'
 import { requestNotFoundCheck } from './src/middlewares/request-not-found-check.js'
+import { dbErrorHandler } from './src/middlewares/db-error-handler.js'
+import { requestNotFoundCheck } from './src/middlewares/request-not-found-check.js'
 import connectDB from './src/config/db.js'
 import swagger from './src/config/swagger.js'
 import session from 'express-session'
@@ -11,6 +13,8 @@ import bodyParser from 'body-parser'
 import morgan from 'morgan'
 import cors from 'cors'
 import configureRoutes from './src/routes/routes.js'
+import projectRouter from './src/routes/project.js'
+
 
 // Load environment variables from .env file
 dotenv.config()
