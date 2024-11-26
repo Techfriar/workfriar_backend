@@ -1,5 +1,4 @@
-# version: '3.8'
-
+version: "3.8"
 services:
   # Express app
   workfriar-app:
@@ -9,15 +8,15 @@ services:
     environment:
       - MONGO_URI=${MONGO_URI}
       - REDIS_HOST=${REDIS_HOST}
-      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ENDPOINT=http://minio:${MINIO_PORT} # Ensure internal service communication
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     ports:
       - "3002:3002"
     volumes:
-      - .:/app                  # Mount project directory into the container
-      - /app/node_modules       # Prevent overwriting node_modules inside the container
-    command: yarn server        # Run the nodemon script
+      - .:/app # Mount the project directory into the container
+      - /app/node_modules # Prevent overwriting node_modules inside the container
+    command: yarn server # Run the nodemon script from package.json
     depends_on:
       - mongo
       - redis
@@ -51,7 +50,7 @@ services:
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-    command: server /data
+    command: server --address ":${MINIO_PORT}" --console-address ":${MINIO_CONSOLE_PORT}" /data
     ports:
       - "${MINIO_PORT}:${MINIO_INTERNAL_PORT}"
       - "${MINIO_CONSOLE_PORT}:${MINIO_CONSOLE_INTERNAL_PORT}"
@@ -62,6 +61,7 @@ services:
 
 networks:
   workfriar-network:
+    driver: bridge
 
 volumes:
   mongo_data:
