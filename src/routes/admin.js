@@ -1,16 +1,17 @@
 import express from 'express'
-import multer from 'multer'
+// import multer from 'multer'
 
-import {
-    checkAnyPermissions,
-    checkPermissions,
-} from '../middlewares/checkPermission.js'
-import { authenticateAdmin } from '../middlewares/authenticateEmployee.js'
-import uploadCsv from '../utils/uploadCsv.js'
+// import {
+//     checkAnyPermissions,
+//     checkPermissions,
+// } from '../middlewares/checkPermission.js'
+// import { authenticateAdmin } from '../middlewares/authenticateEmployee.js'
+// import uploadCsv from '../utils/uploadCsv.js'
 
 
-const upload = multer()
-const multerMiddleware = multer().single('file')
+// const upload = multer()
+// const multerMiddleware = multer().single('file')
+import ClientController from '../controllers/admin/client-controller.js'
 
 /*
 |--------------------------------------------------------------------------
@@ -21,8 +22,8 @@ const multerMiddleware = multer().single('file')
 |
 */
 
-// const adminRouter = express.Router()
-
+const adminRouter = express.Router()
+const client = new ClientController()
 // const auth = new AuthController()
 
 
@@ -41,5 +42,13 @@ const multerMiddleware = multer().single('file')
 //         checkPermissions('role-read'),
 //         role.listPermission,
 //     )
+
+/* 
+* Client Routes
+*/
+adminRouter.route('/add-client').post(client.addClient)
+adminRouter.route('/all-clients').post(client.allClient)
+adminRouter.route('/edit-client').put(client.editClient)
+
 
 export default adminRouter
