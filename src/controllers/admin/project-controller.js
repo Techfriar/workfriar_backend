@@ -106,10 +106,17 @@ export default class ProjectController {
         });
       }
     } catch (error) {
+      if (error instanceof CustomValidationError) {
+        return res.status(422).json({
+          status: false,
+          message: "Validation failed.",
+          errors: error.errors,
+        });
+      }
       return res.status(500).json({
         status: false,
         message: "Failed to add project.",
-        errors: error,
+        errors: error.message || error,
       });
     }
   }
@@ -159,9 +166,7 @@ export default class ProjectController {
       const projects = await projectRepo.getAllProjects();
 
       const formattedProjects = await Promise.all(
-        projects.map(
-          async (project) => await ProjectResponse.format(project)
-        )
+        projects.map(async (project) => await ProjectResponse.format(project))
       );
 
       return res.status(200).json({
@@ -359,10 +364,17 @@ export default class ProjectController {
         });
       }
     } catch (error) {
+      if (error instanceof CustomValidationError) {
+        return res.status(422).json({
+          status: false,
+          message: "Validation failed.",
+          errors: error.errors,
+        });
+      }
       return res.status(500).json({
         status: false,
         message: "Failed to update project.",
-        errors: error,
+        errors: error.message || error,
       });
     }
   }

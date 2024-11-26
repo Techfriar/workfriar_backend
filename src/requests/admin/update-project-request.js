@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import ProjectRepository from '../../repositories/admin/project-repository.js'
 import UserRepository from '../../repositories/admin/user-repository.js'
+import { CustomValidationError } from '../../exceptions/custom-validation-error.js'
 
 class UpdateProjectRequest {
     static projectRepo = new ProjectRepository()
@@ -104,7 +105,7 @@ class UpdateProjectRequest {
                 validationErrors['project'] = 'Project not found.'
             }
 
-            throw validationErrors
+            throw new CustomValidationError(validationErrors);
         }
 
         return value
