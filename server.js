@@ -8,7 +8,7 @@ import session from 'express-session'
 import bodyParser from 'body-parser'
 import morgan from 'morgan'
 import cors from 'cors'
- import configureRoutes from './src/routes/routes.js'
+import configureRoutes from './src/routes/routes.js'
 
 
 dotenv.config()

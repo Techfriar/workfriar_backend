@@ -1,6 +1,7 @@
 import CategoryRepository from "../repositories/admin/category-repository.js";
 import CategoryResponse from "../responses/category-response.js";
 import CreateCategoryRequest from "../requests/admin/category-request.js";
+import { CustomValidationError } from "../exceptions/custom-validation-error.js";
 
 const categoryRepo = new CategoryRepository();
 const categoryResponse = new CategoryResponse();
@@ -64,12 +65,7 @@ export default class CategoryController {
             const { category, timeentry } = req.body
             const validationResult = await createCategoryRequest.validateCategory(category,timeentry);
             if (!validationResult.isValid) {
-                 res.status(400).json({
-                    status:false,
-                    message:validationResult.message,
-                    data:[],
-                })
-               return
+                throw new CustomValidationError(validationResult.message);
             }
             const newCategory = await categoryRepo.createCategory(category, timeentry);
             if(newCategory)
@@ -93,12 +89,21 @@ export default class CategoryController {
             }
           
         } catch (error) {
-            res.status(500).json(
-                {
-                    status:false,
-                    message:"Internal Server Error",
-                    data:[],
-                })
+            {
+                if (error instanceof CustomValidationError) {
+                    return res.status(422).json({
+                        status: false,
+                        message: "Validation Failed",
+                        errors: error.errors, 
+                    });
+                } else {
+                    return res.status(500).json({
+                        status: false,
+                        message: "Internal Server Error",
+                        errors: error.message || error,
+                    });
+                }
+            }
         }
     }
 
@@ -291,12 +296,7 @@ async updateCategories(req, res) {
         const updateFields = req.body; 
         const validationResult = await createCategoryRequest.validateUpdateCategory(updateFields);
         if (!validationResult.isValid) {
-             res.status(400).json({
-                status:false,
-                message:validationResult.message,
-                data:[],
-            })
-           return
+            throw new CustomValidationError(validationResult.message);
         }
         if (updateFields.timeentry) {
             updateFields.time_entry = updateFields.timeentry;
@@ -319,12 +319,21 @@ async updateCategories(req, res) {
             });
         }
     } catch (error) {
-        console.error("Error updating category:", error);
-        return res.status(500).json({
-            status: false,
-            message: "Internal Server Error",
-            data: [],
-        });
+        {
+            if (error instanceof CustomValidationError) {
+                return res.status(422).json({
+                    status: false,
+                    message: "Validation Failed",
+                    errors: error.errors,
+                });
+            } else {
+                return res.status(500).json({
+                    status: false,
+                    message: "Internal Server Error",
+                    errors: error.message || error,
+                });
+            }
+        }
     }
 }
 

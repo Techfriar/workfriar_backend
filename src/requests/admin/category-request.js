@@ -52,7 +52,6 @@ class CreateCategoryRequest {
             }
             return { isValid: true, message: "Category is valid and unique" };
         } catch (err) {
-            console.error('Error in validateCategory:', err);
             return { isValid: false, message: "Error occurred while validating the category" };
         }
     }
@@ -62,7 +61,6 @@ class CreateCategoryRequest {
     {
         const {error}=CreateCategoryRequest.updateCategorySchema.validate(updateData)
         if (error) {
-            console.log("Error bhjvty",error)
             return { isValid: false, message: error.details.map(err => err.message) };
         }
         try {
@@ -73,7 +71,6 @@ class CreateCategoryRequest {
             }
             return { isValid: true, message: "Category is valid and unique" };
         } catch (err) {
-            console.error('Error in validateCategory:', err);
             return { isValid: false, message: "Error occurred while validating the category" };
         }
     }

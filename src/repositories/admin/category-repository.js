@@ -7,7 +7,6 @@ export default class CategoryRepository{
    {
     try
     {
-        console.log("category and tmeentry",category,timeentry)
         const newCategory=await Category.create({
             category,
             time_entry:timeentry
