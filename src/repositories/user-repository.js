@@ -1,4 +1,5 @@
 import User from '../models/user.js'
+import Role from '../models/role.js';
 
 export default class UserRepository {
 
@@ -19,6 +20,28 @@ export default class UserRepository {
     async getUserById(userId) {
         return await User.findOne({ _id: userId })
     }
+
+    /**
+     * Get user by ID with expanded roles (including department field)
+     * @param {String} userId - The ID of the user
+     * @return {Promise<Object>} - The user with populated roles and their department
+     */
+    async getUserExpanded(userId) {
+        try {
+            return await User.findOne({ _id: userId })
+                .populate({
+                    path: 'roles',
+                    select: 'role department', // Include only the required fields
+                })
+                .populate({
+                    path: 'reporting_manager',
+                    select: 'full_name', // Fetch only the manager's name
+                });
+        } catch (error) {
+            throw new Error(`Unable to fetch user: ${error.message}`);
+        }
+    }
+
     /**
      * Check the email is existing or not
      * @param String email

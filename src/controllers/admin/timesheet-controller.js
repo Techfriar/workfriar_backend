@@ -123,9 +123,13 @@ export default class TimesheetController {
 			// Extract token from Authorization header
 			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
 
-			// if (!token) {
-			// 	return res.status(401).json({ message: 'No token provided' });
-			// }
+			if (!token) {
+				return res.status(401).json({ 
+					status:false,
+					message: 'No token provided',
+					data: []
+				});
+			}
 
 			// // Decode the token without verifying it (get the payload)
 			// const decoded = jwt.decode(token);  // Decode without verification
