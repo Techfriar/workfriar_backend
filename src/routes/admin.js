@@ -6,18 +6,9 @@ const categoryController = new CategoryController();
 
 
 const adminRouter = express.Router()
+const forecastController=new ForecastController()
 
 
-//Route for adding category
-adminRouter.post("/admin/addcategory",categoryController.addCategory.bind(categoryController));
-
-// Route to get all categories
-adminRouter.get("/admin/getcategories",categoryController.getCategories.bind(categoryController));
-
-
-
-// Route for updating Category
-adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategories.bind(categoryController));
 
 // import multer from 'multer'
 
@@ -38,15 +29,27 @@ import ClientController from '../controllers/admin/client-controller.js'
 
 
 //Route for adding category
-adminRouter.post("/admin/addcategory",categoryController.addCategory.bind(categoryController));
+adminRouter.post("/addcategory",categoryController.addCategory.bind(categoryController));
 // Route to get all categories
-adminRouter.get("/admin/getcategories",categoryController.getCategories.bind(categoryController));
+adminRouter.get("/getcategories",categoryController.getCategories.bind(categoryController));
 
 // Route for updating Category
-adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategories.bind(categoryController));
+adminRouter.put("/updatecategories/:id",categoryController.updateCategories.bind(categoryController));
 
 //Route for adding new Forecast
-adminRouter.post("/admin/addforecast",forecastController.addForecast.bind(forecastController))
+adminRouter.post("/addforecast",forecastController.addForecastController.bind(forecastController))
+
+//Route for getting all forecast
+adminRouter.get("/getforecast",forecastController.getForecastController.bind(forecastController))
+
+//Route for getting a single project forecast
+adminRouter.get("/getforecast/:id",forecastController.getForecastbyIdController.bind(forecastController))
+
+//Route for deleting a project forecast
+adminRouter.delete("/deleteforecast/:id",forecastController.deleteForecastController.bind(forecastController))
+
+//Route for updaying an existing project forecast 
+adminRouter.put("/updateforecast/:id",forecastController.updateForecast.bind(forecastController))
 
 // const auth = new AuthController()
 

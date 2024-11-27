@@ -15,4 +15,65 @@ export default class ForecastRepository{
             throw new Error(error)
         }
     }
+
+    //getting forecasts list
+    async getForecast()
+    {
+        try
+        {
+            const forecastData=await projectForecast.find().populate({
+                path:'opportunity_manager',
+                select:'full_name'
+            })
+            return forecastData
+        }catch(error)
+        {
+            throw new Error(error)
+        }
+    }
+
+    //getting a single forecast by id
+    async getForecastByid(id)
+    {
+        try
+        {
+            const forecastData=await projectForecast.findById(id).populate({
+                path:'project_manager opportunity_manager product_manager tech_lead account_manager team_forecast.team_member',
+                select:'full_name'
+            })
+            return forecastData
+        }catch(error)
+        {
+            throw new Error(error)
+        }
+    }
+
+    async deleteForecast(id)
+    {
+        try
+        {
+            const data=await projectForecast.findByIdAndDelete(id)
+            return data
+        }catch(error)
+        {
+            console.log(error)
+        }
+    }
+
+    async updateForecast(forecastData, id) {
+        try {
+            const updatedForecast = await projectForecast.findByIdAndUpdate(
+                id,                 
+                { $set: forecastData },
+                { new: true, runValidators: true } 
+            );
+            if (!updatedForecast) {
+                throw new Error("Forecast not found");
+            }
+            return updatedForecast;
+        } catch (error) {
+            throw new Error(error.message || "Failed to update forecast");
+        }
+    }
+    
 }

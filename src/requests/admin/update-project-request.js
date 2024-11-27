@@ -1,6 +1,6 @@
 import Joi from 'joi'
 import ProjectRepository from '../../repositories/admin/project-repository.js'
-import UserRepository from '../../repositories/admin/user-repository.js'
+import UserRepository from '../../repositories/user-repository.js'
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js'
 
 class UpdateProjectRequest {
@@ -89,8 +89,7 @@ class UpdateProjectRequest {
 
         if (error || checkProjectExists || !checkProjectLead || !projectExists) {
             const validationErrors = {}
-            error
-                ? error.details.forEach((err) => {
+            error? error.details.forEach((err) => {
                     validationErrors[err.context.key] = err.message
                 })
                 : []
