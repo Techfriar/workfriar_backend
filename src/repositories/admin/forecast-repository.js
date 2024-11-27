@@ -56,7 +56,7 @@ export default class ForecastRepository{
             return data
         }catch(error)
         {
-            console.log(error)
+            throw new Error(error)
         }
     }
 
