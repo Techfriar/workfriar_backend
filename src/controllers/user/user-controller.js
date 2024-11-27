@@ -1,4 +1,5 @@
-import UserRepository from "../../repositories/user-repository"
+import UserRepository from "../../repositories/user-repository.js"
+import UserResponse from "../../responses/user-response.js"
 
 const userRepo = new UserRepository()
 
@@ -47,7 +48,7 @@ export default class UserController{
 
             console.log('here', userData)
 
-            if (adminData) {
+            if (userData) {
                 const userDetails = await UserResponse.format( userData )
                 res.status(200).json({
                     status: true,
