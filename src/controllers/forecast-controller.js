@@ -322,7 +322,7 @@ export default class ForecastController{
                 else
                 {  
                     const forecastData=await forecastResponse.formatForecastSet(data) 
-                    console.log(forecastData)
+                  
                     res.status(200).json({
                         status:true,
                         message:"Forecasts",
@@ -493,7 +493,6 @@ export default class ForecastController{
                 })
             }
         } catch (error) {
-            console.log(error)
                 res.status(500).json(
                 {
                     status:false,
