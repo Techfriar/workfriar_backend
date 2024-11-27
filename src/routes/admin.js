@@ -36,7 +36,6 @@ adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategori
 import ClientController from '../controllers/admin/client-controller.js'
 
 
-const adminRouter=express.Router()
 
 //Route for adding category
 adminRouter.post("/admin/addcategory",categoryController.addCategory.bind(categoryController));
@@ -48,7 +47,7 @@ adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategori
 
 //Route for adding new Forecast
 adminRouter.post("/admin/addforecast",forecastController.addForecast.bind(forecastController))
-const client = new ClientController()
+
 // const auth = new AuthController()
 
 import passport from '../config/passport-config.js'
