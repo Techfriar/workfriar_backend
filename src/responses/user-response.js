@@ -1,6 +1,6 @@
 import capitalizeWords from '../utils/capitalizeWords.js'
-import { generateFileUrl } from '../utils/generateFileUrl.js'
-import RoleMinResponse from './roleMinResponse.js'
+// import { generateFileUrl } from '../utils/generateFileUrl.js'
+// import RoleMinResponse from './roleMinResponse.js'
 
 export default class UserResponse {
     /**
@@ -10,19 +10,17 @@ export default class UserResponse {
      * @return {Object} - An object containing selected properties from the user.
      */
     static async format(user) {
-        return {
-            id: user._id,
-            name: capitalizeWords(user.name),
-            email: user.email,
-            country_code: user?.country_code,
-            country_unicode: user?.country_unicode,
-            phone: user?.phone,
-            status: user.status ,
-            profile_pic_path:
-                generateFileUrl(user.profile_pic_path) ||
-                process.env.APP_URL + 'public/images/no-user.png',
-            employee_id: user?.employee_id,
-        }
+        console.log('format', user)
+            return {
+                id: user._id,
+                name: capitalizeWords(user.full_name),
+                email: user.email,
+                location: user.location,
+                phone: user?.phone,
+                role: user?.roles?.role,
+                reporting_manager: user?.reporting_manager,
+                profile_pic_path: user.profile_pic,
+            }
     }
 }
 

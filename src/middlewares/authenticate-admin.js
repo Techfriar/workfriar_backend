@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken'
-import EmployeeRepository from '../repositories/employeeRepository.js'
+import UserRepository from '../repositories/user-repository.js'
 
-const employeeRepo = new EmployeeRepository()
+const UserRepo = new UserRepository()
 
 /**
  * @DESC Verify JWT from authorization header Middleware
  */
-const authenticateEmployee = async (req, res, next) => {
+const authenticateAdmin = async (req, res, next) => {
     const authHeader = req.headers['authorization']
     if (!authHeader) {
         res.status(401).json({ message: 'Unauthorized' })
@@ -16,9 +16,9 @@ const authenticateEmployee = async (req, res, next) => {
             jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
                 if (decoded) {
                     const { userId } = decoded
-                    const employee = await employeeRepo.getEmployee(userId)
-                    req.session.user = employee
-                    if (err) {
+                    const user = await UserRepo.getUserById(userId)
+                    req.session.user = user
+                    if (err || !decoded.isAdmin || !user.isAdmin) {
                         res.status(401).json({ message: 'Unauthorized' })
                     }
                     next()
@@ -32,4 +32,4 @@ const authenticateEmployee = async (req, res, next) => {
     }
 }
 
-export { authenticateEmployee }
+export { authenticateAdmin }

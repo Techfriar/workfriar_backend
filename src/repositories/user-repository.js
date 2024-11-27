@@ -1,4 +1,6 @@
 import User from '../models/user.js'
+import Role from '../models/role.js';
+
 export default class UserRepository {
 
     /**
@@ -18,6 +20,28 @@ export default class UserRepository {
     async getUserById(userId) {
         return await User.findOne({ _id: userId })
     }
+
+    /**
+     * Get user by ID with expanded roles (including department field)
+     * @param {String} userId - The ID of the user
+     * @return {Promise<Object>} - The user with populated roles and their department
+     */
+    async getUserExpanded(userId) {
+        try {
+            return await User.findOne({ _id: userId })
+                .populate({
+                    path: 'roles',
+                    select: 'role department', // Include only the required fields
+                })
+                .populate({
+                    path: 'reporting_manager',
+                    select: 'full_name', // Fetch only the manager's name
+                });
+        } catch (error) {
+            throw new Error(`Unable to fetch user: ${error.message}`);
+        }
+    }
+
     /**
      * Check the email is existing or not
      * @param String email
@@ -67,8 +91,20 @@ export default class UserRepository {
             customerData,
             { new: true },
         )
-
         return updatedUser
     }
 
+     /**
+     * Check if a user exists by email and is an admin.
+     * @param {string} email - The user's email address.
+     * @returns {Promise<boolean>} - Returns true if the user exists and is an admin, otherwise false.
+     */
+     async isAdminByEmail(email) {
+        try {
+            const user = await User.findOne({ email }).exec();
+            return user ? user.isAdmin : false;
+        } catch (error) {
+            throw new Error('Error checking user admin status');
+        }
+    }
 }

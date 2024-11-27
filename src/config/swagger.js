@@ -45,7 +45,7 @@ const swagger = {
         ],
         //auth setup end
     },
-    apis: ['./src/controllers/admin/*.js', './src/controllers/employee/*.js','./src/controllers/admin/*.js'],
+    apis: ['./src/controllers/admin/*.js', './src/controllers/employee/*.js','./src/controllers/admin/*.js','./src/controllers/*.js'],
 }
 
 export default swagger

@@ -13,7 +13,6 @@ import cors from 'cors'
 import configureRoutes from './src/routes/routes.js'
 
 
-// Load environment variables from .env file
 dotenv.config()
 
 // Create Express app
@@ -36,6 +35,9 @@ app.set('view engine', 'ejs')
 
 // Set view path
 app.set('views', './src/views')
+
+
+console.log('ensure the error in connectingDB')
 
 // Import MongoDB connection and establish the database connection
 connectDB()
@@ -63,6 +65,7 @@ app.use(
 // Rendering index page when accessing the root URL
 app.get('/', (req, res) => {
     res.render('index')
+    // res.send("joooo")
 })
 
 // Set up Swagger API documentation
@@ -84,10 +87,10 @@ app.use('/storage/uploads', express.static('storage/uploads'))
 app.use('/public', express.static('public'))
 
 // Middleware to handle 404 Not Found errors
-app.use(requestNotFoundCheck)
+//app.use(requestNotFoundCheck)
 
 // Middleware to handle database-related errors
-app.use(dbErrorHandler)
+//app.use(dbErrorHandler)
 
 // Start the server and listen on the specified port and hostname
 app.listen(port, hostname, () => {

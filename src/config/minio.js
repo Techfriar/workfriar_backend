@@ -1,5 +1,7 @@
 import { Client } from 'minio'
+import dotenv from 'dotenv'
 
+dotenv.config();
 /**
  * Create a Minio config
  */
