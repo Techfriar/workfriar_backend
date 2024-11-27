@@ -93,6 +93,6 @@ app.use('/public', express.static('public'))
 //app.use(dbErrorHandler)
 
 // Start the server and listen on the specified port and hostname
-app.listen(port, hostname, () => {
-    console.log(`Server is running at http://${hostname}:${port}/`)
-})
+app.listen(port, "0.0.0.0", () => {
+	console.log(`Server is running at http://localhost:${port}`);
+});
