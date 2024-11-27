@@ -36,6 +36,9 @@ app.set('view engine', 'ejs')
 // Set view path
 app.set('views', './src/views')
 
+
+console.log('ensure the error in connectingDB')
+
 // Import MongoDB connection and establish the database connection
 connectDB()
 
@@ -62,6 +65,7 @@ app.use(
 // Rendering index page when accessing the root URL
 app.get('/', (req, res) => {
     res.render('index')
+    // res.send("joooo")
 })
 
 // Set up Swagger API documentation

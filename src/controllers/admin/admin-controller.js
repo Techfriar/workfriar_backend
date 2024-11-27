@@ -1,9 +1,11 @@
-import UserRepository from '../../repositories/employeeRepository.js'
-import AddUserRequest from '../../requests/admin/user/addUserRequest.js'
-import UserResponse from '../../responses/employeeResponse.js'
+import EmailRepository from '../../repositories/email-repository.js'
+import UserRepository from '../../repositories/user-repository.js'
+import AddUserRequest from '../../requests/admin/add-employee-request.js'
+import UserResponse from '../../responses/user-response.js'
 import bcryptPassword from '../../utils/bcryptPassword.js'
 
 const employeeRepo = new UserRepository()
+const userRepo = new UserRepository()
 const emailRepo = new EmailRepository()
 
 export default class UserController {
@@ -539,17 +541,33 @@ export default class UserController {
      */
     async getMyProfile(req, res) {
         try {
-            const employeeData = await employeeRepo.getUser(
-                req.session.user.id,
-            )
-            if (employeeData) {
-                const employeeDetails = await UserResponse.format(
-                    employeeData,
-                )
+            // Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const UserId = decoded.UserId;
+
+            const UserId = '6744a7c9707ecbeea1efd14c'
+            const adminData = await userRepo.getUserExpanded( UserId )
+
+            console.log('here', adminData)
+
+            if (adminData) {
+                const adminDetails = await UserResponse.format( adminData )
                 res.status(200).json({
                     status: true,
                     message: 'Profile fetched successfully.',
-                    data: employeeDetails,
+                    data: adminDetails,
                 })
             } else {
                 res.status(200).json({
@@ -648,91 +666,6 @@ export default class UserController {
             res.status(200).json({
                 status: false,
                 message: 'Unable to update profile.',
-                errors: error,
-            })
-        }
-    }
-
-    /**
-     * Change password
-     *
-     * @swagger
-     * /user/change_password:
-     *   post:
-     *     tags:
-     *       - User
-     *     security:
-     *       - bearerAuth: []
-     *     summary: User change password
-     *     produces:
-     *       - application/json
-     *     requestBody:
-     *       content:
-     *         multipart/form-data:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               old_password:
-     *                 type: string
-     *                 description: Enter old password
-     *               new_password:
-     *                 type: string
-     *                 description: Enter new password
-     *               confirm_password:
-     *                 type: string
-     *                 description: Re-enter new password
-     *     responses:
-     *       200:
-     *         description: Success
-     *       422:
-     *         description: Unprocessable Entity
-     *       401:
-     *         description: Unauthenticated
-     */
-    async changePassword(req, res) {
-        const { current_password, new_password, confirm_password } = req.body
-        const employeeRequest = new ChangePasswordRequest({
-            employeeId: req.session.user.id,
-            current_password,
-            new_password,
-            confirm_password,
-        })
-
-        try {
-            const validatedData = await employeeRequest.validate()
-            const hashedPassword = await bcryptPassword(
-                validatedData.new_password,
-            )
-            const updatedProfile = await employeeRepo.updateUser({
-                id: req.session.user.id,
-                name: req.session.user.name,
-                email: req.session.user.email,
-                phone: req.session.user.phone,
-                role: req.session.user.role,
-                status: req.session.user.status,
-                password: hashedPassword,
-            })
-            if (updatedProfile) {
-                const employeeData = await UserResponse.format(
-                    updatedProfile,
-                )
-
-                res.status(200).json({
-                    status: true,
-                    message: 'Password changed successfully.',
-                    data: employeeData,
-                })
-            } else {
-                res.status(200).json({
-                    status: false,
-                    message: 'Unable to change password.',
-                    data: [],
-                })
-            }
-        } catch (error) {
-            res.status(200).json({
-                status: false,
-                message: 'Unable to change password.',
                 errors: error,
             })
         }
@@ -977,4 +910,6 @@ export default class UserController {
             })
         }
     }
+
+    
 }
