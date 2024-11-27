@@ -1,4 +1,4 @@
-import Role from '../models/'
+import Role from '../models/Role.js'
 import User from '../models/user.js';
 
 /**

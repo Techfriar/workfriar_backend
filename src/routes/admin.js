@@ -8,15 +8,15 @@ const adminRouter = express.Router()
 
 
 //Route for adding category
-adminRouter.post("/admin/addcategory",categoryController.addCategory.bind(categoryController));
+adminRouter.post("/addcategory",categoryController.addCategory.bind(categoryController));
 
 // Route to get all categories
-adminRouter.get("/admin/getcategories",categoryController.getCategories.bind(categoryController));
+adminRouter.get("/getcategories",categoryController.getCategories.bind(categoryController));
 
 
 
 // Route for updating Category
-adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategories.bind(categoryController));
+adminRouter.put("/updatecategories/:id", categoryController.updateCategories.bind(categoryController));
 
 // import multer from 'multer'
 

@@ -121,30 +121,34 @@ export default class TimesheetController {
 
 		try {
 			// Extract token from Authorization header
-			const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
 
-			if (!token) {
-				return res.status(401).json({ message: 'No token provided' });
-			}
+			// if (!token) {
+			// 	return res.status(401).json({ message: 'No token provided' });
+			// }
 
-			// Decode the token without verifying it (get the payload)
-			const decoded = jwt.decode(token);  // Decode without verification
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
 
-			const user_id = decoded.UserId; 
+			// const user_id = decoded.UserId; 
+
+			// 6746a473ed7e5979a3a1f891 - user
+
+			const user_id = '6746a473ed7e5979a3a1f891'
 
 			const { project_id, task_category_id, task_detail, data_sheet=[], status='not submitted' } = req.body;
 
 			// await TimesheetReq.validateReferences(project_id, user_id, task_category_id)
 
 			const startDate = Date.now()
-			const endDate = FindSunday_.getNextSunday()
+			const endDate = await FindSunday_.getNextSunday()
 			// Call the Repository to create the timesheet
 			await TimesheetRepo.createTimesheet(project_id, user_id, task_category_id, task_detail, startDate, endDate, data_sheet, status);
 			 
 			return res.status(201).json({ 
 				status:true,
 				message: 'Timesheet added successfully', 
-				data: [] 
+				data: []
 			});
 		} catch (err) {
 

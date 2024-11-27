@@ -1,5 +1,6 @@
  import adminRouter from './admin.js'
 //  import employeeRouter from './employee.js'
+import projectRouter from './project.js'
 
 const configureRoutes = (app) => {
 
