@@ -46,12 +46,14 @@ import ClientController from '../controllers/admin/client-controller.js'
 
 import passport from '../config/passport-config.js'
 import AuthController from '../controllers/admin/auth-controller.js'
+import AdminController from '../controllers/admin/admin-controller.js'
 import TimesheetController from '../controllers/admin/timesheet-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 
 
 
 const auth = new AuthController()
+const admin = new AdminController()
 const timesheet = new TimesheetController()
 const client = new ClientController()
 
@@ -65,9 +67,16 @@ adminRouter.route('/google-callback').get(passport.authenticate('google', { sess
 adminRouter.route('/google-fallback').get(auth.googleFallback)
 
 adminRouter
+    .route('/profile-view')
+    .post(
+        // authenticateAdmin,
+        admin.getMyProfile
+    )
+
+adminRouter
     .route('/timesheet/add-timesheet')
     .post(
-        authenticateAdmin,
+        // authenticateAdmin,
         // checkPermissions('timesheet', 'add'),
         timesheet.addTimesheet
     )

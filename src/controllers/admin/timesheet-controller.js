@@ -124,7 +124,11 @@ export default class TimesheetController {
 			const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
 
 			if (!token) {
-				return res.status(401).json({ message: 'No token provided' });
+				return res.status(401).json({ 
+					status:false,
+					message: 'No token provided',
+					data: []
+				});
 			}
 
 			// Decode the token without verifying it (get the payload)
