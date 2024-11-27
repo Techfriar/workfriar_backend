@@ -144,7 +144,7 @@ export default class CategoryController {
         try {
             const data = await categoryRepo.getAllCategories()
             if (data.length === 0) {
-                res.json(422).json({
+                res.status(422).json({
                     status:false,
                     message:"No Category Found",
                     data:[],

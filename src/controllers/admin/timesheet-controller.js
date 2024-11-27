@@ -129,7 +129,7 @@ export default class TimesheetController {
 	async addTimesheet(req, res) {
 
 		try {
-			// // Extract token from Authorization header
+			// Extract token from Authorization header
 			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
 
 			// if (!token) {
@@ -161,7 +161,7 @@ export default class TimesheetController {
 			return res.status(201).json({ 
 				status:true,
 				message: 'Timesheet added successfully', 
-				data: [] 
+				data: []
 			});
 		} catch (err) {
 
