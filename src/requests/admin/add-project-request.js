@@ -1,10 +1,10 @@
 import Joi from "joi";
 import ProjectRepository from "../../repositories/admin/project-repository.js";
-import UserRepository from "../../repositories/admin/user-repository.js";
+// import UserRepository from "../../repositories/admin/user-repository.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 class AddProjectRequest {
   static projectRepo = new ProjectRepository();
-  static userRepo = new UserRepository();
+  // static userRepo = new UserRepository();
 
   static schema = Joi.object({
     client_name: Joi.string().required().messages({
