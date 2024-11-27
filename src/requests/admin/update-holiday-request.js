@@ -18,8 +18,9 @@ class UpdateHolidayRequest {
       "date.base": "Please enter a valid date.",
       "any.required": "Please enter the holiday start date.",
     }),
-    end_date: Joi.date().required().greater(Joi.ref("start_date")).messages({
+    end_date: Joi.date().required().min(Joi.ref("start_date")).messages({
       "date.base": "Please enter a valid date.",
+      "date.min": "End date must be on or after start date.",
       "any.required": "Please enter the holiday end date.",
     }),
     location: Joi.string().required().messages({

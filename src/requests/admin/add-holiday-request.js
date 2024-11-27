@@ -17,10 +17,10 @@ class AddHolidayRequest {
     }),
     end_date: Joi.date()
       .required()
-      .greater(Joi.ref("start_date"))
+      .min(Joi.ref("start_date"))
       .messages({
         "date.base": "Please enter a valid end date.",
-        "date.greater": "End date must be after start date.",
+        "date.min": "End date must be on or after start date.",
         "any.required": "Please enter the end date.",
       }),
     location: Joi.string().valid("India", "Dubai").required(),

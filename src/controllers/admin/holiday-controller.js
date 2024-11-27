@@ -1,7 +1,7 @@
 import HolidayRepository from "../../repositories/admin/holiday-repository.js";
 import AddHolidayRequest from "../../requests/admin/add-holiday-request.js";
 import UpdateHolidayRequest from "../../requests/admin/update-holiday-request.js";
-import HolidayResponse from "../../responses/holiday-response.js";
+import HolidayResponse from '../../responses/holiday-response.js';
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 
 const holidayRepo = new HolidayRepository();
@@ -30,17 +30,19 @@ export default class HolidayController {
    *                 description: Enter holiday name
    *               holiday_type:
    *                 type: string
+   *                 enum: ["National Holiday", "Public Holiday", "Restricted Holiday", "Office Shutdown"]
    *                 description: Enter holiday type
    *               start_date:
    *                 type: string
    *                 format: date
-   *                 description: Enter holiday start date
+   *                 description: Enter start date
    *               end_date:
    *                 type: string
    *                 format: date
-   *                 description: Enter holiday end date
+   *                 description: Enter end date
    *               location:
    *                 type: string
+   *                 enum: ["India", "Dubai"]
    *                 description: Enter holiday location
    *     responses:
    *       200:
@@ -53,19 +55,19 @@ export default class HolidayController {
   async addHoliday(req, res) {
     try {
       const validatedData = await new AddHolidayRequest(req).validate();
-
+      
       const holidayDetails = await holidayRepo.addHoliday(validatedData);
 
       if (holidayDetails) {
         const holidayData = await HolidayResponse.format(holidayDetails);
 
-        res.status(200).json({
+        return res.status(200).json({
           status: true,
           message: "Holiday added successfully.",
           data: holidayData,
         });
       } else {
-        res.status(422).json({
+        return res.status(422).json({
           status: false,
           message: "Failed to add holiday.",
           data: [],
@@ -73,34 +75,32 @@ export default class HolidayController {
       }
     } catch (error) {
       if (error instanceof CustomValidationError) {
-        res.status(422).json({
+        return res.status(422).json({
           status: false,
           message: "Validation failed.",
           errors: error.errors,
         });
-      } else {
-        res.status(500).json({
-          status: false,
-          message: "Failed to add holiday.",
-          errors: error.message || error,
-        });
       }
+      return res.status(500).json({
+        status: false,
+        message: "Failed to add holiday.",
+        errors: error.message || error,
+      });
     }
   }
 
   /**
-   * Get all holidays with filters
+   * Get All Holidays
    *
    * @swagger
    * /holiday/list:
    *   post:
    *     tags:
    *       - Holiday
-   *     summary: Get all holidays with filters
+   *     summary: Get all holidays
    *     security:
    *       - bearerAuth: []
    *     requestBody:
-   *       required: true
    *       content:
    *         application/json:
    *           schema:
@@ -108,24 +108,16 @@ export default class HolidayController {
    *             properties:
    *               holiday_type:
    *                 type: string
-   *                 description: Filter by holiday type
+   *                 enum: ["National Holiday", "Public Holiday", "Restricted Holiday", "Office Shutdown"]
    *               location:
    *                 type: string
-   *                 description: Filter by location
+   *                 enum: ["India", "Dubai"]
+   *               year:
+   *                 type: integer
+   *                 description: Filter by year
    *               holiday_name:
    *                 type: string
    *                 description: Filter by holiday name
-   *               year:
-   *                 type: integer
-   *                 description: Filter holidays by year (optional)
-   *               start_date:
-   *                 type: string
-   *                 format: date
-   *                 description: Filter holidays by start date
-   *               end_date:
-   *                 type: string
-   *                 format: date
-   *                 description: Filter holidays by end date
    *     responses:
    *       200:
    *         description: Success
@@ -136,42 +128,25 @@ export default class HolidayController {
    */
   async getAllHolidays(req, res) {
     try {
-      // Extract filters from request body
-      const filters = {
-        holiday_type: req.body.holiday_type,
-        location: req.body.location,
-        holiday_name: req.body.holiday_name,
-        year: req.body.year,
-        start_date: req.body.start_date,
-        end_date: req.body.end_date,
-      };
-
-      // Remove undefined filters
-      Object.keys(filters).forEach((key) => {
-        if (filters[key] === undefined) {
-          delete filters[key];
-        }
-      });
-
-      // Retrieve holidays
+      const filters = req.body;
       const holidays = await holidayRepo.getAllHolidays(filters);
 
-      // Respond with holidays
-      res.status(200).json({
+      const formattedHolidays = await Promise.all(
+        holidays.map(async (holiday) => await HolidayResponse.format(holiday))
+      );
+
+      return res.status(200).json({
         status: true,
-        message: "Holidays retrieved successfully",
+        message: "Holidays retrieved successfully.",
         data: {
-          holidays: holidays,
-          total: holidays.length,
+          holidays: formattedHolidays,
         },
       });
     } catch (error) {
-      console.error("Error fetching holidays:", error);
-
-      res.status(500).json({
+      return res.status(500).json({
         status: false,
-        message: "Failed to fetch holidays",
-        errors: error.message || "Unknown error occurred",
+        message: "Failed to retrieve holidays.",
+        errors: error,
       });
     }
   }
@@ -216,25 +191,17 @@ export default class HolidayController {
 
       const holidayData = await HolidayResponse.format(holiday);
 
-      res.status(200).json({
+      return res.status(200).json({
         status: true,
         message: "Holiday retrieved successfully.",
         data: holidayData,
       });
     } catch (error) {
-      if (error instanceof CustomValidationError) {
-        res.status(422).json({
-          status: false,
-          message: "Validation Error",
-          errors: error.errors,
-        });
-      } else {
-        return res.status(500).json({
-          status: false,
-          message: "Failed to retrieve holiday.",
-          errors: error.message || error,
-        });
-      }
+      return res.status(500).json({
+        status: false,
+        message: "Failed to retrieve holiday.",
+        errors: error,
+      });
     }
   }
 
@@ -268,17 +235,19 @@ export default class HolidayController {
    *                 description: Enter holiday name
    *               holiday_type:
    *                 type: string
+   *                 enum: ["National Holiday", "Public Holiday", "Restricted Holiday", "Office Shutdown"]
    *                 description: Enter holiday type
    *               start_date:
    *                 type: string
    *                 format: date
-   *                 description: Enter holiday start date
+   *                 description: Enter start date
    *               end_date:
    *                 type: string
    *                 format: date
-   *                 description: Enter holiday end date
+   *                 description: Enter end date
    *               location:
    *                 type: string
+   *                 enum: ["India", "Dubai"]
    *                 description: Enter holiday location
    *     responses:
    *       200:
@@ -294,6 +263,8 @@ export default class HolidayController {
     try {
       const validatedData = await new UpdateHolidayRequest(req).validate();
 
+      delete validatedData.holidayId;
+
       const holidayDetails = await holidayRepo.updateHoliday(
         req.params.id,
         validatedData
@@ -302,13 +273,13 @@ export default class HolidayController {
       if (holidayDetails) {
         const holidayData = await HolidayResponse.format(holidayDetails);
 
-        res.status(200).json({
+        return res.status(200).json({
           status: true,
           message: "Holiday updated successfully.",
           data: holidayData,
         });
       } else {
-        res.status(404).json({
+        return res.status(404).json({
           status: false,
           message: "Holiday not found.",
           data: null,
@@ -316,18 +287,17 @@ export default class HolidayController {
       }
     } catch (error) {
       if (error instanceof CustomValidationError) {
-        res.status(422).json({
+        return res.status(422).json({
           status: false,
-          message: "Validation Error",
+          message: "Validation failed.",
           errors: error.errors,
         });
-      } else {
-        return res.status(500).json({
-          status: false,
-          message: "Failed to update holiday.",
-          errors: error.message || error,
-        });
       }
+      return res.status(500).json({
+        status: false,
+        message: "Failed to update holiday.",
+        errors: error.message || error,
+      });
     }
   }
 }
