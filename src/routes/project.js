@@ -15,7 +15,7 @@ const upload = multer();
 projectRouter
   .route("/add")
   .post(
-    upload.fields([{ name: "projectLogo", maxCount: 1 }]),
+    upload.fields([{ name: "project_logo", maxCount: 1 }]),
     project.addProject
   );
 
@@ -32,7 +32,7 @@ projectRouter
   projectRouter
   .route("/update/:id")
   .put(
-    upload.fields([{ name: "projectLogo", maxCount: 1 }]),
+    upload.fields([{ name: "project_logo", maxCount: 1 }]),
     project.updateProject
   );
   projectRouter

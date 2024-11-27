@@ -5,11 +5,11 @@ import mongoose from "mongoose";
  */
 const projectSchema = mongoose.Schema(
   {
-    clientName: {
+    client_name: {
       type: String,
       required: true,
     },
-    projectName: {
+    project_name: {
       type: String,
       required: true,
     },
@@ -17,30 +17,30 @@ const projectSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    plannedStartDate: {
+    planned_start_date: {
       type: String,
     },
-    plannedEndDate: {
+    planned_end_date: {
       type: String,
     },
-    actualStartDate: {
+    actual_start_date: {
       type: String,
     },
-    actualEndDate: {
+    actual_end_date: {
       type: String,
     },
-    projectLead: {
+    project_lead: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: false,
     },
-    billingModel: {
+    billing_model: {
       type: String,
     },
-    projectLogo: {
+    project_logo: {
       type: String,
     },
-    openForTimeEntry: {
+    open_for_time_entry: {
       type: String,
       required: true,
       enum: ["opened", "closed"],

@@ -26,34 +26,34 @@ export default class ProjectController {
    *           schema:
    *             type: object
    *             properties:
-   *               clientName:
+   *               client_name:
    *                 type: string
    *                 description: Enter client name
-   *               projectName:
+   *               project_name:
    *                 type: string
    *                 description: Enter project name
    *               description:
    *                 type: string
    *                 description: Enter project description
-   *               plannedStartDate:
+   *               planned_start_date:
    *                 type: string
    *                 format: date
    *                 description: Enter planned start date
-   *               plannedEndDate:
+   *               planned_end_date:
    *                 type: string
    *                 format: date
    *                 description: Enter planned end date
-   *               projectLead:
+   *               project_lead:
    *                 type: string
    *                 description: Enter project lead user id
-   *               billingModel:
+   *               billing_model:
    *                 type: string
    *                 description: Enter billing model
-   *               projectLogo:
+   *               project_logo:
    *                 type: string
    *                 format: binary
    *                 description: Upload project logo
-   *               openForTimeEntry:
+   *               open_for_time_entry:
    *                 type: string
    *                 description: Enter time entry status (opened/closed)
    *               status:
@@ -78,14 +78,14 @@ export default class ProjectController {
             const folderName = "projects";
             const uploadedFile = await uploadFile(file, folderName);
             if (uploadedFile.path) {
-              req.body.projectLogo = uploadedFile.path;
+              req.body.project_logo = uploadedFile.path;
             }
           }
         }
       }
 
-      if (validatedData.projectLogo != undefined) {
-        validatedData.projectLogo = req.body.projectLogo;
+      if (validatedData.project_logo != undefined) {
+        validatedData.project_logo = req.body.project_logo;
       }
 
       const projectDetails = await projectRepo.addProject(validatedData);
@@ -147,10 +147,10 @@ export default class ProjectController {
    *               status:
    *                 type: string
    *                 description: Filter by status
-   *               clientName:
+   *               client_name:
    *                 type: string
    *                 description: Filter by client name
-   *               projectName:
+   *               project_name:
    *                 type: string
    *                 description: Filter by project name
    *     responses:
@@ -273,34 +273,34 @@ export default class ProjectController {
    *           schema:
    *             type: object
    *             properties:
-   *               clientName:
+   *               client_name:
    *                 type: string
    *                 description: Enter client name
-   *               projectName:
+   *               project_name:
    *                 type: string
    *                 description: Enter project name
    *               description:
    *                 type: string
    *                 description: Enter project description
-   *               plannedStartDate:
+   *               planned_start_date:
    *                 type: string
    *                 format: date
    *                 description: Enter planned start date
-   *               plannedEndDate:
+   *               planned_end_date:
    *                 type: string
    *                 format: date
    *                 description: Enter planned end date
-   *               projectLead:
+   *               project_lead:
    *                 type: string
    *                 description: Enter project lead user id
-   *               billingModel:
+   *               billing_model:
    *                 type: string
    *                 description: Enter billing model
-   *               projectLogo:
+   *               project_logo:
    *                 type: string
    *                 format: binary
    *                 description: Upload project logo
-   *               openForTimeEntry:
+   *               open_for_time_entry:
    *                 type: string
    *                 description: Enter time entry status (opened/closed)
    *               status:
@@ -331,10 +331,10 @@ export default class ProjectController {
                 const oldProject = await projectRepo.getProjectById(
                   req.params.id
                 );
-                if (oldProject.projectLogo) {
-                  await deleteFile(oldProject.projectLogo);
+                if (oldProject.project_logo) {
+                  await deleteFile(oldProject.project_logo);
                 }
-                validatedData.projectLogo = uploadedFile.path;
+                validatedData.project_logo = uploadedFile.path;
               }
             }
           }
@@ -417,8 +417,8 @@ export default class ProjectController {
         });
       }
 
-      if (project.projectLogo) {
-        await deleteFile(project.projectLogo);
+      if (project.project_logo) {
+        await deleteFile(project.project_logo);
       }
 
       await projectRepo.deleteProject(req.params.id);

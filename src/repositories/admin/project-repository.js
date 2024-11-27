@@ -21,7 +21,7 @@ export default class ProjectRepository {
      */
     async getAllProjects() {
         try {
-            return await Project.find().populate("projectLead").sort({ createdAt: -1 });
+            return await Project.find().populate("project_lead").sort({ createdAt: -1 });
         } catch (error) {
             throw new Error(`Failed to get projects: ${error.message}`);
         }
@@ -34,7 +34,7 @@ export default class ProjectRepository {
      */
     async getProjectById(projectId) {
         try {
-            const project = await Project.findOne().populate("projectLead");
+            const project = await Project.findOne().populate("project_lead");
             if (!project) {
                 throw new Error(`Project with ID ${projectId} not found`);
             }
@@ -53,7 +53,7 @@ export default class ProjectRepository {
     async updateProject(projectId, projectData) {
         try {
             const project = await Project.findByIdAndUpdate(projectId, projectData, { new: true })
-                .populate("projectLead");
+                .populate("project_lead");
             
             if (!project) {
                 throw new Error(`Project with ID ${projectId} not found`);
@@ -83,16 +83,16 @@ export default class ProjectRepository {
 
     /**
      * Check if project name exists for the client
-     * @param {String} projectName
-     * @param {String} clientName
+     * @param {String} project_name
+     * @param {String} client_name
      * @param {String} excludeProjectId - Optional project id to exclude from check
      * @return {Promise<Project>}
      */
-    async checkProjectExists(projectName, clientName, excludeProjectId = null) {
+    async checkProjectExists(project_name, client_name, excludeProjectId = null) {
         try {
             const query = {
-                projectName: projectName,
-                clientName: clientName
+                project_name: project_name,
+                client_name: client_name
             };
 
             if (excludeProjectId) {
