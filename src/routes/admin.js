@@ -105,11 +105,18 @@ adminRouter
         timesheet.getUserTimesheets
     )
 
-    adminRouter
+adminRouter
     .route('/get-current-day-timesheets')
     .post(
         // authenticateAdmin,
         timesheet.getCurrentDayTimesheet
+    )
+
+adminRouter
+    .route('/get-weekly-timesheets')
+    .post(
+        // authenticateAdmin,
+        timesheet.getWeeklyTimesheet
     )
 
 

@@ -8,6 +8,7 @@ import FindSunday from '../../services/findSunday.js';
 import FindWeekRange from '../../services/findWeekRange.js';
 import ProjectRepository from '../../repositories/admin/project-repository.js';
 import TimesheetResponse from '../../responses/timesheet-response.js';
+import moment from 'moment';
 
 const TimesheetRepo = new TimesheetRepository()
 const HolidayRepo = new HolidayRepository()
@@ -375,103 +376,92 @@ export default class TimesheetController {
 		}
 	}
 
+/**
+ * @swagger
+ * /admin/get-user-timesheets:
+ *   post:
+ *     summary: Get user timesheets
+ *     description: Fetches the timesheets for the user based on the provided JWT token.
+ *     operationId: getUserTimesheets
+ *     tags:
+ *       - Timesheet
+ *     responses:
+ *       '200':
+ *         description: User timesheets fetched successfully
+ *         schema:
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: true
+ *             message:
+ *               type: string
+ *               example: 'User timesheets fetched successfully'
+ *             data:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   userid:
+ *                     type: string
+ *                     example: '6746a473ed7e5979a3a1f891'
+ *                   projectid:
+ *                     type: string
+ *                     example: '1234abcd5678'
+ *                   category:
+ *                     type: string
+ *                     example: 'Development'
+ *                   detail:
+ *                     type: string
+ *                     example: 'Worked on feature X'
+ *                   data:
+ *                     type: object
+ *                     additionalProperties: true
+ *                     example: {"2024-11-22": 4}
+ *       '400':
+ *         description: No timesheets found
+ *         schema:
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: false
+ *             message:
+ *               type: string
+ *               example: 'No timesheets found'
+ *             data:
+ *               type: array
+ *               items: {}
+ *       '401':
+ *         description: Unauthorized - No token provided
+ *         schema:
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: false
+ *             message:
+ *               type: string
+ *               example: 'No token provided'
+ *             data:
+ *               type: array
+ *               items: {}
+ *       '500':
+ *         description: Internal server error
+ *         schema:
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: false
+ *             message:
+ *               type: string
+ *               example: 'Error message'
+ *             data:
+ *               type: array
+ *               items: {}
+ */
 
-	/**
-	* @swagger
-	* /admin/get-user-timesheets:
-	*   post:
-	*     summary: Get user timesheets
-	*     description: Fetches the timesheets of a specific user. The user ID is extracted from the provided Bearer token.
-	*     operationId: getUserTimesheets
-	*     tags:
-	*       - Timesheet
-	*     responses:
-	*       200:
-	*         description: User timesheets fetched successfully
-	*         content:
-	*           application/json:
-	*             schema:
-	*               type: object
-	*               properties:
-	*                 success:
-	*                   type: boolean
-	*                   example: true
-	*                 message:
-	*                   type: string
-	*                   example: User timesheets fetched successfully
-	*                 data:
-	*                   type: array
-	*                   items:
-	*                     type: object
-	*                     properties:
-	*                       userId:
-	*                         type: string
-	*                         example: "6744a7c9707ecbeea1efd14c"
-	*                       projectId:
-	*                         type: string
-	*                         example: "Project ID"
-	*                       categoryId:
-	*                         type: string
-	*                         example: "Category ID"
-	*                       taskDetail:
-	*                         type: string
-	*                         example: "Task detail description"
-	*                       status:
-	*                         type: string
-	*                         example: "Completed"
-	*                       startDate:
-	*                         type: string
-	*                         format: date
-	*                         example: "2024-01-01"
-	*                       endDate:
-	*                         type: string
-	*                         format: date
-	*                         example: "2024-01-31"
-	*       204:
-	*         description: No timesheets found
-	*         content:
-	*           application/json:
-	*             schema:
-	*               type: object
-	*               properties:
-	*                 success:
-	*                   type: boolean
-	*                   example: false
-	*                 message:
-	*                   type: string
-	*                   example: No timesheets found
-	*                 data:
-	*                   type: array
-	*                   items: {}
-	*       401:
-	*         description: Authorization token missing or invalid
-	*         content:
-	*           application/json:
-	*             schema:
-	*               type: object
-	*               properties:
-	*                 success:
-	*                   type: boolean
-	*                   example: false
-	*                 message:
-	*                   type: string
-	*                   example: Authorization token missing or invalid
-	*                 data:
-	*                   type: array
-	*                   items: {}
-	*       500:
-	*         description: Internal Server Error
-	*         content:
-	*           application/json:
-	*             schema:
-	*               type: object
-	*               properties:
-	*                 success:
-	*                   type: boolean
-	*                   example: false
-	*                 message:
-	*                   type: string
-	*/
 	async getUserTimesheets(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -517,6 +507,88 @@ export default class TimesheetController {
 
 	}
 
+/**
+ * @swagger
+ * /admin/get-current-day-timesheets:
+ *   post:
+ *     summary: Get current day's timesheet for the user
+ *     description: Fetches the timesheet entries for the current day based on the provided JWT token.
+ *     operationId: getCurrentDayTimesheet
+ *     tags:
+ *       - Timesheet
+ *     responses:
+ *       '200':
+ *         description: Current day's timesheets fetched successfully
+ *         schema:
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: true
+ *             message:
+ *               type: string
+ *               example: 'Current Date timesheets fetched successfully'
+ *             length:
+ *               type: integer
+ *               example: 3
+ *             data:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   projectId:
+ *                     type: string
+ *                     example: '6746afa90f425a352c7bcd8e'
+ *                   projectName:
+ *                     type: string
+ *                     example: 'Soeazy'
+ *                   hours:
+ *                     type: number
+ *                     format: float
+ *                     example: 3
+ *       '400':
+ *         description: No timesheets found for the current day
+ *         schema:
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: false
+ *             message:
+ *               type: string
+ *               example: 'No timesheets found'
+ *             data:
+ *               type: array
+ *               items: {}
+ *       '401':
+ *         description: Unauthorized - No token provided
+ *         schema:
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: false
+ *             message:
+ *               type: string
+ *               example: 'No token provided'
+ *             data:
+ *               type: array
+ *               items: {}
+ *       '500':
+ *         description: Internal server error
+ *         schema:
+ *           type: object
+ *           properties:
+ *             success:
+ *               type: boolean
+ *               example: false
+ *             message:
+ *               type: string
+ *               example: 'Error message'
+ *             data:
+ *               type: array
+ *               items: {}
+ */
 	async getCurrentDayTimesheet(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -623,6 +695,54 @@ export default class TimesheetController {
 
 		}
 		catch (err) {
+			return res.status(500).json({
+				status: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
+
+	async getWeeklyTimesheet(req,res){
+		try {
+			// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const user_id = decoded.UserId;
+			const user_id = '6746a474ed7e5979a3a1f896';
+			const { startDate , endDate } = req.body
+
+			const start = moment(startDate);
+			const end = moment(endDate);
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id,start,end)
+			if (timesheets.length === 0) {
+				return res.status(404).json({
+				  success: false,
+				  message: 'No timesheets found for the provided date range',
+				  data: []
+				});
+			  }
+		  
+			  // Return the result
+			  res.status(200).json({
+				success: true,
+				message: 'Weekly timesheets fetched successfully',
+				length: timesheets.length,
+				data: timesheets
+			  });
+			
+		}catch (err) {
 			return res.status(500).json({
 				status: false,
 				message: err.message,

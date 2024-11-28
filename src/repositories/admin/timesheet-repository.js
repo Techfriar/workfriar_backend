@@ -113,11 +113,10 @@ export default class TimesheetRepository {
         }
 	}
 
+	//get Timesheet based on current date
 	async getCurrentDayTimesheets(userId,startOfDay,endOfDay){
 		try {
-			//   "data_sheet.date": {
-    // $gte: new Date(`${currentDate}T00:00:00.000Z`),
-    // $lt: new Date(`${currentDate}T23:59:59.999Z`)
+
             return await Timesheet.find({user_id: userId,"data_sheet.date": {
 				$gte: startOfDay,
 				$lte: endOfDay
@@ -126,6 +125,25 @@ export default class TimesheetRepository {
             throw new Error(error); 
         }
 	}
+
+	async getWeeklyTimesheets(user_id,startDate,endDate){
+		console.log(startDate,endDate);
+		
+		try {
+			// Use Mongoose to find timesheets where the startDate and endDate match exactly
+			const timesheets = await Timesheet.find({
+			  user_id,
+			  start_date: startDate.toISOString(),
+			  end_date: endDate.toISOString()
+			});
+	  
+			return timesheets;
+		  } catch (error) {
+			console.error('Error fetching timesheets:', error);
+			throw error;
+		  }
+	}
+	
 
 }
 
