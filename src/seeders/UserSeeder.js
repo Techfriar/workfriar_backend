@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/user.js';  // Adjust the path to your User model file
 
 // Connect to MongoDB (you should replace the connection string with your actual MongoDB URI)
-mongoose.connect('mongodb://localhost:27017/workfriar', {
+mongoose.connect('mongodb+srv://snehaanil03:workfriar@cluster0.ts84e.mongodb.net/workfriar?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log('Database connected'))
@@ -14,7 +14,7 @@ const hashPassword = async (password) => {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
 };
-
+//llll
 // Seed data for users
 const seedUsers = async () => {
     try {

@@ -1,6 +1,6 @@
 import Joi from 'joi'
 import ProjectRepository from '../../repositories/admin/project-repository.js'
-import UserRepository from '../../repositories/admin/user-repository.js'
+import UserRepository from '../../repositories/user-repository.js'
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js'
 
 class UpdateProjectRequest {
