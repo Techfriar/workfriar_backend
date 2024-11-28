@@ -14,11 +14,11 @@ const projectTeamController=new ProjectTeamController()
 
 // import multer from 'multer'
 
-// import {
-//     checkAnyPermissions,
-//     checkPermissions,
-// } from '../middlewares/checkPermission.js'
-// import { authenticateAdmin } from '../middlewares/authenticateEmployee.js'
+// // import {
+// //     checkAnyPermissions,
+// //     checkPermissions,
+// // } from '../middlewares/checkPermission.js'
+// // import { authenticateEmployee } from '../middlewares/authenticateEmployee.js'
 // import uploadCsv from '../utils/uploadCsv.js'
 
 
@@ -89,11 +89,27 @@ adminRouter
     )
 
 adminRouter
-    .route('/timesheet/add-timesheet')
+    .route('/add-timesheet')
     .post(
         // authenticateAdmin,
         // checkPermissions('timesheet', 'add'),
         timesheet.addTimesheet
+    )
+
+adminRouter
+    .route('/save-timesheet')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('timesheet', 'add'),
+        timesheet.updateTimesheet
+    )
+
+adminRouter
+    .route('/employee-list')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('user', 'view'),
+        admin.employeeList
     )
 
 /* 

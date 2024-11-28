@@ -14,7 +14,7 @@ const employeeRouter = express.Router()
 const multerMiddleware = multer().single('file')
 const upload = multer()
 
-const employee = new EmployeeController()
+// const employee = new EmployeeController()
 
 /**
  * Employee Signup Routes
