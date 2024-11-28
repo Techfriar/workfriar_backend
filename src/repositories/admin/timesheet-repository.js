@@ -104,5 +104,28 @@ export default class TimesheetRepository {
 	}
 	}
 	  
+	//Get timesheet using userId
+	async getUserTimesheets(userId){
+		try {
+            return await Timesheet.find({user_id: userId})
+        } catch (error) {
+            throw new Error(error); 
+        }
+	}
+
+	async getCurrentDayTimesheets(userId,startOfDay,endOfDay){
+		try {
+			//   "data_sheet.date": {
+    // $gte: new Date(`${currentDate}T00:00:00.000Z`),
+    // $lt: new Date(`${currentDate}T23:59:59.999Z`)
+            return await Timesheet.find({user_id: userId,"data_sheet.date": {
+				$gte: startOfDay,
+				$lte: endOfDay
+			}})
+        } catch (error) {
+            throw new Error(error); 
+        }
+	}
+
 }
 

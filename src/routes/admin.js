@@ -99,6 +99,21 @@ adminRouter
     )
 
 adminRouter
+    .route('/get-user-timesheets')
+    .post(
+        // authenticateAdmin,
+        timesheet.getUserTimesheets
+    )
+
+    adminRouter
+    .route('/get-current-day-timesheets')
+    .post(
+        // authenticateAdmin,
+        timesheet.getCurrentDayTimesheet
+    )
+
+
+adminRouter
     .route('/employee-list')
     .post(
         // authenticateAdmin,

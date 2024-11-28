@@ -235,14 +235,14 @@ class ClientController {
         try {
             const existingClients = await clientRepository.allClients();
 
-            if (existingClients) {
+            if (existingClients.length > 0) {
                 return res.status(200).json({
                     success: true,
                     message: 'Clients fetched successfully',
                     data: existingClients,
                 });
             } else {
-                return res.status(404).json({
+                return res.status(400).json({
                     success: false,
                     message: 'No clients found.',
                     data: [],
