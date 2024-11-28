@@ -9,7 +9,7 @@ const forecastSchema=new mongoose.Schema({
         trim:true,
     },
     opportunity_manager:{
-         type: mongoose.Schema.Types.ObjectId, ref: 'Employee'
+         type: mongoose.Schema.Types.ObjectId, ref: 'User'
     },
     opportunity_description:{
         type:String,
@@ -47,6 +47,7 @@ const forecastSchema=new mongoose.Schema({
     opportunity_stage:{
         type:String,
         required:true,
+        enum:['Prospecting','Closed Lost','Closed Won'],
         trim:true
     },
     expected_resource_breakdown:{
@@ -54,23 +55,28 @@ const forecastSchema=new mongoose.Schema({
         trim:true
     },
     project_manager:{
-         type: mongoose.Schema.Types.ObjectId, ref: 'Employee'
+         type: mongoose.Schema.Types.ObjectId, ref: 'User'
     },
     product_manager:{
-         type: mongoose.Schema.Types.ObjectId, ref: 'Employee'
+         type: mongoose.Schema.Types.ObjectId, ref: 'User'
     },
     tech_lead:{
-         type: mongoose.Schema.Types.ObjectId, ref: 'Employee'
+         type: mongoose.Schema.Types.ObjectId, ref: 'User'
     },
     account_manager:{
-         type: mongoose.Schema.Types.ObjectId, ref: 'Employee'
+         type: mongoose.Schema.Types.ObjectId, ref: 'User'
     },
     estimated_project_completion:{
         type:String
     },
+    status:{
+        type:String,
+        enum:['Not Started','In Progress','On Hold','Cancelled'],
+        default:'Not Started'
+    },
     team_forecast:[{
         team_member:{
-             type: mongoose.Schema.Types.ObjectId, ref: 'employee'
+             type: mongoose.Schema.Types.ObjectId, ref: 'User'
         },
         forecast_hours:{
             type:String

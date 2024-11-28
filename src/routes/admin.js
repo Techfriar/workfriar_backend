@@ -1,22 +1,14 @@
 import express from 'express'
 
 import CategoryController from '../controllers/category-controller.js'
+import ForecastController from '../controllers/forecast-controller.js';
 const categoryController = new CategoryController();
 
 
 const adminRouter = express.Router()
+const forecastController=new ForecastController()
 
 
-//Route for adding category
-adminRouter.post("/admin/addcategory",categoryController.addCategory.bind(categoryController));
-
-// Route to get all categories
-adminRouter.get("/admin/getcategories",categoryController.getCategories.bind(categoryController));
-
-
-
-// Route for updating Category
-adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategories.bind(categoryController));
 
 // import multer from 'multer'
 
@@ -28,19 +20,36 @@ adminRouter.put("/admin/updatecategories/:id", categoryController.updateCategori
 // import uploadCsv from '../utils/uploadCsv.js'
 
 
+
+
 // const upload = multer()
 // const multerMiddleware = multer().single('file')
 import ClientController from '../controllers/admin/client-controller.js'
 
-/*
-|--------------------------------------------------------------------------
-| Admin API Routes
-|--------------------------------------------------------------------------
-|
-| In this section, you can define the admin routes and corresponding controller methods.
-|
-*/
 
+
+//Route for adding category
+adminRouter.post("/addcategory",categoryController.addCategory.bind(categoryController));
+// Route to get all categories
+adminRouter.get("/getcategories",categoryController.getCategories.bind(categoryController));
+
+// Route for updating Category
+adminRouter.put("/updatecategories/:id",categoryController.updateCategories.bind(categoryController));
+
+//Route for adding new Forecast
+adminRouter.post("/addforecast",forecastController.addForecastController.bind(forecastController))
+
+//Route for getting all forecast
+adminRouter.get("/getforecast",forecastController.getForecastController.bind(forecastController))
+
+//Route for getting a single project forecast
+adminRouter.get("/getforecast/:id",forecastController.getForecastbyIdController.bind(forecastController))
+
+//Route for deleting a project forecast
+adminRouter.delete("/deleteforecast/:id",forecastController.deleteForecastController.bind(forecastController))
+
+//Route for updaying an existing project forecast 
+adminRouter.put("/updateforecast/:id",forecastController.updateForecast.bind(forecastController))
 
 // const auth = new AuthController()
 
@@ -74,11 +83,27 @@ adminRouter
     )
 
 adminRouter
-    .route('/timesheet/add-timesheet')
+    .route('/add-timesheet')
     .post(
         // authenticateAdmin,
         // checkPermissions('timesheet', 'add'),
         timesheet.addTimesheet
+    )
+
+adminRouter
+    .route('/save-timesheet')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('timesheet', 'add'),
+        timesheet.updateTimesheet
+    )
+
+adminRouter
+    .route('/employee-list')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('user', 'view'),
+        admin.employeeList
     )
 
 /* 

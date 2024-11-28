@@ -4,7 +4,7 @@ import UpdateProjectRequest from "../../requests/admin/update-project-request.js
 import ProjectResponse from "../../responses/project-response.js";
 import uploadFile from "../../utils/uploadFile.js";
 import deleteFile from "../../utils/deleteFile.js";
-
+import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 const projectRepo = new ProjectRepository();
 
 export default class ProjectController {
@@ -26,34 +26,34 @@ export default class ProjectController {
    *           schema:
    *             type: object
    *             properties:
-   *               clientName:
+   *               client_name:
    *                 type: string
    *                 description: Enter client name
-   *               projectName:
+   *               project_name:
    *                 type: string
    *                 description: Enter project name
    *               description:
    *                 type: string
    *                 description: Enter project description
-   *               plannedStartDate:
+   *               planned_start_date:
    *                 type: string
    *                 format: date
    *                 description: Enter planned start date
-   *               plannedEndDate:
+   *               planned_end_date:
    *                 type: string
    *                 format: date
    *                 description: Enter planned end date
-   *               projectLead:
+   *               project_lead:
    *                 type: string
    *                 description: Enter project lead user id
-   *               billingModel:
+   *               billing_model:
    *                 type: string
    *                 description: Enter billing model
-   *               projectLogo:
+   *               project_logo:
    *                 type: string
    *                 format: binary
    *                 description: Upload project logo
-   *               openForTimeEntry:
+   *               open_for_time_entry:
    *                 type: string
    *                 description: Enter time entry status (opened/closed)
    *               status:
@@ -71,21 +71,18 @@ export default class ProjectController {
     try {
       const validatedData = await new AddProjectRequest(req).validate();
 
-      for (const fieldName in req.files) {
-        if (Object.hasOwnProperty.call(req.files, fieldName)) {
-          const fileArray = req.files[fieldName];
-          for (const file of fileArray) {
-            const folderName = "projects";
-            const uploadedFile = await uploadFile(file, folderName);
-            if (uploadedFile.path) {
-              req.body.projectLogo = uploadedFile.path;
-            }
+      if (req.files && req.files.project_logo) {
+        const fileArray = Array.isArray(req.files.project_logo)
+          ? req.files.project_logo
+          : [req.files.project_logo];
+
+        for (const file of fileArray) {
+          const uploadedFile = await uploadFile(file);
+
+          if (uploadedFile.path) {
+            validatedData.project_logo = uploadedFile.path;
           }
         }
-      }
-
-      if (validatedData.projectLogo != undefined) {
-        validatedData.projectLogo = req.body.projectLogo;
       }
 
       const projectDetails = await projectRepo.addProject(validatedData);
@@ -147,10 +144,10 @@ export default class ProjectController {
    *               status:
    *                 type: string
    *                 description: Filter by status
-   *               clientName:
+   *               client_name:
    *                 type: string
    *                 description: Filter by client name
-   *               projectName:
+   *               project_name:
    *                 type: string
    *                 description: Filter by project name
    *     responses:
@@ -222,7 +219,7 @@ export default class ProjectController {
    */
   async getProjectById(req, res) {
     try {
-      const project = await projectRepo.getProjectById(req.params.id, filters);
+      const project = await projectRepo.getProjectById(req.params.id);
 
       if (!project) {
         return res.status(404).json({
@@ -243,7 +240,10 @@ export default class ProjectController {
       return res.status(500).json({
         status: false,
         message: "Failed to retrieve project.",
-        errors: error,
+        errors: {
+          details: error.message || 'Unknown error occurred',
+          code: error.code || 'UNKNOWN_ERROR'
+        }
       });
     }
   }
@@ -273,34 +273,34 @@ export default class ProjectController {
    *           schema:
    *             type: object
    *             properties:
-   *               clientName:
+   *               client_name:
    *                 type: string
    *                 description: Enter client name
-   *               projectName:
+   *               project_name:
    *                 type: string
    *                 description: Enter project name
    *               description:
    *                 type: string
    *                 description: Enter project description
-   *               plannedStartDate:
+   *               planned_start_date:
    *                 type: string
    *                 format: date
    *                 description: Enter planned start date
-   *               plannedEndDate:
+   *               planned_end_date:
    *                 type: string
    *                 format: date
    *                 description: Enter planned end date
-   *               projectLead:
+   *               project_lead:
    *                 type: string
    *                 description: Enter project lead user id
-   *               billingModel:
+   *               billing_model:
    *                 type: string
    *                 description: Enter billing model
-   *               projectLogo:
+   *               project_logo:
    *                 type: string
    *                 format: binary
    *                 description: Upload project logo
-   *               openForTimeEntry:
+   *               open_for_time_entry:
    *                 type: string
    *                 description: Enter time entry status (opened/closed)
    *               status:
@@ -321,21 +321,21 @@ export default class ProjectController {
       const validatedData = await new UpdateProjectRequest(req).validate();
 
       if (req.files && Object.keys(req.files).length > 0) {
-        for (const fieldName in req.files) {
-          if (Object.hasOwnProperty.call(req.files, fieldName)) {
-            const fileArray = req.files[fieldName];
-            for (const file of fileArray) {
-              const folderName = "projects";
-              const uploadedFile = await uploadFile(file, folderName);
-              if (uploadedFile.path) {
-                const oldProject = await projectRepo.getProjectById(
-                  req.params.id
-                );
-                if (oldProject.projectLogo) {
-                  await deleteFile(oldProject.projectLogo);
-                }
-                validatedData.projectLogo = uploadedFile.path;
+        if (req.files.project_logo) {
+          const fileArray = req.files.project_logo;
+          for (const file of fileArray) {
+            const uploadedFile = await uploadFile(file);
+
+            if (uploadedFile.path) {
+              // Delete the old logo if it exists
+              const oldProject = await projectRepo.getProjectById(
+                req.params.id
+              );
+              if (oldProject.project_logo) {
+                await deleteFile(oldProject.project_logo);
               }
+
+              validatedData.project_logo = uploadedFile.path;
             }
           }
         }
@@ -417,8 +417,8 @@ export default class ProjectController {
         });
       }
 
-      if (project.projectLogo) {
-        await deleteFile(project.projectLogo);
+      if (project.project_logo) {
+        await deleteFile(project.project_logo);
       }
 
       await projectRepo.deleteProject(req.params.id);

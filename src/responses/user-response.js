@@ -10,7 +10,6 @@ export default class UserResponse {
      * @return {Object} - An object containing selected properties from the user.
      */
     static async format(user) {
-        console.log('format', user)
             return {
                 id: user._id,
                 name: capitalizeWords(user.full_name),
@@ -21,6 +20,18 @@ export default class UserResponse {
                 reporting_manager: user?.reporting_manager,
                 profile_pic_path: user.profile_pic,
             }
+    }
+
+    static async formatEmployee(user) {
+        return {
+            id: user._id,
+            name: capitalizeWords(user.full_name),
+            email: user.email,
+            role: user?.roles?.role,
+            department: user?.roles?.department,
+            reporting_manager: user?.reporting_manager,
+            status: user.status
+        }
     }
 }
 

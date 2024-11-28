@@ -1,17 +1,17 @@
 import Joi from "joi";
 import ProjectRepository from "../../repositories/admin/project-repository.js";
-import UserRepository from "../../repositories/admin/user-repository.js";
+// import UserRepository from "../../repositories/admin/user-repository.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 class AddProjectRequest {
   static projectRepo = new ProjectRepository();
-  static userRepo = new UserRepository();
+  // static userRepo = new UserRepository();
 
   static schema = Joi.object({
-    clientName: Joi.string().required().messages({
+    client_name: Joi.string().required().messages({
       "string.empty": "Please enter the client name.",
       "any.required": "Please enter the client name.",
     }),
-    projectName: Joi.string().required().messages({
+    project_name: Joi.string().required().messages({
       "string.empty": "Please enter the project name.",
       "any.required": "Please enter the project name.",
     }),
@@ -19,43 +19,43 @@ class AddProjectRequest {
       "string.empty": "Please enter the project description.",
       "any.required": "Please enter the project description.",
     }),
-    plannedStartDate: Joi.required().messages({
+    planned_start_date: Joi.required().messages({
       "date.base": "Please enter a valid planned start date.",
       "any.required": "Please enter the planned start date.",
     }),
-    plannedEndDate: Joi.optional().allow("").allow(null),
-    actualStartDate: Joi.date().optional().allow("").allow(null),
-    actualEndDate: Joi.date().optional().allow("").allow(null),
-    // projectLead: Joi.string()
+    planned_end_date: Joi.optional().allow("").allow(null),
+    actual_start_date: Joi.date().optional().allow("").allow(null),
+    actual_end_date: Joi.date().optional().allow("").allow(null),
+    // project_lead: Joi.string()
     //   .regex(/^[0-9a-fA-F]{24}$/)
     //   .required()
     //   .messages({
     //     "string.empty": "Please specify the project lead.",
     //     "any.required": "Please specify the project lead.",
     //   }),
-    billingModel: Joi.string().optional().allow("").allow(null),
-    projectLogo: Joi.object().optional().allow("").allow(null),
-    openForTimeEntry: Joi.string().valid("opened", "closed").required(),
+    billing_model: Joi.string().optional().allow("").allow(null),
+    project_logo: Joi.object().optional().allow("").allow(null),
+    open_for_time_entry: Joi.string().valid("opened", "closed").required(),
     status: Joi.string()
       .valid("Not Started", "In Progress", "Completed", "On Hold", "Cancelled")
       .required(),
   });
 
   constructor(req) {
-    const file = req.files["projectLogo"] ? req.files["projectLogo"][0] : null;
+    const file = req.files["project_logo"] ? req.files["project_logo"][0] : null;
 
     this.data = {
-      clientName: req.body.clientName,
-      projectName: req.body.projectName,
+      client_name: req.body.client_name,
+      project_name: req.body.project_name,
       description: req.body.description,
-      plannedStartDate: req.body.plannedStartDate,
-      plannedEndDate: req.body.plannedEndDate,
-      actualStartDate: req.body.actualStartDate,
-      actualEndDate: req.body.actualEndDate,
-    //   projectLead: req.body.projectLead,
-      billingModel: req.body.billingModel,
-      projectLogo: file,
-      openForTimeEntry: req.body.openForTimeEntry,
+      planned_start_date: req.body.planned_start_date,
+      planned_end_date: req.body.planned_end_date,
+      actual_start_date: req.body.actual_start_date,
+      actual_end_date: req.body.actual_end_date,
+    //   project_lead: req.body.project_lead,
+      billing_model: req.body.billing_model,
+      project_logo: file,
+      open_for_time_entry: req.body.open_for_time_entry,
       status: req.body.status,
     };
   }
@@ -68,13 +68,13 @@ class AddProjectRequest {
     // Check if project exists
     const checkProjectExists =
       await AddProjectRequest.projectRepo.checkProjectExists(
-        this.data.projectName,
-        this.data.clientName
+        this.data.project_name,
+        this.data.client_name
       );
 
     // Check if project lead exists
-    // const checkProjectLead = await AddProjectRequest.userRepo.getUserById(
-    //   this.data.projectLead
+    // const checkproject_lead = await AddProjectRequest.userRepo.getUserById(
+    //   this.data.project_lead
     // );
 
     if (error || checkProjectExists) {
@@ -86,7 +86,7 @@ class AddProjectRequest {
         : [];
 
       if (checkProjectExists) {
-        validationErrors["projectName"] =
+        validationErrors["project_name"] =
           "Project with this name already exists for the client.";
       }
 
