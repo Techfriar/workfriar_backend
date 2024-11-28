@@ -106,7 +106,7 @@ adminRouter
     )
 
 adminRouter
-    .route('/save-timesheet')
+    .route('/save-timesheets')
     .post(
         // authenticateAdmin,
         // checkPermissions('timesheet', 'add'),
