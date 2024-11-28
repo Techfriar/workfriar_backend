@@ -89,8 +89,7 @@ class UpdateProjectRequest {
 
         if (error || checkProjectExists || !checkProjectLead || !projectExists) {
             const validationErrors = {}
-            error
-                ? error.details.forEach((err) => {
+            error? error.details.forEach((err) => {
                     validationErrors[err.context.key] = err.message
                 })
                 : []

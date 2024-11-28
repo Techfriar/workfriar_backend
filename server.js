@@ -37,8 +37,6 @@ app.set('view engine', 'ejs')
 app.set('views', './src/views')
 
 
-console.log('ensure the error in connectingDB')
-
 // Import MongoDB connection and establish the database connection
 connectDB()
 
