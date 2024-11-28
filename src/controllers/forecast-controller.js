@@ -177,10 +177,9 @@ export default class ForecastController{
  *                   example: "Internal Server Error"
  */
 
- 
     async addForecastController(req,res)
     {
-        try
+        try                     
         {
          const validationResult=await forecastRequest.validateForecast(req.body)
         if (!validationResult.isValid) {
@@ -563,6 +562,7 @@ export default class ForecastController{
  *                   items: []
  */
 
+
     async deleteForecastController(req,res)
     {
         const { id } = req.params;
@@ -588,7 +588,7 @@ export default class ForecastController{
         }
     }
 
-
+    //Function for mapping items from cline side to database entries
     async formattedForecast(input) {
         const allowedKeys = {
             name: "opportunity_name",
