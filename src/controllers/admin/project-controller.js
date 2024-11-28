@@ -4,6 +4,7 @@ import UpdateProjectRequest from "../../requests/admin/update-project-request.js
 import ProjectResponse from "../../responses/project-response.js";
 import uploadFile from "../../utils/uploadFile.js";
 import deleteFile from "../../utils/deleteFile.js";
+import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 
 const projectRepo = new ProjectRepository();
 

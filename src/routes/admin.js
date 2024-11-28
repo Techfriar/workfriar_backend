@@ -83,11 +83,27 @@ adminRouter
     )
 
 adminRouter
-    .route('/timesheet/add-timesheet')
+    .route('/add-timesheet')
     .post(
         // authenticateAdmin,
         // checkPermissions('timesheet', 'add'),
         timesheet.addTimesheet
+    )
+
+adminRouter
+    .route('/save-timesheet')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('timesheet', 'add'),
+        timesheet.updateTimesheet
+    )
+
+adminRouter
+    .route('/employee-list')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('user', 'view'),
+        admin.employeeList
     )
 
 /* 
