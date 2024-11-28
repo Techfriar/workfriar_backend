@@ -96,7 +96,7 @@ const uploadToS3 = (file, resolve, reject) => {
         if (error) {
             reject(error)
         }
-        const objectUrl = `${uploadBucket}/${uniqueFileName}`
+        const objectUrl = `${uniqueFileName}`
         resolve({
             path: objectUrl, // Include the object URL in req.uploadedFile as the path
             filename: uniqueFileName,
