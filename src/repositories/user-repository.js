@@ -4,6 +4,21 @@ import Role from '../models/role.js';
 export default class UserRepository {
 
     /**
+     * Fetch all users
+     * @return Array<User> users
+     */
+    async getAllUsers() {
+        try {
+            // Fetch all users from the database
+            const users = await User.find().populate('roles'); // Populate roles if needed
+            return users;
+        } catch (error) {
+            console.error("Error fetching all users:", error);
+            throw new Error("Failed to fetch users");
+        }
+    }
+
+    /**
      * Get user by email
      * @param String email
      * @return User user

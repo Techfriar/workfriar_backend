@@ -152,7 +152,6 @@ export default class TimesheetController {
 			// await TimesheetReq.validateReferences(project_id, user_id, task_category_id)
 
 			const today = new Date(); // Reference date (can be any date)
-			// const today = '2024-11-29'
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
 			console.log(new Date(weekEndDate.getTime()).toLocaleString())
 			// Call the Repository to create the timesheet

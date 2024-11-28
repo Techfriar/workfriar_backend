@@ -21,21 +21,6 @@ export default class FindWeekRange {
      * @param {Date} weekStartDate - The start date of the week.
      * @returns {Date} - The week's end date.
      */
-    // getWeekEndDate(weekStartDate) {
-    //     const lastDayOfMonth = new Date(
-    //         weekStartDate.getFullYear(),
-    //         weekStartDate.getMonth() + 1,
-    //         0
-    //     ); // Last day of the current month
-    //     const weekStartDay = weekStartDate.getDay(); // 0 = Sunday, ..., 6 = Saturday
-    //     const daysUntilSaturday = 6 - weekStartDay;
-
-    //     const nextSaturday = new Date(weekStartDate);
-    //     nextSaturday.setDate(weekStartDate.getDate() + daysUntilSaturday);
-
-    //     // If the next Saturday is after the last day of the month, return the last day of the month
-    //     return nextSaturday > lastDayOfMonth ? lastDayOfMonth : nextSaturday;
-    // }
     getWeekEndDate(date = new Date()) {
         const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0); // Last day of the month
         const dayOfWeek = date.getDay(); // Day of the week (0 = Sunday, ..., 6 = Saturday)

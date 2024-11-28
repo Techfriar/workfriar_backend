@@ -89,6 +89,14 @@ adminRouter
         timesheet.updateTimesheet
     )
 
+adminRouter
+    .route('/employee-list')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('user', 'view'),
+        admin.employeeList
+    )
+
 /* 
 * Client Routes
 */
