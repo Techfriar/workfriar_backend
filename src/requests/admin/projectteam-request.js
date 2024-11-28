@@ -1,8 +1,4 @@
 import Joi from 'joi';
-import CategoryRepository from '../../repositories/admin/category-repository.js';
-
-const categoryRepo = new CategoryRepository();
-
 class ProjectTeamRequest {
 
 static teamDataSchema = Joi.object({
@@ -15,23 +11,23 @@ static teamDataSchema = Joi.object({
         }),
     status: Joi.string()
         .required()
-        .valid("Open Entry", "Close Entry") 
+        .valid("Not Started","On hold","Cancelled","Completed") 
         .messages({
             "any.required": "Status is required.",
-            "any.only": "Status must be either 'Open Entry' or 'Close Entry'.",
+            "any.only": "Status must be Not Started,On hold,Cancelled,Completed .",
         }),
-    start_date: Joi.date()
+    startDate: Joi.date()
         .required()
         .messages({
             "any.required": "Start date is required.",
             "date.base": "Start date must be a valid date.",
         }),
-    end_date: Joi.date() 
+    endDate: Joi.date() 
         .allow(null)
         .messages({
             "date.base": "End date must be a valid date.",
         }),
-    team_members: Joi.array()
+    teamMembers: Joi.array()
         .items(
             Joi.string()
                 .required()
@@ -51,29 +47,20 @@ static teamDataSchema = Joi.object({
 
 
 
-
 //function for validating project team
-    async validateProjectTeam(newCategory,timeentry) {
-        const { error } = CreateCategoryRequest.categorySchema.validate({ category: newCategory,time_entry:timeentry });
+    async validateProjectTeam(input) {
+        const { error } = ProjectTeamRequest.teamDataSchema.validate(input);
         if (error) {
             return { isValid: false, message: error.details.map(err => err.message) };
         }
-        try {
-            const existingCategories = await categoryRepo.getAllCategories();
-            const existingCategoryNames = existingCategories.map(cat => cat.category.toLowerCase());
-            if (existingCategoryNames.includes(newCategory.toLowerCase())) {
-                return { isValid: false, message: "Category already exists" };
-            }
-            return { isValid: true, message: "Category is valid and unique" };
-        } catch (err) {
-            return { isValid: false, message: "Error occurred while validating the category" };
-        }
+       
+            return { isValid: true, message: "Project team has no vaidation errror" };
     }
 
     //Function for validating category while updation
     async validateUpdateCategory(updateData)
     {
-        const {error}=CreateCategoryRequest.updateCategorySchema.validate(updateData)
+        const {error}=ProjectTeamRequest.updateCategorySchema.validate(updateData)
         if (error) {
             return { isValid: false, message: error.details.map(err => err.message) };
         }

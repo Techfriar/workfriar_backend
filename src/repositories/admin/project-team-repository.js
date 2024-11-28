@@ -1,4 +1,4 @@
-import projectTeam from "../../models/project-team";
+import projectTeam from "../../models/project-team.js";
 
 class ProjectTeamRepository
 {
@@ -7,13 +7,13 @@ class ProjectTeamRepository
     {
         try
         {
-        const{project,status,start_date,end_date,team_members}=teamData
+        const{project,status,startDate,endDate,teamMembers}=teamData
         const data=await projectTeam.create({
           project,
           status,
-          start_date,
-          end_date,
-          team_members
+          start_date:startDate,
+          end_date:endDate,
+          team_members:teamMembers
         })
         return data
     }catch(error)

@@ -1,17 +1,19 @@
 import ProjectTeamRepository from "../repositories/admin/project-team-repository.js";
 import ProjectTeamResponse from "../responses/projectteam-response.js";
-
+import ProjectTeamRequest from "../requests/admin/projectteam-request.js";
+import { CustomValidationError } from "../exceptions/custom-validation-error.js";
 const projectTeamRepo=new ProjectTeamRepository()
 const projectTeamResponse=new ProjectTeamResponse()
+const projectTeamRequest=new ProjectTeamRequest()
 class ProjectTeamController{
     async addProjectTeam(req,res)
     {
+        console.log(req.body)
         try {
-         /*    const { category, timeentry } = req.body
-            const validationResult = await createCategoryRequest.validateCategory(category,timeentry);
+            const validationResult = await projectTeamRequest.validateProjectTeam(req.body);
             if (!validationResult.isValid) {
                 throw new CustomValidationError(validationResult.message);
-            } */
+            } 
             const newTeam = await projectTeamRepo.createTeam(req.body);
             if(newTeam)
             {
@@ -52,3 +54,4 @@ class ProjectTeamController{
         }
     }
 }
+export default ProjectTeamController

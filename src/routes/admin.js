@@ -2,11 +2,13 @@ import express from 'express'
 
 import CategoryController from '../controllers/category-controller.js'
 import ForecastController from '../controllers/forecast-controller.js';
+import ProjectTeamController from '../controllers/project-team-controller.js';
 const categoryController = new CategoryController();
 
 
 const adminRouter = express.Router()
 const forecastController=new ForecastController()
+const projectTeamController=new ProjectTeamController()
 
 
 
@@ -50,6 +52,10 @@ adminRouter.delete("/deleteforecast/:id",forecastController.deleteForecastContro
 
 //Route for updaying an existing project forecast 
 adminRouter.put("/updateforecast/:id",forecastController.updateForecast.bind(forecastController))
+
+//Route for creating new project team
+
+adminRouter.post("/addprojectteam",projectTeamController.addProjectTeam.bind(projectTeamController))
 
 // const auth = new AuthController()
 
