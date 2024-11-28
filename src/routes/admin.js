@@ -54,8 +54,17 @@ adminRouter.delete("/deleteforecast/:id",forecastController.deleteForecastContro
 adminRouter.put("/updateforecast/:id",forecastController.updateForecast.bind(forecastController))
 
 //Route for creating new project team
-
 adminRouter.post("/addprojectteam",projectTeamController.addProjectTeam.bind(projectTeamController))
+
+//Route for getting the project team
+adminRouter.get("/getprojectteam",projectTeamController.getProjectTeam.bind(projectTeamController))
+
+//Route for getting a team associated with a project
+adminRouter.get("/getprojectteam/:id",projectTeamController.getProjectTeambyidController.bind(projectTeamController))
+
+//Route for editing the project team
+adminRouter.put("/editprojectteam/:id",projectTeamController.editProjectTeamController.bind(projectTeamController))
+
 
 // const auth = new AuthController()
 

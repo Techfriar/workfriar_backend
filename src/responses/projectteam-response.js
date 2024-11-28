@@ -1,4 +1,4 @@
-
+import moment from "moment";
 export default class ProjectTeamResponse{
     async formattedResponse  (team) {
         return ({
@@ -8,13 +8,24 @@ export default class ProjectTeamResponse{
         });
     };   
 
-    async formatProjectTeamSet(categories)
-    {
-        return categories.map(category => ({
-            id: category.id,
-            category: category.category,
-            timeentry: category.time_entry
-        }));
-    }
-    
+    async formatProjectTeamSet(teams) {
+        console.log(teams)
+        try {
+        return{
+                id: teams.id,
+                project_id: teams.project._id,
+                projectname: teams.project.projectName,
+                status: teams.status,
+                date: `${moment(teams.start_date).format('MM/DD/YYYY')} - ${moment(teams.close_date).format('MM/DD/YYYY')}`,
+                teamsMembers: teams.team_members.map(member => ({
+                    id: member._id,
+                    name: member.full_name,
+                    profilepic: member.profile_pic,
+                    email:member.email
+                }))
+            };
+        } catch (error) {
+            console.log("Error in formatProjectTeamSet:", error);
+        }
+    }    
 }
