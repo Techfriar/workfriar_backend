@@ -89,7 +89,7 @@ export default class CategoryController {
             }
           
         } catch (error) {
-            {
+            
                 if (error instanceof CustomValidationError) {
                     return res.status(422).json({
                         status: false,
@@ -102,7 +102,7 @@ export default class CategoryController {
                         message: "Internal Server Error",
                         errors: error.message || error,
                     });
-                }
+                
             }
         }
     }
@@ -319,7 +319,6 @@ async updateCategories(req, res) {
             });
         }
     } catch (error) {
-        {
             if (error instanceof CustomValidationError) {
                 return res.status(422).json({
                     status: false,
@@ -333,7 +332,6 @@ async updateCategories(req, res) {
                     errors: error.message || error,
                 });
             }
-        }
     }
 }
 
