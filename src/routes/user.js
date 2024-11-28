@@ -1,15 +1,15 @@
 import express from 'express'
 import UserController from '../controllers/user/user-controller.js'
 
-const userRoutes = express.Router()
+const userRouter = express.Router()
 
 const user = new UserController()
 
-userRoutes
+userRouter
     .route('/profile-view')
     .post(
         // authenticateUser,
         user.getMyProfile
     )
 
-export default userRoutes
+export default userRouter
