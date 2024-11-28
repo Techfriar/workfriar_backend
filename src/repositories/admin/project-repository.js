@@ -34,7 +34,7 @@ export default class ProjectRepository {
      */
     async getProjectById(projectId) {
         try {
-            const project = await Project.findOne().populate("project_lead");
+            const project = await Project.findById(projectId).populate("project_lead");
             if (!project) {
                 throw new Error(`Project with ID ${projectId} not found`);
             }

@@ -71,21 +71,18 @@ export default class ProjectController {
     try {
       const validatedData = await new AddProjectRequest(req).validate();
 
-      for (const fieldName in req.files) {
-        if (Object.hasOwnProperty.call(req.files, fieldName)) {
-          const fileArray = req.files[fieldName];
-          for (const file of fileArray) {
-            const folderName = "projects";
-            const uploadedFile = await uploadFile(file, folderName);
-            if (uploadedFile.path) {
-              req.body.project_logo = uploadedFile.path;
-            }
+      if (req.files && req.files.project_logo) {
+        const fileArray = Array.isArray(req.files.project_logo)
+          ? req.files.project_logo
+          : [req.files.project_logo];
+
+        for (const file of fileArray) {
+          const uploadedFile = await uploadFile(file);
+
+          if (uploadedFile.path) {
+            validatedData.project_logo = uploadedFile.path;
           }
         }
-      }
-
-      if (validatedData.project_logo != undefined) {
-        validatedData.project_logo = req.body.project_logo;
       }
 
       const projectDetails = await projectRepo.addProject(validatedData);
@@ -222,7 +219,7 @@ export default class ProjectController {
    */
   async getProjectById(req, res) {
     try {
-      const project = await projectRepo.getProjectById(req.params.id, filters);
+      const project = await projectRepo.getProjectById(req.params.id);
 
       if (!project) {
         return res.status(404).json({
@@ -243,7 +240,10 @@ export default class ProjectController {
       return res.status(500).json({
         status: false,
         message: "Failed to retrieve project.",
-        errors: error,
+        errors: {
+          details: error.message || 'Unknown error occurred',
+          code: error.code || 'UNKNOWN_ERROR'
+        }
       });
     }
   }
@@ -321,21 +321,21 @@ export default class ProjectController {
       const validatedData = await new UpdateProjectRequest(req).validate();
 
       if (req.files && Object.keys(req.files).length > 0) {
-        for (const fieldName in req.files) {
-          if (Object.hasOwnProperty.call(req.files, fieldName)) {
-            const fileArray = req.files[fieldName];
-            for (const file of fileArray) {
-              const folderName = "projects";
-              const uploadedFile = await uploadFile(file, folderName);
-              if (uploadedFile.path) {
-                const oldProject = await projectRepo.getProjectById(
-                  req.params.id
-                );
-                if (oldProject.project_logo) {
-                  await deleteFile(oldProject.project_logo);
-                }
-                validatedData.project_logo = uploadedFile.path;
+        if (req.files.project_logo) {
+          const fileArray = req.files.project_logo;
+          for (const file of fileArray) {
+            const uploadedFile = await uploadFile(file);
+
+            if (uploadedFile.path) {
+              // Delete the old logo if it exists
+              const oldProject = await projectRepo.getProjectById(
+                req.params.id
+              );
+              if (oldProject.project_logo) {
+                await deleteFile(oldProject.project_logo);
               }
+
+              validatedData.project_logo = uploadedFile.path;
             }
           }
         }

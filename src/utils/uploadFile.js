@@ -3,7 +3,7 @@ import { Readable } from 'stream'
 import minioConfig from '../config/minio.js'
 
 // Set upload bucket minio
-const uploadBucket = process.env.AWS_BUCKET_NAME
+const uploadBucket = process.env.UPLOAD_BUCKET || 'workfriar'
 
 // Set the project location based on the environment variable
 const storageType = process.env.STORAGE_TYPE
@@ -56,9 +56,9 @@ async function uploadFile(file, folderName) {
 
 // Upload to Minio
 const uploadToMinio = (file, resolve, reject) => {
-    const fileBuffer = file.buffer
+    const fileBuffer = file.buffer || file
     const timestamp = Date.now()
-    const uniqueFileName = `${timestamp}_${file.originalname}`
+    const uniqueFileName = `${timestamp}_${file.originalname || file.name}`
 
     const readableStream = Readable.from(fileBuffer)
 
@@ -70,7 +70,7 @@ const uploadToMinio = (file, resolve, reject) => {
             if (error) {
                 reject(error)
             }
-            const objectUrl = `${uploadBucket}/${uniqueFileName}`
+            const objectUrl = `${uniqueFileName}`
             resolve({
                 path: objectUrl, // Include the object URL in req.uploadedFile as the path
                 filename: uniqueFileName,
