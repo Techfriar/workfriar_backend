@@ -10,6 +10,39 @@ const forecastResponse=new ForecastResponse()
 
 export default class ForecastController{
 
+   
+    //Function for mapping items from cline side to database entries
+   static async formattedForecast(input) {
+        const allowedKeys = {
+            name: "opportunity_name",
+            manager: "opportunity_manager",
+            description: "opportunity_description",
+            clientName: "client_name",
+            billing: "billing_model",
+            startDate: "opportunity_start_date",
+            endDate: "opportunity_close_date",
+            expectedStartdate: "expected_project_start_date",
+            expectedEnddate: "expected_project_end_date",
+            revenue: "estimated_revenue",
+            stage: "opportunity_stage",
+            resource: "expected_resource_breakdown",
+            projectManager: "project_manager",
+            productManager: "product_manager",
+            techLead: "tech_lead",
+            accountManager: "account_manager",
+            estimatedCompletion: "estimated_project_completion",
+            team: "team_forecast",
+        };
+    
+        const forecastData = Object.entries(allowedKeys).reduce((acc, [key, mappedKey]) => {
+            if (input[key]) {
+                acc[mappedKey] = input[key];
+            }
+            return acc;
+        }, {});
+    
+        return forecastData;
+    }
  /**
  * @swagger
  * /admin/addforecast:
@@ -185,7 +218,8 @@ export default class ForecastController{
         if (!validationResult.isValid) {
             throw new CustomValidationError(validationResult.message)
         } 
-        const forecastData=await this.formattedForecast(req.body)
+       
+        const forecastData=await ForecastController.formattedForecast(req.body)
             const newForecast=await forecastRepo.createForecast(forecastData)
             if(newForecast)
             {
@@ -208,6 +242,7 @@ export default class ForecastController{
         }
         catch(error)
             {
+                console.log(error)
                 if (error instanceof CustomValidationError) {
                     return res.status(422).json({
                         status: false,
@@ -228,8 +263,8 @@ export default class ForecastController{
  * Get all Project Forecasts
  * 
  * @swagger
- * /admin/getforecast:
- *   get:
+ * /admin/getallforecast:
+ *   post:
  *     summary: Retrieve a list of all project forecasts
  *     tags: [Forecast]
  *     responses:
@@ -337,22 +372,25 @@ export default class ForecastController{
                     })
             }
     }
-    /**
+ /**
  * Get Project Forecast by ID
  * 
  * @swagger
- * /admin/getforecast/{id}:
- *   get:
+ * /admin/getforecast:
+ *   post:
  *     summary: Retrieve a single project forecast by its ID
  *     tags: [Forecast]
- *     parameters:
- *       - name: id
- *         in: path
- *         description: The ID of the project forecast to retrieve
- *         required: true
- *         schema:
- *           type: string
- *           example: "6746b68444117998965847ff"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The ID of the project forecast to retrieve
+ *                 example: "6746b68444117998965847ff"
  *     responses:
  *       200:
  *         description: Details of the requested project forecast
@@ -468,11 +506,10 @@ export default class ForecastController{
  *                   type: array
  *                   items: []
  */
-
     async getForecastbyIdController(req,res)
     {
         try {
-            const { id } = req.params; 
+            const { id } = req.body; 
             const data = await forecastRepo.getForecastByid(id)
             if (data.length === 0) {
                 res.status(422).json({
@@ -586,39 +623,6 @@ export default class ForecastController{
             message: "Internal Server Error"
           });
         }
-    }
-
-    //Function for mapping items from cline side to database entries
-    async formattedForecast(input) {
-        const allowedKeys = {
-            name: "opportunity_name",
-            manager: "opportunity_manager",
-            description: "opportunity_description",
-            clientName: "client_name",
-            billing: "billing_model",
-            startDate: "opportunity_start_date",
-            endDate: "opportunity_close_date",
-            expectedStartdate: "expected_project_start_date",
-            expectedEnddate: "expected_project_end_date",
-            revenue: "estimated_revenue",
-            stage: "opportunity_stage",
-            resource: "expected_resource_breakdown",
-            projectManager: "project_manager",
-            productManager: "product_manager",
-            techLead: "tech_lead",
-            accountManager: "account_manager",
-            estimatedCompletion: "estimated_project_completion",
-            team: "team_forecast",
-        };
-    
-        const forecastData = Object.entries(allowedKeys).reduce((acc, [key, mappedKey]) => {
-            if (input[key]) {
-                acc[mappedKey] = input[key];
-            }
-            return acc;
-        }, {});
-    
-        return forecastData;
     }
 /**
  * Update an existing project forecast by ID
@@ -798,7 +802,7 @@ export default class ForecastController{
             if (!validationResult.isValid) {
                 throw new CustomValidationError(validationResult.message)
             } 
-           const forecastData=await this.formattedForecast(req.body)
+           const forecastData=await ForecastController.formattedForecast(req.body)
 
             const newForecast=await forecastRepo.updateForecast(forecastData,id)
             if(newForecast)

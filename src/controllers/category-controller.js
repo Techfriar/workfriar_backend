@@ -112,7 +112,7 @@ export default class CategoryController {
      * 
      * @swagger
      * /admin/getcategories:
-     *   get:
+     *   post:
      *     summary: Retrieve all categories
      *     tags: [Categories]
      *     responses:

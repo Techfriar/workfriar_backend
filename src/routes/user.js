@@ -11,5 +11,4 @@ userRouter
         // authenticateUser,
         user.getMyProfile
     )
-
 export default userRouter

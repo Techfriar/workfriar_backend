@@ -31,39 +31,31 @@ import ClientController from '../controllers/admin/client-controller.js'
 
 
 //Route for adding category
-adminRouter.post("/addcategory",categoryController.addCategory.bind(categoryController));
+adminRouter.route("/addcategory").post(categoryController.addCategory)
 // Route to get all categories
-adminRouter.get("/getcategories",categoryController.getCategories.bind(categoryController));
-
+adminRouter.route("/getcategories").post(categoryController.getCategories)
 // Route for updating Category
-adminRouter.put("/updatecategories/:id",categoryController.updateCategories.bind(categoryController));
+adminRouter.route("/updatecategories/:id").put(categoryController.updateCategories)
 
 //Route for adding new Forecast
-adminRouter.post("/addforecast",forecastController.addForecastController.bind(forecastController))
-
+adminRouter.route("/addforecast").post(forecastController.addForecastController)
 //Route for getting all forecast
-adminRouter.get("/getforecast",forecastController.getForecastController.bind(forecastController))
-
+adminRouter.route("/getallforecast").post(forecastController.getForecastController)
 //Route for getting a single project forecast
-adminRouter.get("/getforecast/:id",forecastController.getForecastbyIdController.bind(forecastController))
-
+adminRouter.route("/getforecast").post(forecastController.getForecastbyIdController)
 //Route for deleting a project forecast
-adminRouter.delete("/deleteforecast/:id",forecastController.deleteForecastController.bind(forecastController))
-
+adminRouter.route("/deleteforecast/:id").delete(forecastController.deleteForecastController)
 //Route for updaying an existing project forecast 
-adminRouter.put("/updateforecast/:id",forecastController.updateForecast.bind(forecastController))
+adminRouter.route("/updateforecast/:id").put(forecastController.updateForecast)
 
 //Route for creating new project team
-adminRouter.post("/addprojectteam",projectTeamController.addProjectTeam.bind(projectTeamController))
-
+adminRouter.route("/addprojectteam").post(projectTeamController.addProjectTeam)
 //Route for getting the project team
-adminRouter.get("/getprojectteam",projectTeamController.getProjectTeam.bind(projectTeamController))
-
+adminRouter.route("/getallprojectteam").post(projectTeamController.getProjectTeam)
 //Route for getting a team associated with a project
-adminRouter.get("/getprojectteam/:id",projectTeamController.getProjectTeambyidController.bind(projectTeamController))
-
+adminRouter.route("/getprojectteam").post(projectTeamController.getProjectTeambyidController)
 //Route for editing the project team
-adminRouter.put("/editprojectteam/:id",projectTeamController.editProjectTeamController.bind(projectTeamController))
+adminRouter.route("/editprojectteam/:id").put(projectTeamController.editProjectTeamController)
 
 
 // const auth = new AuthController()
@@ -120,7 +112,6 @@ adminRouter
         // checkPermissions('user', 'view'),
         admin.employeeList
     )
-
 /* 
 * Client Routes
 */

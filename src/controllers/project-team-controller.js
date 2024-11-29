@@ -27,7 +27,7 @@ class ProjectTeamController{
  *                 example: "Project Alpha"
  *               status:
  *                 type: string
- *                 example: "Active"
+ *                 example: "On hold"
  *               startDate:
  *                 type: string
  *                 format: date
@@ -66,7 +66,7 @@ class ProjectTeamController{
  *                       example: "Project Alpha"
  *                     status:
  *                       type: string
- *                       example: "Active"
+ *                       example: "On hold"
  *                     start_date:
  *                       type: string
  *                       example: "2024-01-01"
@@ -131,8 +131,8 @@ class ProjectTeamController{
 
     /**
  * @swagger
- * /admin/getprojectteam:
- *   get:
+ * /admin/getallprojectteam:
+ *   post:
  *     summary: Retrieve all project teams
  *     tags: [ProjectTeams]
  *     responses:
@@ -210,19 +210,23 @@ class ProjectTeamController{
         }
     }
 
-    /**
+/**
  * @swagger
- * /admin/getprojectteam/{id}:
- *   get:
+ * /admin/getprojectteam:
+ *   post:
  *     summary: Retrieve a specific project team by ID
  *     tags: [ProjectTeams]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the project team to retrieve
- *         schema:
- *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The ID of the project team to retrieve
+ *                 example: "12345abcde"
  *     responses:
  *       200:
  *         description: Successfully retrieved project team data
@@ -231,38 +235,85 @@ class ProjectTeamController{
  *             schema:
  *               type: object
  *               properties:
- *                 id:
- *                   type: string
- *                 project_id:
- *                   type: string
- *                 projectname:
- *                   type: string
  *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
  *                   type: string
- *                 date:
- *                   type: string
- *                 teamsMembers:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                       name:
- *                         type: string
- *                       profilepic:
- *                         type: string
- *                       email:
- *                         type: string
+ *                   example: "Project Team data"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "12345abcde"
+ *                     project_id:
+ *                       type: string
+ *                       example: "54321edcba"
+ *                     projectname:
+ *                       type: string
+ *                       example: "Project Alpha"
+ *                     status:
+ *                       type: string
+ *                       example: "Active"
+ *                     date:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-01T00:00:00.000Z"
+ *                     teamMembers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             example: "user123"
+ *                           name:
+ *                             type: string
+ *                             example: "John Doe"
+ *                           profilepic:
+ *                             type: string
+ *                             example: "https://example.com/profile.jpg"
+ *                           email:
+ *                             type: string
+ *                             example: "john.doe@example.com"
  *       422:
  *         description: No project team found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No Category Found"
+ *                 data:
+ *                   type: array
+ *                   items: []
  *       500:
  *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ *                 data:
+ *                   type: array
+ *                   items: []
  */
 
     async getProjectTeambyidController(req,res)
     {
-        const id=req.params
+        const id=req.body
         try
         {
             const data = await projectTeamRepo. getProjectTeambyId(id)
@@ -320,7 +371,7 @@ class ProjectTeamController{
  *                 example: "Project Alpha"
  *               status:
  *                 type: string
- *                 example: "Inactive"
+ *                 example: "In Progress"
  *               startDate:
  *                 type: string
  *                 format: date
@@ -359,7 +410,7 @@ class ProjectTeamController{
  *                       example: "Project Alpha"
  *                     status:
  *                       type: string
- *                       example: "Inactive"
+ *                       example: "in Progress"
  *                     start_date:
  *                       type: string
  *                       example: "2024-01-01"
