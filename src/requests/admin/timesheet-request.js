@@ -8,26 +8,24 @@ import { CustomValidationError } from '../../exceptions/custom-validation-error.
 import IsDateInRange from '../../services/isDateInRange.js';
 import TimesheetRepository from '../../repositories/admin/timesheet-repository.js';
 
-const TimesheetRepo = new TimesheetRepository()
-const HolidayRepo = new HolidayRepository()
-const IsDateInRange_ = new IsDateInRange()
-
 export default class CreateTimesheetRequest {
 
 	static ProjectRepo = new ProjectRepository()
 	static UserRepo = new UserRepository()
+	static TimesheetRepo = new TimesheetRepository()
+	static HolidayRepo = new HolidayRepository()
 	static  TaskCategoryRepo = new TaskCateogryRepository()
 
     // Validate Project, User, and TaskCategory references
-    async validateReferences(project_id, user_id, task_category_id) {
-        const project = await ProjectRepo.findById(project_id);
+    static async validateReferences(project_id, user_id, task_category_id) {
+        const project = await this.ProjectRepo.getProjectById(project_id);
         if (!project) throw new CustomValidationError('Project not found');
 
-        const user = await UserRepo.getUserById(user_id)
+        const user = await this.UserRepo.getUserById(user_id)
         if (!user) throw new Error('User not found');
-        if (!project.team.includes(user_id)) throw new CustomValidationError('User is not part of the project team');
+        // if (!project.team || project.team && !project.team.team_members || (project.team && !project.team.team_members.includes(user_id))) throw new CustomValidationError('User is not part of the project team');
 
-        const taskCategory = await TaskCategory.findById(task_category_id);
+        const taskCategory = await this.TaskCategoryRepo.getCategoryById(task_category_id);
         if (!taskCategory) throw new CustomValidationError('Task Category not found');
 
         return { project, user, taskCategory };
@@ -39,32 +37,64 @@ export default class CreateTimesheetRequest {
    * @param {Array} data_sheet 
    * @returns {string|null} Error message or null if valid
    */
-	async validateTimesheetAndOwnership(timesheetId, user_id) {
+	static async validateTimesheetAndOwnership(timesheetId, user_id) {
 		if (!timesheetId) throw new CustomValidationError('timesheetId is required')
 	
-		const timesheet = await TimesheetRepo.getTimesheetById(timesheetId);
+		const timesheet = await this.TimesheetRepo.getTimesheetById(timesheetId);
 	
 		if (!timesheet) throw new CustomValidationError('Timesheet not found')
 		
 		if (!timesheet.user_id.equals(new mongoose.Types.ObjectId(user_id))) {
 			throw new CustomValidationError('Unauthorized to update this timesheet')
 		}
+
+		// Check if the timesheet is already submitted or accepted
+		if (['submitted', 'accepted'].includes(timesheet.status)) {
+			throw new Error('Timesheet cannot be updated as it is already submitted or accepted');
+		}
 	
 		return { error: false, timesheet };
 	}
 	
-	async validateAndProcessDataSheet(data_sheet, timesheet) {
+	static async validateProjectStatus(projectId) {
+		// Fetch the associated project by its ID
+		const project = await this.ProjectRepo.getProjectById(projectId);
+
+		if (!project) {
+			throw new CustomValidationError('Associated project not found');
+		}
+
+		if(!["In Progress"].includes(project.status)){
+			throw new CustomValidationError('Time entry is not enabled for the associated project');
+		}
+	 
+		// Verify the project's "Time Entry" field
+		if (project.open_for_time_entry == 'closed') {
+			if(
+				project.effective_close_date &&
+				new Date(project.effective_close_date) < Date.now()
+			) {
+				throw new CustomValidationError('Time entry is not enabled for the associated project');
+			} else if(!project.effective_close_date) {
+				throw new CustomValidationError('Time entry is not enabled for the associated project');
+			}
+		}
+
+		return {error: false};
+	}
+
+	static async validateAndProcessDataSheet(data_sheet, timesheet) {
 		// Validate that data_sheet is an array
 		if (!Array.isArray(data_sheet)) throw new CustomValidationError('Data sheet should be an array')
 		
 		for (const item of data_sheet) {
 			if (!item.date || !item.hours) throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')
 	
-			if (!IsDateInRange_.isDateInRange(item.date, timesheet.startDate, timesheet.endDate)) {
+			if (!IsDateInRange.isDateInRange(item.date, timesheet.startDate, timesheet.endDate)) {
 				throw new CustomValidationError(`Date ${item.date} is outside the timesheet's start and end date range`)
 			}
 	
-			const isHoliday = await HolidayRepo.isHoliday(item.date);
+			const isHoliday = await this.HolidayRepo.isHoliday(item.date);
 			item.isHoliday = isHoliday; // Add isHoliday field directly to the item
 		}
 	

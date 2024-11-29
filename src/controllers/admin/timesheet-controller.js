@@ -5,7 +5,6 @@ import FindWeekRange from '../../services/findWeekRange.js';
 
 const TimesheetRepo = new TimesheetRepository()
 
-const TimesheetReq = new TimesheetRequest()
 const FindWeekRange_ = new FindWeekRange()
 
 // Admin controller to add a timesheet
@@ -130,9 +129,10 @@ export default class TimesheetController {
 
             const user_id = '6744a7c9707ecbeea1efd14c'
 
-			const { project_id, task_category_id, task_detail, data_sheet=[], status='not submitted' } = req.body;
+			const { project_id, task_category_id, task_detail, data_sheet=[], status='in_progress' } = req.body;
 
-			// await TimesheetReq.validateReferences(project_id, user_id, task_category_id)
+			await TimesheetRequest.validateReferences(project_id, user_id, task_category_id)
+			await TimesheetRequest.validateProjectStatus(project_id)
 
 			const today = new Date(); // Reference date (can be any date)
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
@@ -339,10 +339,14 @@ export default class TimesheetController {
 
 			// Validate request input and timesheet ownership 
 			const validatedTimesheets = await Promise.all(timesheets.map(async ({ timesheetId, data_sheet }) => { 
-				const timesheetValidationError = await TimesheetReq.validateTimesheetAndOwnership(timesheetId, user_id)
+				const timesheetValidationError = await TimesheetRequest.validateTimesheetAndOwnership(timesheetId, user_id)
 				const { timesheet } = timesheetValidationError; // Extract validated timesheet 
 				// Validate and process data_sheet items 
-				await TimesheetReq.validateAndProcessDataSheet(data_sheet, timesheet);
+				await TimesheetRequest.validateAndProcessDataSheet(data_sheet, timesheet);
+				
+				// Validate Project Status
+				await TimesheetRequest.validateProjectStatus(timesheet.project_id)
+
 				return { timesheetId, data_sheet, timesheet }; })); // Update each timesheet 
 				
 			const updatedTimesheets = await Promise.all(validatedTimesheets.map(async ({ timesheetId, data_sheet }) => { 
@@ -479,8 +483,9 @@ export default class TimesheetController {
 			// Validate request input and timesheet ownership
 			const validatedTimesheets = await Promise.all(
 				timesheets.map(async (timesheetId) => {
-					const timesheetValidationError = await TimesheetReq.validateTimesheetAndOwnership(timesheetId, user_id);
+					const timesheetValidationError = await TimesheetRequest.validateTimesheetAndOwnership(timesheetId, user_id);
 					const { timesheet } = timesheetValidationError; // Extract validated timesheet
+					await TimesheetRequest.validateProjectStatus(timesheet.project_id) // Validate Project Status
 					return timesheetId; 
 				})
 			);
