@@ -1,21 +1,18 @@
-import mongoose from 'mongoose';
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
 import TimesheetRepository from '../../repositories/admin/timesheet-repository.js';
-import HolidayRepository from '../../repositories/holiday-repository.js';
-import IsDateInRange from '../../services/isDateInRange.js';
-// import TimesheetRequest from '../../requests/admin/timesheet-request.js'
-import FindSunday from '../../services/findSunday.js';
+import TimesheetRequest from '../../requests/admin/timesheet-request.js'
 import FindWeekRange from '../../services/findWeekRange.js';
 import ProjectRepository from '../../repositories/admin/project-repository.js';
 import TimesheetResponse from '../../responses/timesheet-response.js';
 import moment from 'moment';
+import HolidayRepository from '../../repositories/holiday-repository.js';
+import IsDateInRange from '../../services/isDateInRange.js';
 
 const TimesheetRepo = new TimesheetRepository()
 const HolidayRepo = new HolidayRepository()
 const ProjectRepo = new ProjectRepository()
 
-// const TimesheetReq = new TimesheetRequest()
-const FindSunday_ = new FindSunday()
+const TimesheetReq = new TimesheetRequest()
 const FindWeekRange_ = new FindWeekRange()
 const IsDateInRange_ = new IsDateInRange()
 
@@ -159,7 +156,6 @@ export default class TimesheetController {
 
 			const today = new Date(); // Reference date (can be any date)
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
-			console.log(new Date(weekEndDate.getTime()).toLocaleString())
 			// Call the Repository to create the timesheet
 			await TimesheetRepo.createTimesheet(project_id, user_id, task_category_id, task_detail, weekStartDate, weekEndDate, data_sheet, status);
 
@@ -184,6 +180,161 @@ export default class TimesheetController {
 			});
 		}
 	}
+
+	/**
+	 * @swagger
+	 * /admin/save-timesheets:
+	 *   post:
+	 *     summary: Update multiple timesheet entries
+	 *     description: Update the `data_sheet` of multiple timesheets. Ensures each timesheet is not in `submitted` or `accepted` status before allowing updates.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               timesheets:
+	 *                 type: array
+	 *                 description: Array of timesheets to update
+	 *                 items:
+	 *                   type: object
+	 *                   properties:
+	 *                     timesheetId:
+	 *                       type: string
+	 *                       description: ID of the timesheet to update
+	 *                       example: "64f6c25e97f847001c24f7c9"
+	 *                     data_sheet:
+	 *                       type: array
+	 *                       description: Array of data_sheet entries to add or update
+	 *                       items:
+	 *                         type: object
+	 *                         properties:
+	 *                           date:
+	 *                             type: string
+	 *                             format: date
+	 *                             description: Date of the timesheet entry (YYYY-MM-DD format)
+	 *                             example: "2024-11-29"
+	 *                           hours:
+	 *                             type: string
+	 *                             description: Hours worked on the date
+	 *                             example: "8"
+	 *     responses:
+	 *       200:
+	 *         description: Successfully updated the timesheets
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 status:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: "All timesheets updated successfully"
+	 *                 data:
+	 *                   type: object
+	 *                   properties:
+	 *                     updatedTimesheets:
+	 *                       type: array
+	 *                       description: List of successfully updated timesheets
+	 *                       items:
+	 *                         type: object
+	 *                         properties:
+	 *                           timesheetId:
+	 *                             type: string
+	 *                             example: "64f6c25e97f847001c24f7c9"
+	 *                           status:
+	 *                             type: string
+	 *                             example: "saved"
+	 *                     errors:
+	 *                       type: array
+	 *                       description: List of errors for timesheets that failed to update
+	 *                       items:
+	 *                         type: object
+	 *                         properties:
+	 *                           timesheetId:
+	 *                             type: string
+	 *                             example: "64f6c25e97f847001c24f7d0"
+	 *                           message:
+	 *                             type: string
+	 *                             example: "Unauthorized to update this timesheet"
+	 *       207:
+	 *         description: Partial success - some timesheets failed to update
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 status:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: "Some timesheets failed to save"
+	 *                 data:
+	 *                   type: object
+	 *                   properties:
+	 *                     updatedTimesheets:
+	 *                       type: array
+	 *                       description: List of successfully updated timesheets
+	 *                       items:
+	 *                         type: object
+	 *                         properties:
+	 *                           timesheetId:
+	 *                             type: string
+	 *                             example: "64f6c25e97f847001c24f7c9"
+	 *                           status:
+	 *                             type: string
+	 *                             example: "saved"
+	 *                     errors:
+	 *                       type: array
+	 *                       description: List of errors for timesheets that failed to update
+	 *                       items:
+	 *                         type: object
+	 *                         properties:
+	 *                           timesheetId:
+	 *                             type: string
+	 *                             example: "64f6c25e97f847001c24f7d0"
+	 *                           message:
+	 *                             type: string
+	 *                             example: "Unauthorized to update this timesheet"
+	 *       400:
+	 *         description: Bad request due to invalid input
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 status:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: "Invalid input: timesheets should be a non-empty array"
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 *       500:
+	 *         description: Server error
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 status:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: "Internal server error"
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
 
 	/**
 	 * @swagger
@@ -364,8 +515,8 @@ export default class TimesheetController {
 
 			return res.status(200).json({
 				status: true,
-				message: 'Timesheet saved successfully',
-				data: updatedTimesheet,
+				message: 'Timesheets saved successfully',
+				data: updatedTimesheets,
 			});
 		} catch (err) {
 			return res.status(500).json({
@@ -376,91 +527,92 @@ export default class TimesheetController {
 		}
 	}
 
-/**
- * @swagger
- * /admin/get-user-timesheets:
- *   post:
- *     summary: Get user timesheets
- *     description: Fetches the timesheets for the user based on the provided JWT token.
- *     operationId: getUserTimesheets
- *     tags:
- *       - Timesheet
- *     responses:
- *       '200':
- *         description: User timesheets fetched successfully
- *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: true
- *             message:
- *               type: string
- *               example: 'User timesheets fetched successfully'
- *             data:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   userid:
- *                     type: string
- *                     example: '6746a473ed7e5979a3a1f891'
- *                   projectid:
- *                     type: string
- *                     example: '1234abcd5678'
- *                   category:
- *                     type: string
- *                     example: 'Development'
- *                   detail:
- *                     type: string
- *                     example: 'Worked on feature X'
- *                   data:
- *                     type: object
- *                     additionalProperties: true
- *                     example: {"2024-11-22": 4}
- *       '400':
- *         description: No timesheets found
- *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: false
- *             message:
- *               type: string
- *               example: 'No timesheets found'
- *             data:
- *               type: array
- *               items: {}
- *       '401':
- *         description: Unauthorized - No token provided
- *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: false
- *             message:
- *               type: string
- *               example: 'No token provided'
- *             data:
- *               type: array
- *               items: {}
- *       '500':
- *         description: Internal server error
- *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: false
- *             message:
- *               type: string
- *               example: 'Error message'
- *             data:
- *               type: array
- *               items: {}
- */
+	//get all timesheets of a user
+	/**
+	 * @swagger
+	 * /admin/get-user-timesheets:
+	 *   post:
+	 *     summary: Get user timesheets
+	 *     description: Fetches the timesheets for the user based on the provided JWT token.
+	 *     operationId: getUserTimesheets
+	 *     tags:
+	 *       - Timesheet
+	 *     responses:
+	 *       '200':
+	 *         description: User timesheets fetched successfully
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             success:
+	 *               type: boolean
+	 *               example: true
+	 *             message:
+	 *               type: string
+	 *               example: 'User timesheets fetched successfully'
+	 *             data:
+	 *               type: array
+	 *               items:
+	 *                 type: object
+	 *                 properties:
+	 *                   userid:
+	 *                     type: string
+	 *                     example: '6746a473ed7e5979a3a1f891'
+	 *                   projectid:
+	 *                     type: string
+	 *                     example: '1234abcd5678'
+	 *                   category:
+	 *                     type: string
+	 *                     example: 'Development'
+	 *                   detail:
+	 *                     type: string
+	 *                     example: 'Worked on feature X'
+	 *                   data:
+	 *                     type: object
+	 *                     additionalProperties: true
+	 *                     example: {"2024-11-22": 4}
+	 *       '400':
+	 *         description: No timesheets found
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             success:
+	 *               type: boolean
+	 *               example: false
+	 *             message:
+	 *               type: string
+	 *               example: 'No timesheets found'
+	 *             data:
+	 *               type: array
+	 *               items: {}
+	 *       '401':
+	 *         description: Unauthorized - No token provided
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             success:
+	 *               type: boolean
+	 *               example: false
+	 *             message:
+	 *               type: string
+	 *               example: 'No token provided'
+	 *             data:
+	 *               type: array
+	 *               items: {}
+	 *       '500':
+	 *         description: Internal server error
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             success:
+	 *               type: boolean
+	 *               example: false
+	 *             message:
+	 *               type: string
+	 *               example: 'Error message'
+	 *             data:
+	 *               type: array
+	 *               items: {}
+	 */
 
 	async getUserTimesheets(req, res) {
 		try {
@@ -507,88 +659,89 @@ export default class TimesheetController {
 
 	}
 
-/**
- * @swagger
- * /admin/get-current-day-timesheets:
- *   post:
- *     summary: Get current day's timesheet for the user
- *     description: Fetches the timesheet entries for the current day based on the provided JWT token.
- *     operationId: getCurrentDayTimesheet
- *     tags:
- *       - Timesheet
- *     responses:
- *       '200':
- *         description: Current day's timesheets fetched successfully
- *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: true
- *             message:
- *               type: string
- *               example: 'Current Date timesheets fetched successfully'
- *             length:
- *               type: integer
- *               example: 3
- *             data:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   projectId:
- *                     type: string
- *                     example: '6746afa90f425a352c7bcd8e'
- *                   projectName:
- *                     type: string
- *                     example: 'Soeazy'
- *                   hours:
- *                     type: number
- *                     format: float
- *                     example: 3
- *       '400':
- *         description: No timesheets found for the current day
- *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: false
- *             message:
- *               type: string
- *               example: 'No timesheets found'
- *             data:
- *               type: array
- *               items: {}
- *       '401':
- *         description: Unauthorized - No token provided
- *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: false
- *             message:
- *               type: string
- *               example: 'No token provided'
- *             data:
- *               type: array
- *               items: {}
- *       '500':
- *         description: Internal server error
- *         schema:
- *           type: object
- *           properties:
- *             success:
- *               type: boolean
- *               example: false
- *             message:
- *               type: string
- *               example: 'Error message'
- *             data:
- *               type: array
- *               items: {}
- */
+	//get timesheet details with current date
+	/**
+	 * @swagger
+	 * /admin/get-current-day-timesheets:
+	 *   post:
+	 *     summary: Get current day's timesheet for the user
+	 *     description: Fetches the timesheet entries for the current day based on the provided JWT token.
+	 *     operationId: getCurrentDayTimesheet
+	 *     tags:
+	 *       - Timesheet
+	 *     responses:
+	 *       '200':
+	 *         description: Current day's timesheets fetched successfully
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             success:
+	 *               type: boolean
+	 *               example: true
+	 *             message:
+	 *               type: string
+	 *               example: 'Current Date timesheets fetched successfully'
+	 *             length:
+	 *               type: integer
+	 *               example: 3
+	 *             data:
+	 *               type: array
+	 *               items:
+	 *                 type: object
+	 *                 properties:
+	 *                   projectId:
+	 *                     type: string
+	 *                     example: '6746afa90f425a352c7bcd8e'
+	 *                   projectName:
+	 *                     type: string
+	 *                     example: 'Soeazy'
+	 *                   hours:
+	 *                     type: number
+	 *                     format: float
+	 *                     example: 3
+	 *       '400':
+	 *         description: No timesheets found for the current day
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             success:
+	 *               type: boolean
+	 *               example: false
+	 *             message:
+	 *               type: string
+	 *               example: 'No timesheets found'
+	 *             data:
+	 *               type: array
+	 *               items: {}
+	 *       '401':
+	 *         description: Unauthorized - No token provided
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             success:
+	 *               type: boolean
+	 *               example: false
+	 *             message:
+	 *               type: string
+	 *               example: 'No token provided'
+	 *             data:
+	 *               type: array
+	 *               items: {}
+	 *       '500':
+	 *         description: Internal server error
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             success:
+	 *               type: boolean
+	 *               example: false
+	 *             message:
+	 *               type: string
+	 *               example: 'Error message'
+	 *             data:
+	 *               type: array
+	 *               items: {}
+	 */
 	async getCurrentDayTimesheet(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -612,7 +765,7 @@ export default class TimesheetController {
 
 			const endOfDay = new Date(startOfDay);
 			endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
-			endOfDay.setMilliseconds(endOfDay.getMilliseconds() - 1);			
+			endOfDay.setMilliseconds(endOfDay.getMilliseconds() - 1);
 
 			const timesheets = await TimesheetRepo.getCurrentDayTimesheets(user_id, startOfDay, endOfDay)
 
@@ -628,60 +781,47 @@ export default class TimesheetController {
 				}
 			})
 
+
+
 			const groupedData = filteredData.reduce((acc, item) => {
 				// Check if the project_id already exists in the accumulator
 				if (!acc[item.project_id]) {
-				  acc[item.project_id] = {
-					project_id: item.project_id,
-					data_sheet: [],
-					total_hours: 0
-				  };
+					acc[item.project_id] = {
+						project_id: item.project_id,
+						data_sheet: [],
+						total_hours: 0
+					};
 				}
-			  
+
 				// Add each timesheet's data to the respective project_id group
 				item.data_sheet.forEach(data => {
-				  acc[item.project_id].data_sheet.push(data);
-				  acc[item.project_id].total_hours += parseFloat(data.hours); // Sum hours
+					acc[item.project_id].data_sheet.push(data);
+					acc[item.project_id].total_hours += parseFloat(data.hours); // Sum hours
 				});
-			  
-				return acc;
-			  }, {});
-			  
-			  // Convert the grouped data to an array
-			  const resultData = Object.values(groupedData);
 
-			  const resultWithProjectDetails = await Promise.all(
-				resultData.map(async (item) => {
-				  // Fetch the project details using the project_id
-				  const projectDetails = await ProjectRepo.getProjectById(item.project_id)
-			  
-				  // Add project details to the result
-				  return {
-					project_id: item.project_id,
-					data_sheet: item.data_sheet,
-					total_hours: item.total_hours,
-					project_details: projectDetails || {} // If no project found, return an empty object
-				  };
-				})
-			  );
-			  
-			
+				return acc;
+			}, {});
+
+			// Convert the grouped data to an array
+			const resultData = Object.values(groupedData);
+
+
 			if (resultData.length > 0) {
 				//const data = await Promise.all(
-//     users.map(
-//         async (user) =>
-//             await UserResponse.format(user),
-//     ),
-// )
-				const data =  await Promise.all(
-					resultWithProjectDetails.map(async(item) =>
+				//     users.map(
+				//         async (user) =>
+				//             await UserResponse.format(user),
+				//     ),
+				// )
+				const data = await Promise.all(
+					resultData.map(async (item) =>
 						await timesheetResponse.currentDateTimesheetResponse(item)
 					)
 				)
 				res.status(200).json({
 					success: true,
 					message: 'Current Date timesheets fetched successfully',
-					length:resultWithProjectDetails.length,
+					length: resultData.length,
 					data: data
 				})
 			}
@@ -696,14 +836,15 @@ export default class TimesheetController {
 		}
 		catch (err) {
 			return res.status(500).json({
-				status: false,
+				success: false,
 				message: err.message,
 				data: [],
 			});
 		}
 	}
 
-	async getWeeklyTimesheet(req,res){
+	//get timesheet details filtered by week 
+	async filterWeeklyTimesheet(req, res) {
 		try {
 			// Extract token from Authorization header
 			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
@@ -721,30 +862,468 @@ export default class TimesheetController {
 
 			// const user_id = decoded.UserId;
 			const user_id = '6746a474ed7e5979a3a1f896';
-			const { startDate , endDate } = req.body
+			const { startDate, endDate } = req.body
 
-			const start = moment(startDate);
-			const end = moment(endDate);
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id,start,end)
-			if (timesheets.length === 0) {
-				return res.status(404).json({
-				  success: false,
-				  message: 'No timesheets found for the provided date range',
-				  data: []
+			const start = new Date(startDate)
+			const end = new Date(endDate)
+
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+
+
+			if (timesheets.length > 0) {
+				const data = await Promise.all(
+					timesheets.map(async (item) =>
+						await timesheetResponse.weeklyTimesheetResponse(item)
+					)
+				)
+				res.status(200).json({
+					success: true,
+					message: 'Weekly timesheets fetched successfully',
+					length: timesheets.length,
+					data: data
 				});
-			  }
-		  
-			  // Return the result
-			  res.status(200).json({
-				success: true,
-				message: 'Weekly timesheets fetched successfully',
-				length: timesheets.length,
-				data: timesheets
-			  });
-			
-		}catch (err) {
+
+			}
+			else {
+				return res.status(404).json({
+					success: false,
+					message: 'No timesheets found for the provided date range',
+					data: []
+				});
+			}
+
+		} catch (err) {
 			return res.status(500).json({
-				status: false,
+				success: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
+
+	//get timesheets of the current week
+	async getCurrentWeekTimeheet(req, res) {
+		try {
+			// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const user_id = decoded.UserId;
+			const user_id = '6746a474ed7e5979a3a1f896';
+			const today = new Date(); // Reference date (can be any date)
+			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
+			console.log(weekStartDate, weekEndDate);
+
+
+			const startDate = new Date(weekStartDate)
+			startDate.setUTCHours(0, 0, 0, 0)
+			let start = startDate.toISOString()
+
+			const endDate = new Date(weekEndDate)
+			endDate.setUTCHours(0, 0, 0, 0)
+			endDate.setUTCDate(endDate.getUTCDate() + 1);
+			let end = endDate.toISOString()
+
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+
+			if (timesheets.length > 0) {
+				const data = await Promise.all(
+					timesheets.map(async (item) =>
+						await timesheetResponse.weeklyTimesheetResponse(item)
+					)
+				)
+				res.status(200).json({
+					success: true,
+					message: 'Weekly timesheets fetched successfully',
+					length: timesheets.length,
+					data: data
+				});
+
+			}
+			else {
+				return res.status(404).json({
+					success: false,
+					message: 'No timesheets found for the provided date range',
+					data: []
+				});
+			}
+
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
+
+	//get timesheet with are not submitted in current week
+	async getDueTimesheets(req, res) {
+		try {
+			// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const user_id = decoded.UserId;
+			const user_id = '6746a474ed7e5979a3a1f896';
+			const today = new Date(); // Reference date (can be any date)
+			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
+
+			const startDate = new Date(weekStartDate)
+			startDate.setUTCHours(0, 0, 0, 0)
+			let start = startDate.toISOString()
+
+			const endDate = new Date(weekEndDate)
+			endDate.setUTCHours(0, 0, 0, 0)
+			endDate.setUTCDate(endDate.getUTCDate() + 1);
+			let end = endDate.toISOString()
+
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'approved')))
+
+			let totalHours = 0;
+
+			savedTimesheets.forEach(timesheet => {
+				timesheet.data_sheet.forEach(entry => {
+					totalHours += parseFloat(entry.hours);
+				});
+			});
+
+			const totalHoursPerDate = {};
+
+			savedTimesheets.forEach(timesheet => {
+				timesheet.data_sheet.forEach(entry => {
+					const date = entry.date;
+					const hours = parseFloat(entry.hours);
+
+					if (totalHoursPerDate[date]) {
+						totalHoursPerDate[date] += hours;
+					} else {
+						totalHoursPerDate[date] = hours;
+					}
+				});
+			});
+
+			if (savedTimesheets.length > 0) {
+				res.status(200).json({
+					success: true,
+					message: "Due timesheets fetched successfully",
+					length: savedTimesheets.length,
+					data: totalHoursPerDate,
+					totalHours
+				})
+			}
+			else {
+				res.status(400).json({
+					success: false,
+					message: "No due timesheets",
+					data: []
+				})
+			}
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
+
+	async getProjectSummaryReport(req, res) {
+		try {
+			const {projectId, Year, Month} = req.body
+			const now = new Date();
+			let currentYear = now.getFullYear();
+			let currentMonth = now.getMonth();
+			
+			if(Year) currentYear = Year
+			if(Month) currentMonth = Month-1
+
+			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
+			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
+
+			const report = await TimesheetRepo.projectSummaryReport(startOfMonth, endOfMonth, projectId)
+			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(startOfMonth);
+
+			if (report.length > 0) {
+				const data = await Promise.all(
+					report.map(async (item) => {
+						if (item.projectName) {
+							return await timesheetResponse.projectSummaryTimesheetResponse(item, monthName, currentYear);
+						}
+					}
+					)
+				)
+
+				res.status(200).json({
+					success: true,
+					message: 'Project summary report fetched successfully',
+					length: report.length,
+					data
+				})
+			}
+			else {
+				res.status(400).json({
+					success: false,
+					message: 'Failed to fetch details of given range',
+					data:[]
+				})
+			}
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
+
+	async projectDetailReport(req, res) {
+		try {
+			const now = new Date();
+			let { year, month, projectId, startDate, endDate } = req.body;
+	
+			if (!year) {
+				year = now.getFullYear();
+			}
+			if (!month) {
+				month = now.getMonth() + 1; 
+			}
+	
+			if (!startDate || !endDate) {
+				const defaultStartDate = new Date(Date.UTC(year, month - 1, 1)); 
+				const defaultEndDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+				startDate = defaultStartDate.toISOString();
+				endDate = defaultEndDate.toISOString();
+			} else {
+				startDate = new Date(startDate).toISOString();
+				endDate = new Date(endDate).toISOString();
+			}
+
+			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
+			
+			const report = await TimesheetRepo.projectDetailReport(startDate, endDate,projectId);
+
+			if (report.length > 0) {
+				const data = await Promise.all(
+					report.map(async (item) => {
+						if (item.projectName) {
+							return await timesheetResponse.projectSummaryTimesheetResponse(item, monthName, year);
+						}
+					}
+					)
+				)
+
+				res.status(200).json({
+					success: true,
+					message: 'Project detail report fetched successfully',
+					length: report.length,
+					data
+				})
+			}
+			else {
+				res.status(400).json({
+					success: false,
+					message: 'Failed to fetch details of given range',
+					data:[]
+				})
+			}
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
+
+	async getEmployeeSummaryReport(req, res) {
+		try {
+			const now = new Date();
+			const {projectId, Year, Month, userId } = req.body
+			
+			let currentYear = now.getFullYear();
+			let currentMonth = now.getMonth();
+
+			if(Year) currentYear = Year
+			if(Month) currentMonth = Month-1
+
+			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
+			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
+
+			const report = await TimesheetRepo.employeeSummaryReport(startOfMonth, endOfMonth, projectId, userId)
+			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startOfMonth));
+
+			if (report.length > 0) {
+				const data = await Promise.all(
+					report.map(async (item) => {
+						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, currentYear);
+
+					}
+					)
+				)
+
+				res.status(200).json({
+					success: true,
+					message: 'Project summary report fetched successfully',
+					length: report.length,
+					data
+				})
+			}
+			else {
+				res.status(400).json({
+					success: false,
+					message: 'Failed to fetch details of given range',
+					data:[]
+				})
+			}
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
+
+	async getEmployeeDetailReport(req, res) {
+		try {
+			const now = new Date();
+			let { year, month, projectId, startDate, endDate, userId } = req.body;
+	
+			if (!year) {
+				year = now.getFullYear();
+			}
+			if (!month) {
+				month = now.getMonth() + 1; 
+			}
+	
+			if (!startDate || !endDate) {
+				const defaultStartDate = new Date(Date.UTC(year, month - 1, 1)); 
+				const defaultEndDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+				startDate = defaultStartDate.toISOString();
+				endDate = defaultEndDate.toISOString();
+			} else {
+				startDate = new Date(startDate).toISOString();
+				endDate = new Date(endDate).toISOString();
+			}
+
+
+			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
+			const report = await TimesheetRepo.employeeDetailReport(startDate,endDate,projectId,userId)
+			const range = `${startDate} - ${endDate}`
+
+			if (report.length > 0) {
+				const data = await Promise.all(
+					report.map(async (item) => {
+
+						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, year);
+
+					}
+					)
+				)
+
+				res.status(200).json({
+					success: true,
+					message: 'Project detail report fetched successfully',
+					length: report.length,
+					range,
+					data
+				})
+			}
+			else {
+				res.status(400).json({
+					success: false,
+					message: 'Failed to fetch details of given range',
+					data:[]
+				})
+			}
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
+
+	async getTimesheetSnapshot(req, res) {
+		try {
+						// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const user_id = decoded.UserId;
+			const user_id = '6746a473ed7e5979a3a1f891';
+			let { year, month } = req.body;
+	
+			const currentDate = new Date();
+			year = year || currentDate.getFullYear(); 
+			month = month || currentDate.getMonth() + 1;
+			const startDate = new Date(Date.UTC(year, month - 1, 1)); 
+			const start = startDate.toISOString()
+			const endDate = new Date(Date.UTC(year, month, 0));
+			const end = endDate.toISOString()
+
+			const timesheetData = await TimesheetRepo.getMonthlySnapshot(user_id,start, end)
+
+			const defaultStatuses = ['saved', 'approved', 'rejected'];
+			const responseData = defaultStatuses.map(status => {
+			  const existingStatus = timesheetData.find(item => item.status === status);
+			  return {
+				status,
+				count: existingStatus ? existingStatus.count : 0
+			  };
+			});
+
+			if (timesheetData.length > 0) {
+				res.status(200).json({
+					success: true,
+					message: 'Timesheet Snapshot fetched successfully',
+					data: responseData
+				})
+			}
+			else {
+				res.status(400).json({
+					success: false,
+					message: 'No timesheets found for given range',
+					data: []
+				})
+			}
+
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
 				message: err.message,
 				data: [],
 			});

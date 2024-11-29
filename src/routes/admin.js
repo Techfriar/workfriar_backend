@@ -91,7 +91,7 @@ adminRouter
     )
 
 adminRouter
-    .route('/save-timesheet')
+    .route('/save-timesheets')
     .post(
         // authenticateAdmin,
         // checkPermissions('timesheet', 'add'),
@@ -113,12 +113,60 @@ adminRouter
     )
 
 adminRouter
-    .route('/get-weekly-timesheets')
+    .route('/filter-weekly-timesheets')
     .post(
         // authenticateAdmin,
-        timesheet.getWeeklyTimesheet
+        timesheet.filterWeeklyTimesheet
     )
 
+adminRouter
+    .route('/get-current-week-timesheets')
+    .post(
+        // authenticateAdmin,
+        timesheet.getCurrentWeekTimeheet
+    )
+
+adminRouter
+    .route('/get-due-timesheets')
+    .post(
+        // authenticateAdmin,
+        timesheet.getDueTimesheets
+    )
+
+adminRouter
+    .route('/get-project-summary-report')
+    .post(
+        // authenticateAdmin,
+        timesheet.getProjectSummaryReport
+    )
+
+adminRouter
+    .route('/get-project-detail-report')
+    .post(
+        // authenticateAdmin,
+        timesheet.projectDetailReport
+    )
+
+adminRouter
+    .route('/get-employee-summary-report')
+    .post(
+        // authenticateAdmin,
+        timesheet.getEmployeeSummaryReport
+    )
+
+adminRouter
+    .route('/get-employee-detail-report')
+    .post(
+        // authenticateAdmin,
+        timesheet.getEmployeeDetailReport
+    )
+
+adminRouter
+    .route('/get-timesheet-snapshot')
+    .post(
+        // authenticateAdmin,
+        timesheet.getTimesheetSnapshot
+    )
 
 adminRouter
     .route('/employee-list')
