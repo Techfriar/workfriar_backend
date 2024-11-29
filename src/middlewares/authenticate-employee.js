@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
+import UserRepository from '../repositories/user-repository.js'
 
-const employeeRepo = new EmployeeRepository()
+const employeeRepo = new UserRepository()
 
 /**
  * @DESC Verify JWT from authorization header Middleware

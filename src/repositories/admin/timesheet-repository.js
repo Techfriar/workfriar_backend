@@ -99,10 +99,38 @@ export default class TimesheetRepository {
 			await timesheet.save();
 		
 			return timesheet;
-	} catch (error) {
-		throw new Error(`Error updating timesheet: ${error.message}`);
+		} catch (error) {
+			throw new Error(`Error updating timesheet: ${error.message}`);
+		}
 	}
+
+	// Submit a specific timesheet by updating its status to "submitted"
+	async submitTimesheet(timesheetId) {
+		try {
+			// Find the timesheet by ID
+			const timesheet = await Timesheet.findById(timesheetId);
+
+			if (!timesheet) {
+				throw new Error('Timesheet not found');
+			}
+
+			// Check if the timesheet is already submitted or accepted
+			if (['submitted', 'accepted'].includes(timesheet.status)) {
+				throw new Error('Timesheet is already submitted or accepted');
+			}
+
+			// Update the status to "submitted"
+			timesheet.status = 'submitted';
+
+			// Save the updated timesheet
+			await timesheet.save();
+
+			return timesheet;
+		} catch (error) {
+			throw new Error(`Error submitting timesheet: ${error.message}`);
+		}
 	}
+
 	  
 }
 

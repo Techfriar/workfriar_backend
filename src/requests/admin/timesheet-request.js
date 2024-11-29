@@ -54,7 +54,8 @@ export default class CreateTimesheetRequest {
 	}
 	
 	async validateAndProcessDataSheet(data_sheet, timesheet) {
-		if (!Array.isArray(data_sheet)) throw new CustomValidationError('data_sheet must be an array')
+		// Validate that data_sheet is an array
+		if (!Array.isArray(data_sheet)) throw new CustomValidationError('Data sheet should be an array')
 		
 		for (const item of data_sheet) {
 			if (!item.date || !item.hours) throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')

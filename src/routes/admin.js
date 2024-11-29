@@ -59,13 +59,9 @@ import AdminController from '../controllers/admin/admin-controller.js'
 import TimesheetController from '../controllers/admin/timesheet-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 
-
-
 const auth = new AuthController()
 const admin = new AdminController()
-const timesheet = new TimesheetController()
 const client = new ClientController()
-
 
 /*
  * Auth Routes
@@ -80,22 +76,6 @@ adminRouter
     .post(
         // authenticateAdmin,
         admin.getMyProfile
-    )
-
-adminRouter
-    .route('/add-timesheet')
-    .post(
-        // authenticateAdmin,
-        // checkPermissions('timesheet', 'add'),
-        timesheet.addTimesheet
-    )
-
-adminRouter
-    .route('/save-timesheets')
-    .post(
-        // authenticateAdmin,
-        // checkPermissions('timesheet', 'add'),
-        timesheet.updateTimesheet
     )
 
 adminRouter
