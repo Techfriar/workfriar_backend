@@ -844,6 +844,118 @@ export default class TimesheetController {
 	}
 
 	//get timesheet details filtered by week 
+	/**
+	 * @swagger
+	 * /admin/filter-weekly-timesheets:
+	 *   post:
+	 *     summary: Filter weekly timesheets by date range
+	 *     description: Fetches weekly timesheets for a user based on the provided start and end dates.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               startDate:
+	 *                 type: string
+	 *                 format: date
+	 *                 description: The start date of the timesheet range (YYYY-MM-DD).
+	 *                 example: 2024-11-01
+	 *               endDate:
+	 *                 type: string
+	 *                 format: date
+	 *                 description: The end date of the timesheet range (YYYY-MM-DD).
+	 *                 example: 2024-11-07
+	 *     responses:
+	 *       200:
+	 *         description: Weekly timesheets fetched successfully.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Weekly timesheets fetched successfully
+	 *                 length:
+	 *                   type: integer
+	 *                   example: 2
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       id:
+	 *                         type: string
+	 *                         example: 64cfc73edfa4d2787b5ed3a7
+	 *                       date:
+	 *                         type: string
+	 *                         format: date
+	 *                         example: 2024-11-03
+	 *                       hours:
+	 *                         type: number
+	 *                         example: 8
+	 *                       status:
+	 *                         type: string
+	 *                         example: saved
+	 *       404:
+	 *         description: No timesheets found for the provided date range.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: No timesheets found for the provided date range
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 *       422:
+	 *         description: Validation error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Validation error
+	 *                 errors:
+	 *                   type: array
+	 *                   items:
+	 *                     type: string
+	 *                     example: "startDate is required and must be a valid date"
+	 *       500:
+	 *         description: Server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Internal server error
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
+
 	async filterWeeklyTimesheet(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -861,14 +973,18 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a474ed7e5979a3a1f896';
+			const user_id = '6746a473ed7e5979a3a1f891';
 			const { startDate, endDate } = req.body
-
+			const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
+			if (validatedDates.error) {
+                // If there are validation errors, return a error
+                throw new CustomValidationError(validationResult.error)
+                
+            }
 			const start = new Date(startDate)
 			const end = new Date(endDate)
 
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
-
 
 			if (timesheets.length > 0) {
 				const data = await Promise.all(
@@ -893,15 +1009,101 @@ export default class TimesheetController {
 			}
 
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: err.message,
-				data: [],
-			});
+			if (err instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: err.errors,
+                });
+            }
+            else{
+                return res.status(500).json({
+                    success: false,
+                    message: err.message,
+					data:[]
+                });
+            }
 		}
 	}
 
 	//get timesheets of the current week
+	/**
+	 * @swagger
+	 * /admin/get-current-week-timesheets:
+	 *   post:
+	 *     summary: Get timesheets for the current week
+	 *     description: Fetches the timesheets for the current week for the logged-in user.
+	 *     tags:
+	 *       - Timesheet
+	 *     responses:
+	 *       200:
+	 *         description: Weekly timesheets fetched successfully.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Weekly timesheets fetched successfully
+	 *                 length:
+	 *                   type: integer
+	 *                   example: 5
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       id:
+	 *                         type: string
+	 *                         example: 64cfc73edfa4d2787b5ed3a7
+	 *                       date:
+	 *                         type: string
+	 *                         format: date
+	 *                         example: 2024-12-01
+	 *                       hours:
+	 *                         type: number
+	 *                         example: 8
+	 *                       status:
+	 *                         type: string
+	 *                         example: saved
+	 *       404:
+	 *         description: No timesheets found for the current week.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: No timesheets found for the provided date range
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 *       500:
+	 *         description: Server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Internal server error
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
+
 	async getCurrentWeekTimeheet(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -919,11 +1121,9 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a474ed7e5979a3a1f896';
+			const user_id = '6746a473ed7e5979a3a1f891';
 			const today = new Date(); // Reference date (can be any date)
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
-			console.log(weekStartDate, weekEndDate);
-
 
 			const startDate = new Date(weekStartDate)
 			startDate.setUTCHours(0, 0, 0, 0)
@@ -931,8 +1131,10 @@ export default class TimesheetController {
 
 			const endDate = new Date(weekEndDate)
 			endDate.setUTCHours(0, 0, 0, 0)
-			endDate.setUTCDate(endDate.getUTCDate() + 1);
+			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
+			console.log(start,end);
+			
 
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
 
@@ -968,6 +1170,75 @@ export default class TimesheetController {
 	}
 
 	//get timesheet with are not submitted in current week
+	/**
+	 * @swagger
+	 * /admin/get-due-timesheets:
+	 *   post:
+	 *     summary: Get due timesheets
+	 *     description: Fetches the timesheets that are not submitted or approved for the current week for the logged-in user.
+	 *     tags:
+	 *       - Timesheet
+	 *     responses:
+	 *       200:
+	 *         description: Due timesheets fetched successfully.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Due timesheets fetched successfully
+	 *                 length:
+	 *                   type: integer
+	 *                   example: 2
+	 *                 data:
+	 *                   type: object
+	 *                   additionalProperties:
+	 *                     type: number
+	 *                   example: 
+	 *                     "2024-12-01": 8
+	 *                     "2024-12-02": 6.5
+	 *                 totalHours:
+	 *                   type: number
+	 *                   example: 14.5
+	 *       400:
+	 *         description: No due timesheets found.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: No due timesheets
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 *       500:
+	 *         description: Server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Internal server error
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
+
 	async getDueTimesheets(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -985,7 +1256,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a474ed7e5979a3a1f896';
+			const user_id = '6746a473ed7e5979a3a1f891';
 			const today = new Date(); // Reference date (can be any date)
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
 
@@ -995,9 +1266,10 @@ export default class TimesheetController {
 
 			const endDate = new Date(weekEndDate)
 			endDate.setUTCHours(0, 0, 0, 0)
-			endDate.setUTCDate(endDate.getUTCDate() + 1);
+			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
-
+			console.log(start,end);
+			
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
 			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'approved')))
 
@@ -1049,20 +1321,140 @@ export default class TimesheetController {
 		}
 	}
 
+	//get project summary report
+	/**
+	 * @swagger
+	 * /admin/get-project-summary-report:
+	 *   post:
+	 *     summary: Fetch the project summary report for a specific month and year.
+	 *     description: Retrieves a project summary report based on the provided project ID, year, and month. 
+	 *                  The report includes detailed information about the timesheets related to the project.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               projectId:
+	 *                 type: string
+	 *                 description: ID of the project to fetch the summary for.
+	 *                 example: 6746a474ed7e5979a3a1f896
+	 *               Year:
+	 *                 type: integer
+	 *                 description: The year for the report.
+	 *                 example: 2024
+	 *               Month:
+	 *                 type: integer
+	 *                 description: The month (1-12) for the report.
+	 *                 example: 11
+	 *     responses:
+	 *       200:
+	 *         description: Successfully fetched the project summary report.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Project summary report fetched successfully
+	 *                 length:
+	 *                   type: integer
+	 *                   example: 3
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       projectName:
+	 *                         type: string
+	 *                         example: "Website Redesign Project"
+	 *                       month:
+	 *                         type: string
+	 *                         example: "November"
+	 *                       year:
+	 *                         type: integer
+	 *                         example: 2024
+	 *                       totalHours:
+	 *                         type: number
+	 *                         example: 120.5
+	 *       400:
+	 *         description: Failed to fetch details.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Failed to fetch details
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 *       422:
+	 *         description: Validation error for input parameters.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Validation error
+	 *                 errors:
+	 *                   type: object
+	 *                   additionalProperties:
+	 *                     type: string
+	 *       500:
+	 *         description: Internal server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: An unexpected error occurred.
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
+
 	async getProjectSummaryReport(req, res) {
 		try {
 			const {projectId, Year, Month} = req.body
+
+			const validatedParams = await TimesheetRequest.validateProjectSummaryParams({ projectId, Year, Month });
+			if (validatedParams.error) {
+                // If there are validation errors, return a error
+                throw new CustomValidationError(validatedParams.error)
+                
+            }
 			const now = new Date();
 			let currentYear = now.getFullYear();
 			let currentMonth = now.getMonth();
 			
-			if(Year) currentYear = Year
-			if(Month) currentMonth = Month-1
+			if(validatedParams.Year) currentYear = validatedParams.Year
+			if(validatedParams.Month) currentMonth = validatedParams.Month-1
 
 			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
 			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
 
-			const report = await TimesheetRepo.projectSummaryReport(startOfMonth, endOfMonth, projectId)
+			const report = await TimesheetRepo.projectSummaryReport(startOfMonth, endOfMonth, validatedParams.projectId)
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(startOfMonth);
 
 			if (report.length > 0) {
@@ -1085,24 +1477,158 @@ export default class TimesheetController {
 			else {
 				res.status(400).json({
 					success: false,
-					message: 'Failed to fetch details of given range',
+					message: 'Failed to fetch details',
 					data:[]
 				})
 			}
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: err.message,
-				data: [],
-			});
+			if (err instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: err.errors,
+                });
+            }
+            else{
+                return res.status(500).json({
+                    success: false,
+                    message: err.message,
+					data:[]
+                });
+            }
 		}
 	}
+
+	//get detailed report on project
+	/**
+	 * @swagger
+	 * /admin/get-project-detail-report:
+	 *   post:
+	 *     summary: Fetch the project detail report for a specified period.
+	 *     description: Retrieves detailed timesheet data for a project within a specified date range or for a default month and year.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               projectId:
+	 *                 type: string
+	 *                 description: ID of the project to fetch the detailed report for.
+	 *                 example: 6746a474ed7e5979a3a1f896
+	 *               year:
+	 *                 type: integer
+	 *                 description: The year for the report. Defaults to the current year if not provided.
+	 *                 example: 2024
+	 *               month:
+	 *                 type: integer
+	 *                 description: The month (1-12) for the report. Defaults to the current month if not provided.
+	 *                 example: 11
+	 *               startDate:
+	 *                 type: string
+	 *                 format: date-time
+	 *                 description: Custom start date for the report in ISO format. Overrides year and month.
+	 *                 example: "2024-11-01T00:00:00Z"
+	 *               endDate:
+	 *                 type: string
+	 *                 format: date-time
+	 *                 description: Custom end date for the report in ISO format. Overrides year and month.
+	 *                 example: "2024-11-30T23:59:59Z"
+	 *     responses:
+	 *       200:
+	 *         description: Successfully fetched the project detail report.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Project detail report fetched successfully
+	 *                 length:
+	 *                   type: integer
+	 *                   example: 5
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       projectName:
+	 *                         type: string
+	 *                         example: "Website Redesign Project"
+	 *                       month:
+	 *                         type: string
+	 *                         example: "November"
+	 *                       year:
+	 *                         type: integer
+	 *                         example: 2024
+	 *                       totalHours:
+	 *                         type: number
+	 *                         example: 150.75
+	 *       400:
+	 *         description: Failed to fetch details.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Failed to fetch details
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 *       422:
+	 *         description: Validation error for input parameters.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Validation error
+	 *                 errors:
+	 *                   type: object
+	 *                   additionalProperties:
+	 *                     type: string
+	 *       500:
+	 *         description: Internal server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: An unexpected error occurred.
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
 
 	async projectDetailReport(req, res) {
 		try {
 			const now = new Date();
 			let { year, month, projectId, startDate, endDate } = req.body;
-	
+			const validatedValues = await TimesheetRequest.validateProjectDetailReportParams({ year, month, projectId, startDate, endDate })
+			if(validatedValues.error){
+				throw new CustomValidationError(validatedValues.error)
+			}
 			if (!year) {
 				year = now.getFullYear();
 			}
@@ -1144,24 +1670,155 @@ export default class TimesheetController {
 			else {
 				res.status(400).json({
 					success: false,
-					message: 'Failed to fetch details of given range',
+					message: 'Failed to fetch details',
 					data:[]
 				})
 			}
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: err.message,
-				data: [],
-			});
+			if (err instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: err.errors,
+                });
+            }
+            else{
+                return res.status(500).json({
+                    success: false,
+                    message: err.message,
+					data:[]
+                });
+            }
 		}
 	}
+
+	//get employee summary report
+	/**
+	 * @swagger
+	 * /admin/get-employee-summary-report:
+	 *   post:
+	 *     summary: Fetch the employee summary report for a specified month and project.
+	 *     description: Retrieves summarized timesheet data for an employee within a specified project and month.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               projectId:
+	 *                 type: string
+	 *                 description: ID of the project for which the employee summary report is to be generated.
+	 *                 example: 6746a474ed7e5979a3a1f896
+	 *               Year:
+	 *                 type: integer
+	 *                 description: The year for the report. Defaults to the current year if not provided.
+	 *                 example: 2024
+	 *               Month:
+	 *                 type: integer
+	 *                 description: The month (1-12) for the report. Defaults to the current month if not provided.
+	 *                 example: 11
+	 *               userId:
+	 *                 type: string
+	 *                 description: ID of the employee whose summary report is to be fetched.
+	 *                 example: 1a2b3c4d5e6f7g8h9i0j
+	 *     responses:
+	 *       200:
+	 *         description: Successfully fetched the employee summary report.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Project summary report fetched successfully
+	 *                 length:
+	 *                   type: integer
+	 *                   example: 5
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       employeeName:
+	 *                         type: string
+	 *                         example: "John Doe"
+	 *                       projectName:
+	 *                         type: string
+	 *                         example: "Website Redesign Project"
+	 *                       month:
+	 *                         type: string
+	 *                         example: "November"
+	 *                       year:
+	 *                         type: integer
+	 *                         example: 2024
+	 *                       totalHours:
+	 *                         type: number
+	 *                         example: 120.50
+	 *       400:
+	 *         description: Failed to fetch the details of the given range.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Failed to fetch details of given range
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 *       422:
+	 *         description: Validation error for input parameters.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Validation error
+	 *                 errors:
+	 *                   type: object
+	 *                   additionalProperties:
+	 *                     type: string
+	 *       500:
+	 *         description: Internal server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: An unexpected error occurred.
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
 
 	async getEmployeeSummaryReport(req, res) {
 		try {
 			const now = new Date();
 			const {projectId, Year, Month, userId } = req.body
-			
+			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ projectId, Year, Month, userId })
+			if(validatedValues.error){
+				throw new CustomValidationError(validatedValues.error)
+			}
 			let currentYear = now.getFullYear();
 			let currentMonth = now.getMonth();
 
@@ -1198,18 +1855,161 @@ export default class TimesheetController {
 				})
 			}
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: err.message,
-				data: [],
-			});
+			if (err instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: err.errors,
+                });
+            }
+            else{
+                return res.status(500).json({
+                    success: false,
+                    message: err.message,
+					data:[]
+                });
+            }
 		}
 	}
+
+	//get detailed report of employee
+	/**
+	 * @swagger
+	 * /admin/get-employee-detail-report:
+	 *   post:
+	 *     summary: Fetch the employee detailed report for a specified date range and project.
+	 *     description: Retrieves detailed timesheet data for an employee within a specified project, date range, and month.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               year:
+	 *                 type: integer
+	 *                 description: The year for the report. Defaults to the current year if not provided.
+	 *                 example: 2024
+	 *               month:
+	 *                 type: integer
+	 *                 description: The month (1-12) for the report. Defaults to the current month if not provided.
+	 *                 example: 11
+	 *               projectId:
+	 *                 type: string
+	 *                 description: ID of the project for which the employee detail report is to be generated.
+	 *                 example: 6746a474ed7e5979a3a1f896
+	 *               startDate:
+	 *                 type: string
+	 *                 format: date
+	 *                 description: The start date for the report range in ISO format. Defaults to the first day of the month if not provided.
+	 *                 example: "2024-11-01"
+	 *               endDate:
+	 *                 type: string
+	 *                 format: date
+	 *                 description: The end date for the report range in ISO format. Defaults to the last day of the month if not provided.
+	 *                 example: "2024-11-30"
+	 *               userId:
+	 *                 type: string
+	 *                 description: ID of the employee whose detailed report is to be fetched.
+	 *                 example: 1a2b3c4d5e6f7g8h9i0j
+	 *     responses:
+	 *       200:
+	 *         description: Successfully fetched the employee detail report.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Project detail report fetched successfully
+	 *                 length:
+	 *                   type: integer
+	 *                   example: 5
+	 *                 range:
+	 *                   type: string
+	 *                   example: "2024-11-01 - 2024-11-30"
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       employeeName:
+	 *                         type: string
+	 *                         example: "John Doe"
+	 *                       projectName:
+	 *                         type: string
+	 *                         example: "Website Redesign Project"
+	 *                       date:
+	 *                         type: string
+	 *                         format: date
+	 *                         example: "2024-11-05"
+	 *                       hoursWorked:
+	 *                         type: number
+	 *                         example: 8
+	 *       400:
+	 *         description: Failed to fetch the details of the given range.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Failed to fetch details of given range
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 *       422:
+	 *         description: Validation error for input parameters.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Validation error
+	 *                 errors:
+	 *                   type: object
+	 *                   additionalProperties:
+	 *                     type: string
+	 *       500:
+	 *         description: Internal server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: An unexpected error occurred.
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
 
 	async getEmployeeDetailReport(req, res) {
 		try {
 			const now = new Date();
 			let { year, month, projectId, startDate, endDate, userId } = req.body;
+			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ year, month, projectId, startDate, endDate, userId })
+			if(validatedValues.error){
+				throw new CustomValidationError(validatedValues.error)
+			}
 	
 			if (!year) {
 				year = now.getFullYear();
@@ -1259,13 +2059,121 @@ export default class TimesheetController {
 				})
 			}
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: err.message,
-				data: [],
-			});
+			if (err instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: err.errors,
+                });
+            }
+            else{
+                return res.status(500).json({
+                    success: false,
+                    message: err.message,
+					data:[]
+                });
+            }
 		}
 	}
+
+	//get a snapshot based on month
+	/**
+	 * @swagger
+	 * /admin/get-timesheet-snapshot:
+	 *   post:
+	 *     summary: Fetches a snapshot of the timesheet for a given year and month
+	 *     description: Returns a summary of timesheet status (saved, approved, rejected) counts for the specified year and month.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               year:
+	 *                 type: integer
+	 *                 description: The year for the snapshot (optional, defaults to current year).
+	 *                 example: 2024
+	 *               month:
+	 *                 type: integer
+	 *                 description: The month for the snapshot (optional, defaults to current month).
+	 *                 example: 12
+	 *     responses:
+	 *       200:
+	 *         description: Successfully fetched timesheet snapshot
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Timesheet Snapshot fetched successfully
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       status:
+	 *                         type: string
+	 *                         example: approved
+	 *                       count:
+	 *                         type: integer
+	 *                         example: 5
+	 *       400:
+	 *         description: No timesheets found for the given range
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: No timesheets found for given range
+	 *                 data:
+	 *                   type: array
+	 *                   items: {}
+	 *       422:
+	 *         description: Validation error
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Validation error
+	 *                 errors:
+	 *                   type: array
+	 *                   items:
+	 *                     type: string
+	 *       500:
+	 *         description: Internal server error
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Internal server error
+	 *                 data:
+	 *                   type: array
+	 *                   items: {}
+	 */
 
 	async getTimesheetSnapshot(req, res) {
 		try {
@@ -1286,6 +2194,10 @@ export default class TimesheetController {
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
 			let { year, month } = req.body;
+			const validatedValues = await TimesheetRequest.validateYearMonth({ year, month })
+			if(validatedValues.error){
+				throw new CustomValidationError(validatedValues.error)
+			}
 	
 			const currentDate = new Date();
 			year = year || currentDate.getFullYear(); 
@@ -1322,11 +2234,20 @@ export default class TimesheetController {
 			}
 
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: err.message,
-				data: [],
-			});
+			if (err instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: err.errors,
+                });
+            }
+            else{
+                return res.status(500).json({
+                    success: false,
+                    message: err.message,
+					data:[]
+                });
+            }
 		}
 	}
 }

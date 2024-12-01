@@ -328,11 +328,11 @@ export default class TimesheetRepository {
 						},
 						approvedHours: {
 							$sum: {
-								$cond: [
-									{ $ne: ["$status", "rejected"] },
-									{ $toDouble: "$data_sheet.hours" },
-									0,
-								],
+							  $cond: [
+								{ $eq: ["$status", "approved"] }, 
+								{ $toDouble: "$data_sheet.hours" }, 
+								0, 
+							  ],
 							},
 						},
 						timesheets: { $push: "$$ROOT" },
@@ -443,11 +443,11 @@ export default class TimesheetRepository {
 						},
 						approvedHours: {
 							$sum: {
-								$cond: [
-									{ $ne: ["$status", "rejected"] },
-									{ $toDouble: "$data_sheet.hours" },
-									0,
-								],
+							  $cond: [
+								{ $eq: ["$status", "approved"] }, 
+								{ $toDouble: "$data_sheet.hours" }, 
+								0, 
+							  ],
 							},
 						},
 						timesheets: { $push: "$$ROOT" },
