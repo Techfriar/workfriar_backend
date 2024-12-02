@@ -4,10 +4,7 @@ import CategoryController from '../controllers/category-controller.js'
 import ForecastController from '../controllers/forecast-controller.js';
 import ProjectTeamController from '../controllers/project-team-controller.js';
 import ClientController from '../controllers/admin/client-controller.js'
-import passport from '../config/passport-config.js'
-import AuthController from '../controllers/admin/auth-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
-import TimesheetController from '../controllers/admin/timesheet-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 
 const adminRouter = express.Router()
@@ -16,9 +13,7 @@ const categoryController = new CategoryController();
 const forecastController=new ForecastController()
 const projectTeamController=new ProjectTeamController()
 
-const auth = new AuthController()
 const admin = new AdminController()
-const timesheet = new TimesheetController()
 const client = new ClientController()
 
 
@@ -61,35 +56,18 @@ adminRouter.route("/editprojectteam/:id").put(projectTeamController.editProjectT
 
 
 // const auth = new AuthController()
-/*
- * Auth Routes
- */
 
-adminRouter.route('/google-login').get(passport.authenticate('google', { scope: ['email'] }))
-adminRouter.route('/google-callback').get(passport.authenticate('google', { session: false }), auth.googleCallback)
-adminRouter.route('/google-fallback').get(auth.googleFallback)
+import AuthController from '../controllers/auth/auth-controller.js'
+import AdminController from '../controllers/admin/admin-controller.js'
+import TimesheetController from '../controllers/admin/timesheet-controller.js'
+import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
+
 
 adminRouter
 .route('/profile-view')
     .post(
         // authenticateAdmin,
         admin.getMyProfile
-    )
-
-adminRouter
-    .route('/add-timesheet')
-    .post(
-        // authenticateAdmin,
-        // checkPermissions('timesheet', 'add'),
-        timesheet.addTimesheet
-    )
-
-adminRouter
-    .route('/save-timesheets')
-    .post(
-        // authenticateAdmin,
-        // checkPermissions('timesheet', 'add'),
-        timesheet.updateTimesheet
     )
 
 adminRouter
