@@ -8,6 +8,7 @@ const projectSchema = mongoose.Schema(
     client_name: {
       type: String,
       required: true,
+      type: mongoose.Schema.Types.ObjectId, ref: 'client',
     },
     project_name: {
       type: String,
@@ -51,6 +52,10 @@ const projectSchema = mongoose.Schema(
       required: true,
       enum: ["Not Started", "In Progress", "Completed", "On Hold", "Cancelled"],
     },
+    effective_close_date:{
+      type: Date,
+      default:null
+    }
   },
   {
     timestamps: true,
