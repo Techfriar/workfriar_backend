@@ -26,12 +26,12 @@ projectStatusRouter
   );
   projectStatusRouter
   .route("/update-report/:id")
-  .put(
+  .post(
     projectStatusReport.updateReport
   );
   projectStatusRouter
   .route("/delete-report/:id")
-  .delete(
+  .post(
     projectStatusReport.deleteReport
   );
 

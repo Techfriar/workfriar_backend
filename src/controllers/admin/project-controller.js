@@ -257,7 +257,7 @@ export default class ProjectController {
    *
    * @swagger
    * /project/update/{id}:
-   *   put:
+   *   post:
    *     tags:
    *       - Project
    *     summary: Update project
@@ -388,7 +388,7 @@ export default class ProjectController {
    *
    * @swagger
    * /project/delete/{id}:
-   *   delete:
+   *   post:
    *     tags:
    *       - Project
    *     summary: Delete project
