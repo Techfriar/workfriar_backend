@@ -1268,7 +1268,6 @@ export default class TimesheetController {
 			endDate.setUTCHours(0, 0, 0, 0)
 			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
-			console.log(start,end);
 			
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
 			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'approved')))
@@ -2177,7 +2176,7 @@ export default class TimesheetController {
 
 	async getTimesheetSnapshot(req, res) {
 		try {
-						// Extract token from Authorization header
+			// Extract token from Authorization header
 			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
 
 			// if (!token) {
