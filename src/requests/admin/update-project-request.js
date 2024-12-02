@@ -2,7 +2,7 @@ import Joi from 'joi'
 import ProjectRepository from '../../repositories/admin/project-repository.js'
 // import UserRepository from '../../repositories/admin/user-repository.js'
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js'
-import Timesheet from '../../models/timesheet.js'
+
 
 class UpdateProjectRequest {
     static projectRepo = new ProjectRepository()
@@ -111,27 +111,7 @@ class UpdateProjectRequest {
         return value
     }
 
-    async timeSheetValidation(projectId)
-    {
-            try {
-                const totalTimesheets = await Timesheet.countDocuments({ project_id: projectId });
-                const notApprovedCount = await Timesheet.countDocuments({
-                    project_id: projectId,
-                    status: { $ne: "approved" },
-                });
-                if (notApprovedCount > 0) {
-                    return {
-                        success: false,
-                        message: `${notApprovedCount} timesheet(s) are not approved.`
-                    };
-                }
-                return {
-                    success: true,
-                };
-            } catch (error) {
-                throw new Error(`Error checking timesheet status: ${error.message}`);
-            }
-        }
 }
+
 
 export default UpdateProjectRequest
