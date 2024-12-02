@@ -242,7 +242,7 @@ export default class ForecastController{
         }
         catch(error)
             {
-                console.log(error)
+               
                 if (error instanceof CustomValidationError) {
                     return res.status(422).json({
                         status: false,

@@ -36,7 +36,7 @@ class ProjectTeamRepository
             return teamData
         }catch(error)
         {
-            console.log(error)
+           throw new Error(error)
         }
     }
 
@@ -57,8 +57,8 @@ class ProjectTeamRepository
                 .lean(); 
             return data[0];
         } catch (error) {
-            console.error("Error in getAllProjectTeambyId:", error.message);
-            throw error; 
+           throw new Error(error)
+            
         }
     }
 

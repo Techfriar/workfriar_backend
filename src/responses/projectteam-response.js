@@ -9,7 +9,7 @@ export default class ProjectTeamResponse{
     };   
 
     async formatProjectTeamSet(teams) {
-        console.log(teams)
+       
         try {
         return{
                 id: teams.id,
@@ -25,7 +25,7 @@ export default class ProjectTeamResponse{
                 }))
             };
         } catch (error) {
-            console.log("Error in formatProjectTeamSet:", error);
+                throw new Error(error)
         }
     }    
 }

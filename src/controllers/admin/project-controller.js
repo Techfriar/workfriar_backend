@@ -5,6 +5,7 @@ import ProjectResponse from "../../responses/project-response.js";
 import uploadFile from "../../utils/uploadFile.js";
 import deleteFile from "../../utils/deleteFile.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
+
 const projectRepo = new ProjectRepository();
 
 export default class ProjectController {
@@ -434,6 +435,83 @@ export default class ProjectController {
         message: "Failed to delete project.",
         errors: error,
       });
+    }
+  }
+  async updateTimeEntry(req,res)
+  {
+    const {id,timeEntry,closeDate} =req.body
+    try
+    {
+      const data = await projectRepo.updateProjectTimeEntry(id,timeEntry,closeDate);
+      if(data)
+      {
+        return res.status(200).json({
+          status:true,
+          message:"Entry Updated",
+          data:[]
+        })
+      }
+      else
+      {
+        return res.status(400).json({
+          status:false,
+          message:"Entry Updation Failed",
+          data:null
+        })
+      }
+    }catch(error)
+    {
+    return res.status(500).json({
+      status:false,
+      message:"Internal Server Error",
+      data:null
+    })
+    }
+  }
+  async upddatestatus(req,res)
+  {
+    const{projectId,status}=req.body
+    try
+    {
+      const validatedData = await new UpdateProjectRequest.timeSheetValidation(projectId)
+      if(!validatedData.status)
+      {
+            throw new CustomValidationError(validatedData.message)
+      }
+    const changeStatus=await new projectRepo.updateProjectStatus(projectId,status)
+     if(changeStatus)
+     {
+      return res.status(200).json({
+        status:200,
+        message:"Project Status Updated",
+        date:[]
+      })
+     }
+     else
+     {
+      return res.status(200).json({
+        status:400,
+        message:"Project Status Updation Failed",
+        date:[]
+      })
+     }
+    }
+    catch(error)
+    {
+      if (error instanceof CustomValidationError) {
+        return res.status(422).json({
+            status: false,
+            message: "Validation Failed",
+            errors: error.errors, 
+        });
+    } else {
+      return res.status(500).json({
+        status:false,
+        message:"Internal Server Error",
+        data:null
+      })
+    }
+
     }
   }
 }

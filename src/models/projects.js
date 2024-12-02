@@ -51,6 +51,10 @@ const projectSchema = mongoose.Schema(
       required: true,
       enum: ["Not Started", "In Progress", "Completed", "On Hold", "Cancelled"],
     },
+    effective_close_date:{
+      type: Date,
+      default:null
+    }
   },
   {
     timestamps: true,

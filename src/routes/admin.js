@@ -3,37 +3,39 @@ import express from 'express'
 import CategoryController from '../controllers/category-controller.js'
 import ForecastController from '../controllers/forecast-controller.js';
 import ProjectTeamController from '../controllers/project-team-controller.js';
-const categoryController = new CategoryController();
-
+import ClientController from '../controllers/admin/client-controller.js'
+import passport from '../config/passport-config.js'
+import AuthController from '../controllers/admin/auth-controller.js'
+import AdminController from '../controllers/admin/admin-controller.js'
+import TimesheetController from '../controllers/admin/timesheet-controller.js'
+import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 
 const adminRouter = express.Router()
+
+const categoryController = new CategoryController();
 const forecastController=new ForecastController()
 const projectTeamController=new ProjectTeamController()
+
+const auth = new AuthController()
+const admin = new AdminController()
+const timesheet = new TimesheetController()
+const client = new ClientController()
 
 
 
 // import multer from 'multer'
-
 // // import {
 // //     checkAnyPermissions,
 // //     checkPermissions,
 // // } from '../middlewares/checkPermission.js'
 // // import { authenticateEmployee } from '../middlewares/authenticateEmployee.js'
 // import uploadCsv from '../utils/uploadCsv.js'
-
-
-
-
 // const upload = multer()
 // const multerMiddleware = multer().single('file')
-import ClientController from '../controllers/admin/client-controller.js'
-
 
 
 //Route for adding category
 adminRouter.route("/addcategory").post(categoryController.addCategory)
-// Route to get all categories
-adminRouter.route("/getcategories").post(categoryController.getCategories)
 // Route for updating Category
 adminRouter.route("/updatecategories/:id").put(categoryController.updateCategories)
 
@@ -59,21 +61,6 @@ adminRouter.route("/editprojectteam/:id").put(projectTeamController.editProjectT
 
 
 // const auth = new AuthController()
-
-import passport from '../config/passport-config.js'
-import AuthController from '../controllers/admin/auth-controller.js'
-import AdminController from '../controllers/admin/admin-controller.js'
-import TimesheetController from '../controllers/admin/timesheet-controller.js'
-import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
-
-
-
-const auth = new AuthController()
-const admin = new AdminController()
-const timesheet = new TimesheetController()
-const client = new ClientController()
-
-
 /*
  * Auth Routes
  */
@@ -83,7 +70,7 @@ adminRouter.route('/google-callback').get(passport.authenticate('google', { sess
 adminRouter.route('/google-fallback').get(auth.googleFallback)
 
 adminRouter
-    .route('/profile-view')
+.route('/profile-view')
     .post(
         // authenticateAdmin,
         admin.getMyProfile

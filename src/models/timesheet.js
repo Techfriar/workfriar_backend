@@ -13,7 +13,11 @@ const TimesheetSchema = new Schema({
 		isHoliday: { type: Boolean, required: true },
 		hours: { type: String, required: true },
 	}],
-	status: { type: String, required: true }
+	status: { 
+		type: String, 
+		required: true,
+		enum: ["in_progress", "saved", "submitted", "accepted", "rejected"]
+	}
 }, { timestamps: true });
 
 // Custom validation to ensure unique dates in data_sheet
