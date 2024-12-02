@@ -44,7 +44,7 @@ export default class TimesheetRepository {
 		await newTimesheet.save();
 		return newTimesheet;
 		} catch (err) {
-		console.log(err, "sdcs")
+
 		throw new Error('Error while creating timesheet: ' + err.message);
 		}
 	}
@@ -144,7 +144,7 @@ export default class TimesheetRepository {
 		  }
 	}
 	
-	async projectSummaryReport(start, end, pId) {
+	async projectSummaryReport(start, end, projectIds) {
 		try {
 		  const matchStage = {
 			$match: {
@@ -152,8 +152,8 @@ export default class TimesheetRepository {
 			},
 		  };
 	  
-		  if (pId) {
-			matchStage.$match.project_id = new mongoose.Types.ObjectId(pId);
+		  if (projectIds && projectIds.length > 0) {
+			matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
 		  }
 	  
 		  return await Timesheet.aggregate([
@@ -168,13 +168,13 @@ export default class TimesheetRepository {
 				  $sum: { $toDouble: "$data_sheet.hours" },
 				},
 				approvedHours: {
-				  $sum: {
-					$cond: [
-					  { $ne: ["$status", "rejected"] },
-					  { $toDouble: "$data_sheet.hours" },
-					  0,
-					],
-				  },
+					$sum: {
+					  $cond: [
+						{ $eq: ["$status", "approved"] }, 
+						{ $toDouble: "$data_sheet.hours" }, 
+						0, 
+					  ],
+					},
 				},
 				timesheets: { $push: "$$ROOT" },
 			  },
@@ -219,7 +219,7 @@ export default class TimesheetRepository {
 		}
 	  }
 
-	async projectDetailReport(startOfMonth,endOfMonth,pId) {
+	async projectDetailReport(startOfMonth,endOfMonth,projectIds) {
 
 		try {
 			const startDate = new Date(startOfMonth);
@@ -232,9 +232,10 @@ export default class TimesheetRepository {
 			};
 	
 			// If pId is provided, add an additional condition for matching project_id
-			if (pId) {
-				matchStage.$match.project_id = new mongoose.Types.ObjectId(pId);
+			if (projectIds && projectIds.length > 0) {
+				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
+
 			return await Timesheet.aggregate([
 				matchStage,
 				{
@@ -248,11 +249,11 @@ export default class TimesheetRepository {
 						},
 						approvedHours: {
 							$sum: {
-								$cond: [
-									{ $ne: ["$status", "rejected"] },
-									{ $toDouble: "$data_sheet.hours" },
-									0,
-								],
+							  $cond: [
+								{ $eq: ["$status", "approved"] }, 
+								{ $toDouble: "$data_sheet.hours" }, 
+								0, 
+							  ],
 							},
 						},
 						timesheets: { $push: "$$ROOT" },
@@ -298,7 +299,7 @@ export default class TimesheetRepository {
 		}
 	}
 
-	async employeeSummaryReport(start, end,pId,userId) {
+	async employeeSummaryReport(start, end, projectIds, userIds) {
 		try {
 			const matchStage = {
 				$match: {
@@ -307,14 +308,15 @@ export default class TimesheetRepository {
 			};
 	
 			// If projectId is provided, add it to the match stage
-			if (pId) {
-				matchStage.$match.project_id = new mongoose.Types.ObjectId(pId);
+			if (projectIds && projectIds.length > 0) {
+				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
 	
 			// If userId is provided, add it to the match stage
-			if (userId) {
-				matchStage.$match.user_id = new mongoose.Types.ObjectId(userId);
+			if (userIds && userIds.length > 0) {
+				matchStage.$match.user_id = { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
+	
 			return await Timesheet.aggregate([
 				matchStage,
 				{
@@ -328,11 +330,11 @@ export default class TimesheetRepository {
 						},
 						approvedHours: {
 							$sum: {
-							  $cond: [
-								{ $eq: ["$status", "approved"] }, 
-								{ $toDouble: "$data_sheet.hours" }, 
-								0, 
-							  ],
+								$cond: [
+									{ $eq: ["$status", "approved"] },
+									{ $toDouble: "$data_sheet.hours" },
+									0,
+								],
 							},
 						},
 						timesheets: { $push: "$$ROOT" },
@@ -364,9 +366,11 @@ export default class TimesheetRepository {
 				},
 				{
 					$addFields: {
-						projectName: { 
-							$arrayElemAt: ["$projectDetails.projectName", 0] // Access the first item of the projectDetails array
+						projectName: {
+							$arrayElemAt: ["$projectDetails.projectName", 0], // Access the first item of the projectDetails array
 						},
+						projectId: "$_id.project_id", // Include the project_id in the output
+						userId: "$_id.user_id", // Include the user_id in the output
 						categories: {
 							$map: {
 								input: "$taskCategories",
@@ -388,10 +392,11 @@ export default class TimesheetRepository {
 				{
 					$group: {
 						_id: "$userName",
+						userId: { $first: "$userId" }, // Include the userId from the grouped result
 						projects: {
 							$push: {
 								projectName: "$projectName",
-								project_id: "$_id.project_id",
+								project_id: "$projectId", // Include project_id
 								loggedHours: "$loggedHours",
 								approvedHours: "$approvedHours",
 								categories: "$categories",
@@ -410,7 +415,9 @@ export default class TimesheetRepository {
 		}
 	}
 	
-	async employeeDetailReport(start,end,pId,userId) {
+	
+	
+	async employeeDetailReport(start,end,projectIds, userIds) {
 		try {
 			const startDate = new Date(start);
 			const endDate = new Date(end);
@@ -421,13 +428,14 @@ export default class TimesheetRepository {
 				},
 			};
 	
-			// If pId is provided, add an additional condition for matching project_id
-			if (pId) {
-				matchStage.$match.project_id = new mongoose.Types.ObjectId(pId);
+			// If projectId is provided, add it to the match stage
+			if (projectIds && projectIds.length > 0) {
+				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
-
-			if (userId) {
-				matchStage.$match.user_id = new mongoose.Types.ObjectId(userId);
+	
+			// If userId is provided, add it to the match stage
+			if (userIds && userIds.length > 0) {
+				matchStage.$match.user_id = { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
 
 			return await Timesheet.aggregate([

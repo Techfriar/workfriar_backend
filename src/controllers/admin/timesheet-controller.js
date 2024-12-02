@@ -473,7 +473,7 @@ export default class TimesheetController {
 
 			// Check if the timesheet belongs to the user
 			const timesheet = await TimesheetRepo.getTimesheetById(timesheetId);
-			console.log(timesheet)
+
 			if (!timesheet || !timesheet.user_id.equals(new mongoose.Types.ObjectId(user_id))) {
 				return res.status(403).json({
 					status: false,
@@ -504,7 +504,7 @@ export default class TimesheetController {
 				// Check if the date is a holiday
 				const isHoliday = await HolidayRepo.isHoliday(item.date);
 				item.isHoliday = isHoliday;
-				console.log(item)
+
 			}
 
 			// Update the timesheet data_sheet and set status to 'saved'
@@ -1133,8 +1133,7 @@ export default class TimesheetController {
 			endDate.setUTCHours(0, 0, 0, 0)
 			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
-			console.log(start,end);
-			
+
 
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
 
@@ -1325,9 +1324,9 @@ export default class TimesheetController {
 	 * @swagger
 	 * /admin/get-project-summary-report:
 	 *   post:
-	 *     summary: Fetch the project summary report for a specific month and year.
-	 *     description: Retrieves a project summary report based on the provided project ID, year, and month. 
-	 *                  The report includes detailed information about the timesheets related to the project.
+	 *     summary: Fetch the project summary report for specific projects and a specific month and year.
+	 *     description: Retrieves a project summary report based on the provided project IDs, year, and month. 
+	 *                  The report includes detailed information about the timesheets related to the projects.
 	 *     tags:
 	 *       - Timesheet
 	 *     requestBody:
@@ -1336,10 +1335,12 @@ export default class TimesheetController {
 	 *           schema:
 	 *             type: object
 	 *             properties:
-	 *               projectId:
-	 *                 type: string
-	 *                 description: ID of the project to fetch the summary for.
-	 *                 example: 6746a474ed7e5979a3a1f896
+	 *               projectIds:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Array of project IDs to fetch the summary for.
+	 *                 example: ["6746a474ed7e5979a3a1f896", "89db74e17a46972b4c56f12e"]
 	 *               Year:
 	 *                 type: integer
 	 *                 description: The year for the report.
@@ -1435,9 +1436,9 @@ export default class TimesheetController {
 
 	async getProjectSummaryReport(req, res) {
 		try {
-			const {projectId, Year, Month} = req.body
+			const {projectIds, Year, Month} = req.body
 
-			const validatedParams = await TimesheetRequest.validateProjectSummaryParams({ projectId, Year, Month });
+			const validatedParams = await TimesheetRequest.validateProjectSummaryParams({ projectIds, Year, Month });
 			if (validatedParams.error) {
                 // If there are validation errors, return a error
                 throw new CustomValidationError(validatedParams.error)
@@ -1453,7 +1454,7 @@ export default class TimesheetController {
 			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
 			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
 
-			const report = await TimesheetRepo.projectSummaryReport(startOfMonth, endOfMonth, validatedParams.projectId)
+			const report = await TimesheetRepo.projectSummaryReport(startOfMonth, endOfMonth, validatedParams.projectIds)
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(startOfMonth);
 
 			if (report.length > 0) {
@@ -1513,10 +1514,12 @@ export default class TimesheetController {
 	 *           schema:
 	 *             type: object
 	 *             properties:
-	 *               projectId:
-	 *                 type: string
-	 *                 description: ID of the project to fetch the detailed report for.
-	 *                 example: 6746a474ed7e5979a3a1f896
+	 *               projectIds:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Array of project IDs to fetch the summary for.
+	 *                 example: ["6746a474ed7e5979a3a1f896", "89db74e17a46972b4c56f12e"]
 	 *               year:
 	 *                 type: integer
 	 *                 description: The year for the report. Defaults to the current year if not provided.
@@ -1623,8 +1626,8 @@ export default class TimesheetController {
 	async projectDetailReport(req, res) {
 		try {
 			const now = new Date();
-			let { year, month, projectId, startDate, endDate } = req.body;
-			const validatedValues = await TimesheetRequest.validateProjectDetailReportParams({ year, month, projectId, startDate, endDate })
+			let { year, month, projectIds, startDate, endDate } = req.body;
+			const validatedValues = await TimesheetRequest.validateProjectDetailReportParams({ year, month, projectIds, startDate, endDate })
 			if(validatedValues.error){
 				throw new CustomValidationError(validatedValues.error)
 			}
@@ -1647,13 +1650,13 @@ export default class TimesheetController {
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
 			
-			const report = await TimesheetRepo.projectDetailReport(startDate, endDate,projectId);
+			const report = await TimesheetRepo.projectDetailReport(startDate, endDate,projectIds);
 
 			if (report.length > 0) {
 				const data = await Promise.all(
 					report.map(async (item) => {
 						if (item.projectName) {
-							return await timesheetResponse.projectSummaryTimesheetResponse(item, monthName, year);
+							return await timesheetResponse.projectDetailTimesheetResponse(item, monthName, year,startDate,endDate);
 						}
 					}
 					)
@@ -1697,7 +1700,7 @@ export default class TimesheetController {
 	 * /admin/get-employee-summary-report:
 	 *   post:
 	 *     summary: Fetch the employee summary report for a specified month and project.
-	 *     description: Retrieves summarized timesheet data for an employee within a specified project and month.
+	 *     description: Retrieves summarized timesheet data for employees within specified projects and months.
 	 *     tags:
 	 *       - Timesheet
 	 *     requestBody:
@@ -1706,10 +1709,12 @@ export default class TimesheetController {
 	 *           schema:
 	 *             type: object
 	 *             properties:
-	 *               projectId:
-	 *                 type: string
-	 *                 description: ID of the project for which the employee summary report is to be generated.
-	 *                 example: 6746a474ed7e5979a3a1f896
+	 *               projectIds:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Array of project IDs for which the employee summary report is to be generated. If provided, all project IDs will be validated.
+	 *                 example: ["6746a474ed7e5979a3a1f896", "5f43a274be8f7e6193a2d456"]
 	 *               Year:
 	 *                 type: integer
 	 *                 description: The year for the report. Defaults to the current year if not provided.
@@ -1718,10 +1723,12 @@ export default class TimesheetController {
 	 *                 type: integer
 	 *                 description: The month (1-12) for the report. Defaults to the current month if not provided.
 	 *                 example: 11
-	 *               userId:
-	 *                 type: string
-	 *                 description: ID of the employee whose summary report is to be fetched.
-	 *                 example: 1a2b3c4d5e6f7g8h9i0j
+	 *               userIds:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Array of employee IDs whose summary reports are to be fetched. If provided, all user IDs will be validated.
+	 *                 example: ["1a2b3c4d5e6f7g8h9i0j", "2b3c4d5e6f7g8h9i0k1l"]
 	 *     responses:
 	 *       200:
 	 *         description: Successfully fetched the employee summary report.
@@ -1735,7 +1742,7 @@ export default class TimesheetController {
 	 *                   example: true
 	 *                 message:
 	 *                   type: string
-	 *                   example: Project summary report fetched successfully
+	 *                   example: Employee summary report fetched successfully
 	 *                 length:
 	 *                   type: integer
 	 *                   example: 5
@@ -1813,8 +1820,9 @@ export default class TimesheetController {
 	async getEmployeeSummaryReport(req, res) {
 		try {
 			const now = new Date();
-			const {projectId, Year, Month, userId } = req.body
-			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ projectId, Year, Month, userId })
+			const {projectIds, Year, Month, userIds } = req.body
+
+			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ projectIds, Year, Month, userIds })
 			if(validatedValues.error){
 				throw new CustomValidationError(validatedValues.error)
 			}
@@ -1827,21 +1835,22 @@ export default class TimesheetController {
 			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
 			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
 
-			const report = await TimesheetRepo.employeeSummaryReport(startOfMonth, endOfMonth, projectId, userId)
+			const report = await TimesheetRepo.employeeSummaryReport(startOfMonth, endOfMonth, projectIds, userIds)
+
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startOfMonth));
 
 			if (report.length > 0) {
-				const data = await Promise.all(
-					report.map(async (item) => {
-						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, currentYear);
 
-					}
-					)
-				)
+				const data = await Promise.all(
+				  report.map(async (item) => {
+					return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, currentYear);
+				  })
+				);
+		  
 
 				res.status(200).json({
 					success: true,
-					message: 'Project summary report fetched successfully',
+					message: 'Employee summary report fetched successfully',
 					length: report.length,
 					data
 				})
@@ -1849,7 +1858,7 @@ export default class TimesheetController {
 			else {
 				res.status(400).json({
 					success: false,
-					message: 'Failed to fetch details of given range',
+					message: 'Failed to fetch details',
 					data:[]
 				})
 			}
@@ -1876,8 +1885,8 @@ export default class TimesheetController {
 	 * @swagger
 	 * /admin/get-employee-detail-report:
 	 *   post:
-	 *     summary: Fetch the employee detailed report for a specified date range and project.
-	 *     description: Retrieves detailed timesheet data for an employee within a specified project, date range, and month.
+	 *     summary: Fetch the employee detailed report for a specified date range and project(s).
+	 *     description: Retrieves detailed timesheet data for an employee within a specified project(s), date range, and month.
 	 *     tags:
 	 *       - Timesheet
 	 *     requestBody:
@@ -1894,10 +1903,12 @@ export default class TimesheetController {
 	 *                 type: integer
 	 *                 description: The month (1-12) for the report. Defaults to the current month if not provided.
 	 *                 example: 11
-	 *               projectId:
-	 *                 type: string
-	 *                 description: ID of the project for which the employee detail report is to be generated.
-	 *                 example: 6746a474ed7e5979a3a1f896
+	 *               projectIds:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Array of project IDs for which the employee detail report is to be generated.
+	 *                 example: ["6746a474ed7e5979a3a1f896", "5e34d4b5c4567e8d98f4a5b9"]
 	 *               startDate:
 	 *                 type: string
 	 *                 format: date
@@ -1908,10 +1919,12 @@ export default class TimesheetController {
 	 *                 format: date
 	 *                 description: The end date for the report range in ISO format. Defaults to the last day of the month if not provided.
 	 *                 example: "2024-11-30"
-	 *               userId:
-	 *                 type: string
-	 *                 description: ID of the employee whose detailed report is to be fetched.
-	 *                 example: 1a2b3c4d5e6f7g8h9i0j
+	 *               userIds:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: Array of employee IDs whose detailed report is to be fetched.
+	 *                 example: ["1a2b3c4d5e6f7g8h9i0j", "5a7b9c2d3e4f5g6h7i8j"]
 	 *     responses:
 	 *       200:
 	 *         description: Successfully fetched the employee detail report.
@@ -2004,8 +2017,8 @@ export default class TimesheetController {
 	async getEmployeeDetailReport(req, res) {
 		try {
 			const now = new Date();
-			let { year, month, projectId, startDate, endDate, userId } = req.body;
-			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ year, month, projectId, startDate, endDate, userId })
+			let { year, month, projectIds, startDate, endDate, userIds } = req.body;
+			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ year, month, projectIds, startDate, endDate, userIds })
 			if(validatedValues.error){
 				throw new CustomValidationError(validatedValues.error)
 			}
@@ -2029,15 +2042,14 @@ export default class TimesheetController {
 
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
-			const report = await TimesheetRepo.employeeDetailReport(startDate,endDate,projectId,userId)
+			const report = await TimesheetRepo.employeeDetailReport(startDate,endDate,projectIds,userIds)
+			
 			const range = `${startDate} - ${endDate}`
 
 			if (report.length > 0) {
 				const data = await Promise.all(
 					report.map(async (item) => {
-
 						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, year);
-
 					}
 					)
 				)
@@ -2173,7 +2185,6 @@ export default class TimesheetController {
 	 *                   type: array
 	 *                   items: {}
 	 */
-
 	async getTimesheetSnapshot(req, res) {
 		try {
 			// Extract token from Authorization header

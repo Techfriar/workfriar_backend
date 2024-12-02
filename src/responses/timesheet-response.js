@@ -34,6 +34,17 @@ class TimesheetResponse{
         }
     }
 
+    async projectDetailTimesheetResponse(report,month,year,startDate,endDate){
+        return{
+            dateRange:`${startDate}-${endDate}`,
+            projectName: report.projectName,
+            year,
+            month,
+            loggedHours: report.loggedHours,
+            approvedHours: report.approvedHours
+        }
+    }
+
     async employeeSummaryTimesheetResponse(report,month,year){
         return{
             employee: report._id,
