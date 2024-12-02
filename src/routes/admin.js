@@ -2,64 +2,19 @@ import express from 'express'
 
 import CategoryController from '../controllers/category-controller.js'
 import ForecastController from '../controllers/forecast-controller.js';
-const categoryController = new CategoryController();
-
-
-const adminRouter = express.Router()
-const forecastController=new ForecastController()
-
-
-
-// import multer from 'multer'
-
-// // import {
-// //     checkAnyPermissions,
-// //     checkPermissions,
-// // } from '../middlewares/checkPermission.js'
-// // import { authenticateEmployee } from '../middlewares/authenticateEmployee.js'
-// import uploadCsv from '../utils/uploadCsv.js'
-
-
-
-
-// const upload = multer()
-// const multerMiddleware = multer().single('file')
+import ProjectTeamController from '../controllers/project-team-controller.js';
 import ClientController from '../controllers/admin/client-controller.js'
-
-
-
-//Route for adding category
-adminRouter.post("/addcategory",categoryController.addCategory.bind(categoryController));
-// Route to get all categories
-adminRouter.get("/getcategories",categoryController.getCategories.bind(categoryController));
-
-// Route for updating Category
-adminRouter.put("/updatecategories/:id",categoryController.updateCategories.bind(categoryController));
-
-//Route for adding new Forecast
-adminRouter.post("/addforecast",forecastController.addForecastController.bind(forecastController))
-
-//Route for getting all forecast
-adminRouter.get("/getforecast",forecastController.getForecastController.bind(forecastController))
-
-//Route for getting a single project forecast
-adminRouter.get("/getforecast/:id",forecastController.getForecastbyIdController.bind(forecastController))
-
-//Route for deleting a project forecast
-adminRouter.delete("/deleteforecast/:id",forecastController.deleteForecastController.bind(forecastController))
-
-//Route for updaying an existing project forecast 
-adminRouter.put("/updateforecast/:id",forecastController.updateForecast.bind(forecastController))
-
-// const auth = new AuthController()
-
 import passport from '../config/passport-config.js'
 import AuthController from '../controllers/admin/auth-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
 import TimesheetController from '../controllers/admin/timesheet-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 
+const adminRouter = express.Router()
 
+const categoryController = new CategoryController();
+const forecastController=new ForecastController()
+const projectTeamController=new ProjectTeamController()
 
 const auth = new AuthController()
 const admin = new AdminController()
@@ -67,6 +22,45 @@ const timesheet = new TimesheetController()
 const client = new ClientController()
 
 
+
+// import multer from 'multer'
+// // import {
+// //     checkAnyPermissions,
+// //     checkPermissions,
+// // } from '../middlewares/checkPermission.js'
+// // import { authenticateEmployee } from '../middlewares/authenticateEmployee.js'
+// import uploadCsv from '../utils/uploadCsv.js'
+// const upload = multer()
+// const multerMiddleware = multer().single('file')
+
+
+//Route for adding category
+adminRouter.route("/addcategory").post(categoryController.addCategory)
+// Route for updating Category
+adminRouter.route("/updatecategories/:id").put(categoryController.updateCategories)
+
+//Route for adding new Forecast
+adminRouter.route("/addforecast").post(forecastController.addForecastController)
+//Route for getting all forecast
+adminRouter.route("/getallforecast").post(forecastController.getForecastController)
+//Route for getting a single project forecast
+adminRouter.route("/getforecast").post(forecastController.getForecastbyIdController)
+//Route for deleting a project forecast
+adminRouter.route("/deleteforecast/:id").delete(forecastController.deleteForecastController)
+//Route for updaying an existing project forecast 
+adminRouter.route("/updateforecast/:id").put(forecastController.updateForecast)
+
+//Route for creating new project team
+adminRouter.route("/addprojectteam").post(projectTeamController.addProjectTeam)
+//Route for getting the project team
+adminRouter.route("/getallprojectteam").post(projectTeamController.getProjectTeam)
+//Route for getting a team associated with a project
+adminRouter.route("/getprojectteam").post(projectTeamController.getProjectTeambyidController)
+//Route for editing the project team
+adminRouter.route("/editprojectteam/:id").put(projectTeamController.editProjectTeamController)
+
+
+// const auth = new AuthController()
 /*
  * Auth Routes
  */
@@ -76,7 +70,7 @@ adminRouter.route('/google-callback').get(passport.authenticate('google', { sess
 adminRouter.route('/google-fallback').get(auth.googleFallback)
 
 adminRouter
-    .route('/profile-view')
+.route('/profile-view')
     .post(
         // authenticateAdmin,
         admin.getMyProfile
@@ -105,7 +99,6 @@ adminRouter
         // checkPermissions('user', 'view'),
         admin.employeeList
     )
-
 /* 
 * Client Routes
 */
