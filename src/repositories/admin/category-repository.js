@@ -45,5 +45,17 @@ export default class CategoryRepository{
         throw new Error(error);
     }
 }
+     /*get all Categories */
+    async  getCategoryById(categoryId)
+    {
+        try
+        {
+            const category=await Category.findById(categoryId)
+            return category
+        }catch(error)
+        {
+            throw new Error(error)
+        }
+    }
 
 }

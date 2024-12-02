@@ -1,4 +1,6 @@
 import UserRepository from '../../repositories/user-repository.js';
+import passport from '../../config/passport-config.js'
+
 
 /**
  * @swagger
@@ -7,6 +9,23 @@ import UserRepository from '../../repositories/user-repository.js';
  *   description: Endpoints for authentication using Google OAuth.
  */
 export default class AuthController {
+
+    /**
+     * @swagger
+     * /auth/google-login:
+     *   get:
+     *     tags:
+     *       - Auth
+     *     summary: Initiates Google OAuth login
+     *     description: Redirects user to Google OAuth for authentication.
+     *     responses:
+     *       302:
+     *         description: Redirected to Google's OAuth page.
+     *       500:
+     *         description: Internal Server Error.
+     */
+    googleLogin = passport.authenticate('google', { scope: ['email'] });
+
     /**
      * @swagger
      * /auth/google-callback:
@@ -28,6 +47,7 @@ export default class AuthController {
 
         try {
             const email = req.user?.email;
+            const isAdmin = req.user?.isAdmin;
 
             if (!email) {
                 return res.status(400).json({ message: 'Authentication failed. No user email found.' });
@@ -40,9 +60,11 @@ export default class AuthController {
             }
 
             // Check if user is an admin
-            const isAdmin = user.isAdmin || (await userRepo.isAdminByEmail(email));
-            if (!isAdmin) {
-                return res.status(403).json({ message: 'Authentication failed. User is not an admin.' });
+            if(isAdmin){
+                const isValidAdmin = user.isAdmin || (await userRepo.isAdminByEmail(email));
+                if (!isValidAdmin) {
+                    return res.status(403).json({ message: 'Authentication failed. User is not an admin.' });
+                }
             }
 
             // Generate JWT token

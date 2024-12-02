@@ -21,7 +21,7 @@ export default class TimesheetRepository {
     }
 
 	// Method to create and save the timesheet
-	async createTimesheet(project_id, user_id, task_category_id, task_detail, startDate, endDate, data_sheet=[], status='not submitted') {
+	async createTimesheet(project_id, user_id, task_category_id, task_detail, startDate, endDate, data_sheet=[], status='in_progress') {
 		try {
 		// Normalize dates to UTC midnight
 		const normalizedStartDate = this.normalizeToUTCDate(startDate);
@@ -54,20 +54,6 @@ export default class TimesheetRepository {
 			// Find the timesheet by ID
 			const timesheet = await Timesheet.findById(timesheetId);
 		
-			if (!timesheet) {
-				throw new Error('Timesheet not found');
-			}
-		
-			// Check if the timesheet is already submitted or accepted
-			if (['submitted', 'accepted'].includes(timesheet.status)) {
-				throw new Error('Timesheet cannot be updated as it is already submitted or accepted');
-			}
-		
-			// Validate that data_sheet is an array
-			if (!Array.isArray(data_sheet)) {
-				throw new Error('Data sheet should be an array');
-			}
-		
 			// Validate each entry in the new data_sheet
 			data_sheet.forEach(entry => {
 				const { date, isHoliday, hours } = entry;
@@ -99,10 +85,33 @@ export default class TimesheetRepository {
 			await timesheet.save();
 		
 			return timesheet;
-	} catch (error) {
-		throw new Error(`Error updating timesheet: ${error.message}`);
+		} catch (error) {
+			throw new Error(`Error updating timesheet: ${error.message}`);
+		}
 	}
+
+	// Submit a specific timesheet by updating its status to "submitted"
+	async submitTimesheet(timesheetId) {
+		try {
+			// Find the timesheet by ID
+			const timesheet = await Timesheet.findById(timesheetId);
+
+			if (!timesheet) {
+				throw new Error('Timesheet not found');
+			}
+
+			// Update the status to "submitted"
+			timesheet.status = 'submitted';
+
+			// Save the updated timesheet
+			await timesheet.save();
+
+			return timesheet;
+		} catch (error) {
+			throw new Error(`Error submitting timesheet: ${error.message}`);
+		}
 	}
+
 	  
 }
 
