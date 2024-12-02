@@ -1436,9 +1436,10 @@ export default class TimesheetController {
 
 	async getProjectSummaryReport(req, res) {
 		try {
-			const {projectIds, Year, Month} = req.body
+			const {projectIds, year, month} = req.body
 
-			const validatedParams = await TimesheetRequest.validateProjectSummaryParams({ projectIds, Year, Month });
+			
+			const validatedParams = await TimesheetRequest.validateProjectSummaryParams({ projectIds, year, month });
 			if (validatedParams.error) {
                 // If there are validation errors, return a error
                 throw new CustomValidationError(validatedParams.error)
@@ -1448,8 +1449,8 @@ export default class TimesheetController {
 			let currentYear = now.getFullYear();
 			let currentMonth = now.getMonth();
 			
-			if(validatedParams.Year) currentYear = validatedParams.Year
-			if(validatedParams.Month) currentMonth = validatedParams.Month-1
+			if(year) currentYear = year
+			if(month) currentMonth = month-1
 
 			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
 			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
@@ -1715,11 +1716,11 @@ export default class TimesheetController {
 	 *                   type: string
 	 *                 description: Array of project IDs for which the employee summary report is to be generated. If provided, all project IDs will be validated.
 	 *                 example: ["6746a474ed7e5979a3a1f896", "5f43a274be8f7e6193a2d456"]
-	 *               Year:
+	 *               year:
 	 *                 type: integer
 	 *                 description: The year for the report. Defaults to the current year if not provided.
 	 *                 example: 2024
-	 *               Month:
+	 *               month:
 	 *                 type: integer
 	 *                 description: The month (1-12) for the report. Defaults to the current month if not provided.
 	 *                 example: 11
@@ -1820,21 +1821,23 @@ export default class TimesheetController {
 	async getEmployeeSummaryReport(req, res) {
 		try {
 			const now = new Date();
-			const {projectIds, Year, Month, userIds } = req.body
+			const {projectIds, year, month, userIds } = req.body
 
-			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ projectIds, Year, Month, userIds })
+			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ projectIds, year, month, userIds })
+
 			if(validatedValues.error){
 				throw new CustomValidationError(validatedValues.error)
 			}
 			let currentYear = now.getFullYear();
 			let currentMonth = now.getMonth();
 
-			if(Year) currentYear = Year
-			if(Month) currentMonth = Month-1
+			if(year) currentYear = year
+			if(month) currentMonth = month-1
 
 			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
 			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
 
+			
 			const report = await TimesheetRepo.employeeSummaryReport(startOfMonth, endOfMonth, projectIds, userIds)
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startOfMonth));
@@ -2040,8 +2043,8 @@ export default class TimesheetController {
 				endDate = new Date(endDate).toISOString();
 			}
 
-
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
+
 			const report = await TimesheetRepo.employeeDetailReport(startDate,endDate,projectIds,userIds)
 			
 			const range = `${startDate} - ${endDate}`
