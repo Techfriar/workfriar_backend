@@ -32,10 +32,11 @@ const projectSchema = mongoose.Schema(
     project_lead: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: false,
+      required: true,
     },
     billing_model: {
       type: String,
+      enum: ["Bill time (time and materials)", "Bill milestones / Fixed fee", "Retainer", "Non billable"],
     },
     project_logo: {
       type: String,

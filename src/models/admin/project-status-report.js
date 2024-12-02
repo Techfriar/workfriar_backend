@@ -5,12 +5,12 @@ const projectStatusReportSchema = mongoose.Schema(
     project_name: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
-      required: false,
+      required: true,
     },
     project_lead: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: false,
+      required: true,
     },
     planned_start_date: {
       type: Date,
