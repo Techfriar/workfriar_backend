@@ -6,9 +6,8 @@ import mongoose from "mongoose";
 const projectSchema = mongoose.Schema(
   {
     client_name: {
-      type: String,
-      required: true,
       type: mongoose.Schema.Types.ObjectId, ref: 'client',
+      required: true,
     },
     project_name: {
       type: String,
