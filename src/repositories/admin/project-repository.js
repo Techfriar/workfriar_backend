@@ -104,4 +104,43 @@ export default class ProjectRepository {
             throw new Error(`Failed to check project existence: ${error.message}`);
         }
     }
+    async updateProjectTimeEntry(id, timeEntry, closeDate) {
+        try {
+            const record = await Project.findOne({ _id: id });
+            if (!record) {
+                throw new Error(`Project with ID ${id} not found`);
+            }
+            if (timeEntry === "closed") {
+                if (["Cancelled", "Completed", "On hold"].includes(record.status)) {
+                    const data = await Project.updateOne({ _id: id }, { 
+                        $set: { 
+                            open_for_time_entry: "closed", 
+                            effective_close_date: closeDate 
+                        } 
+                    });
+                    return data;
+                } 
+            } else {
+                const data = await Project.updateOne({ _id: id }, { 
+                    $set: { open_for_time_entry: "opened",
+                        effective_close_date: closeDate 
+                     } 
+                });
+                return data;
+            }
+        } catch (error) {
+            throw new Error("Error updating project time entry");
+        }
+    }
+    
+    async updateProjectStatus(projectId, status) {
+        try {
+            const result = await Project.updateOne({ _id: projectId }, { status: status });
+            return result
+        } catch (error) {
+            throw new Error(`Error updating project status: ${error.message}`);
+        }
+    }
+    
+  
 }

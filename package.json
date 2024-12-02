@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "server": "nodemon server.js",
-    "stage": "next start -p 5003"
+    "stage": "node server.js"
   },
   "dependencies": {
     "bcryptjs": "2.4.3",

@@ -2,170 +2,71 @@ import express from 'express'
 
 import CategoryController from '../controllers/category-controller.js'
 import ForecastController from '../controllers/forecast-controller.js';
-const categoryController = new CategoryController();
-
+import ProjectTeamController from '../controllers/project-team-controller.js';
+import ClientController from '../controllers/admin/client-controller.js'
+import AdminController from '../controllers/admin/admin-controller.js'
+import TimesheetController from '../controllers/admin/timesheet-controller.js'
+import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
+import AuthController from '../controllers/auth/auth-controller.js'
 
 const adminRouter = express.Router()
+
+const categoryController = new CategoryController();
 const forecastController=new ForecastController()
+const projectTeamController=new ProjectTeamController()
+
+const admin = new AdminController()
+const client = new ClientController()
 
 
 
 // import multer from 'multer'
-
 // // import {
 // //     checkAnyPermissions,
 // //     checkPermissions,
 // // } from '../middlewares/checkPermission.js'
 // // import { authenticateEmployee } from '../middlewares/authenticateEmployee.js'
 // import uploadCsv from '../utils/uploadCsv.js'
-
-
-
-
 // const upload = multer()
 // const multerMiddleware = multer().single('file')
-import ClientController from '../controllers/admin/client-controller.js'
-
 
 
 //Route for adding category
-adminRouter.post("/addcategory",categoryController.addCategory.bind(categoryController));
-// Route to get all categories
-adminRouter.get("/getcategories",categoryController.getCategories.bind(categoryController));
-
+adminRouter.route("/addcategory").post(categoryController.addCategory)
 // Route for updating Category
-adminRouter.put("/updatecategories/:id",categoryController.updateCategories.bind(categoryController));
+adminRouter.route("/updatecategories/:id").put(categoryController.updateCategories)
 
 //Route for adding new Forecast
-adminRouter.post("/addforecast",forecastController.addForecastController.bind(forecastController))
-
+adminRouter.route("/addforecast").post(forecastController.addForecastController)
 //Route for getting all forecast
-adminRouter.get("/getforecast",forecastController.getForecastController.bind(forecastController))
-
+adminRouter.route("/getallforecast").post(forecastController.getForecastController)
 //Route for getting a single project forecast
-adminRouter.get("/getforecast/:id",forecastController.getForecastbyIdController.bind(forecastController))
-
+adminRouter.route("/getforecast").post(forecastController.getForecastbyIdController)
 //Route for deleting a project forecast
-adminRouter.delete("/deleteforecast/:id",forecastController.deleteForecastController.bind(forecastController))
-
+adminRouter.route("/deleteforecast/:id").delete(forecastController.deleteForecastController)
 //Route for updaying an existing project forecast 
-adminRouter.put("/updateforecast/:id",forecastController.updateForecast.bind(forecastController))
+adminRouter.route("/updateforecast/:id").put(forecastController.updateForecast)
+
+//Route for creating new project team
+adminRouter.route("/addprojectteam").post(projectTeamController.addProjectTeam)
+//Route for getting the project team
+adminRouter.route("/getallprojectteam").post(projectTeamController.getProjectTeam)
+//Route for getting a team associated with a project
+adminRouter.route("/getprojectteam").post(projectTeamController.getProjectTeambyidController)
+//Route for editing the project team
+adminRouter.route("/editprojectteam/:id").put(projectTeamController.editProjectTeamController)
+
 
 // const auth = new AuthController()
 
-import passport from '../config/passport-config.js'
-import AuthController from '../controllers/admin/auth-controller.js'
-import AdminController from '../controllers/admin/admin-controller.js'
-import TimesheetController from '../controllers/admin/timesheet-controller.js'
-import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 
 
-
-const auth = new AuthController()
-const admin = new AdminController()
-const timesheet = new TimesheetController()
-const client = new ClientController()
-
-
-/*
- * Auth Routes
- */
-
-adminRouter.route('/google-login').get(passport.authenticate('google', { scope: ['email'] }))
-adminRouter.route('/google-callback').get(passport.authenticate('google', { session: false }), auth.googleCallback)
-adminRouter.route('/google-fallback').get(auth.googleFallback)
 
 adminRouter
-    .route('/profile-view')
+.route('/profile-view')
     .post(
         // authenticateAdmin,
         admin.getMyProfile
-    )
-
-adminRouter
-    .route('/add-timesheet')
-    .post(
-        // authenticateAdmin,
-        // checkPermissions('timesheet', 'add'),
-        timesheet.addTimesheet
-    )
-
-adminRouter
-    .route('/save-timesheets')
-    .post(
-        // authenticateAdmin,
-        // checkPermissions('timesheet', 'add'),
-        timesheet.updateTimesheet
-    )
-
-adminRouter
-    .route('/get-user-timesheets')
-    .post(
-        // authenticateAdmin,
-        timesheet.getUserTimesheets
-    )
-
-adminRouter
-    .route('/get-current-day-timesheets')
-    .post(
-        // authenticateAdmin,
-        timesheet.getCurrentDayTimesheet
-    )
-
-adminRouter
-    .route('/filter-weekly-timesheets')
-    .post(
-        // authenticateAdmin,
-        timesheet.filterWeeklyTimesheet
-    )
-
-adminRouter
-    .route('/get-current-week-timesheets')
-    .post(
-        // authenticateAdmin,
-        timesheet.getCurrentWeekTimeheet
-    )
-
-adminRouter
-    .route('/get-due-timesheets')
-    .post(
-        // authenticateAdmin,
-        timesheet.getDueTimesheets
-    )
-
-adminRouter
-    .route('/get-project-summary-report')
-    .post(
-        // authenticateAdmin,
-        timesheet.getProjectSummaryReport
-    )
-
-adminRouter
-    .route('/get-project-detail-report')
-    .post(
-        // authenticateAdmin,
-        timesheet.projectDetailReport
-    )
-
-adminRouter
-    .route('/get-employee-summary-report')
-    .post(
-        // authenticateAdmin,
-        timesheet.getEmployeeSummaryReport
-    )
-
-adminRouter
-    .route('/get-employee-detail-report')
-    .post(
-        // authenticateAdmin,
-        timesheet.getEmployeeDetailReport
-    )
-
-adminRouter
-    .route('/get-timesheet-snapshot')
-    .post(
-        // authenticateAdmin,
-        timesheet.getTimesheetSnapshot
     )
 
 adminRouter
@@ -175,7 +76,6 @@ adminRouter
         // checkPermissions('user', 'view'),
         admin.employeeList
     )
-
 /* 
 * Client Routes
 */

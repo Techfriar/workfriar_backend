@@ -8,7 +8,8 @@ class CreateForecastRequest {
       "string.max": "Name must be between 3 and 30 characters",
       "string.pattern.base": "Name can only contain alphanumeric characters and spaces",
     }),
-    description: Joi.string().required().min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/).messages({
+    description: Joi.string().required().min(3).max(50).regex(/^(?!\d+$)[a-zA-Z0-9\s@!#\$%\^\&*\)\(+=._-]+$/
+).messages({
       "string.empty": "Description is required",
       "any.required": "Description is required",
       "string.min": "Description must be between 3 and 30 characters",
@@ -55,7 +56,8 @@ class CreateForecastRequest {
     endDate: Joi.date().optional().allow(null),
     expectedStartdate: Joi.date().optional().allow(null),
     expectedEnddate: Joi.date().optional().allow(null),
-    revenue: Joi.string().optional().allow("").min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/).messages({
+    revenue: Joi.string().optional().allow("").min(3).max(30).regex(/^[a-zA-Z0-9\s]+$/
+).messages({
       "string.base": "Revenue must be a string",
       "string.min": "Revenue must be between 3 and 30 characters",
       "string.max": "Revenue must be between 3 and 30 characters",

@@ -3,46 +3,47 @@ import ProjectRepository from '../../repositories/admin/project-repository.js'
 // import UserRepository from '../../repositories/admin/user-repository.js'
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js'
 
+
 class UpdateProjectRequest {
     static projectRepo = new ProjectRepository()
     // static userRepo = new UserRepository()
 
     static schema = Joi.object({
-        client_name: Joi.string().required().messages({
+        client_name: Joi.string().optional().messages({
             'string.empty': 'Please enter the client name.',
-            'any.required': 'Please enter the client name.'
+            'any.optional': 'Please enter the client name.'
         }),
-        project_name: Joi.string().required().messages({
+        project_name: Joi.string().optional().messages({
             'string.empty': 'Please enter the project name.',
-            'any.required': 'Please enter the project name.'
+            'any.optional': 'Please enter the project name.'
         }),
-        description: Joi.string().required().messages({
+        description: Joi.string().optional().messages({
             'string.empty': 'Please enter the project description.',
-            'any.required': 'Please enter the project description.'
+            'any.optional': 'Please enter the project description.'
         }),
-        planned_start_date: Joi.date().required().messages({
+        planned_start_date: Joi.date().optional().messages({
             'date.base': 'Please enter a valid planned start date.',
-            'any.required': 'Please enter the planned start date.'
+            'any.optional': 'Please enter the planned start date.'
         }),
         planned_end_date: Joi.date().optional().allow('').allow(null),
         actual_start_date: Joi.date().optional().allow('').allow(null),
         actual_end_date: Joi.date().optional().allow('').allow(null),
         // project_lead: Joi.string()
         //     .regex(/^[0-9a-fA-F]{24}$/)
-        //     .required()
+        //     .optional()
         //     .messages({
         //         'string.empty': 'Please specify the project lead.',
-        //         'any.required': 'Please specify the project lead.'
+        //         'any.optional': 'Please specify the project lead.'
         //     }),
         billing_model: Joi.string().optional().allow('').allow(null),
         project_logo: Joi.object().optional().allow('').allow(null),
-        open_for_time_entry: Joi.string().valid('opened', 'closed').required(),
+        open_for_time_entry: Joi.string().valid('opened', 'closed').optional(),
         status: Joi.string()
             .valid('Not Started', 'In Progress', 'Completed', 'On Hold', 'Cancelled')
-            .required(),
+            .optional(),
         projectId: Joi.string()
             .regex(/^[0-9a-fA-F]{24}$/)
-            .required()
+            .optional()
     })
 
     constructor(req) {
@@ -109,6 +110,8 @@ class UpdateProjectRequest {
 
         return value
     }
+
 }
+
 
 export default UpdateProjectRequest
