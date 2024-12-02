@@ -15,7 +15,7 @@ passport.use(
         {
             clientID: CLIENT_ID,
             clientSecret: CLIENT_SECRET,
-            callbackURL: '/api/google-callback', // Match callback route
+            callbackURL: '/api/auth/google-callback', // Match callback route
             passReqToCallback: true,
         },
         async (req, accessToken, refreshToken, profile, done) => {
@@ -41,7 +41,7 @@ passport.use(
                     isAdmin: user.isAdmin,
                 });
 
-                return done(null, { email: user.email, token });
+                return done(null, { email: user.email, isAdmin: user.isAdmin, token });
             } catch (error) {
                 console.error('Error in Google strategy:', error);
                 done(error, false);

@@ -53,8 +53,7 @@ adminRouter.put("/updateforecast/:id",forecastController.updateForecast.bind(for
 
 // const auth = new AuthController()
 
-import passport from '../config/passport-config.js'
-import AuthController from '../controllers/admin/auth-controller.js'
+import AuthController from '../controllers/auth/auth-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
 import TimesheetController from '../controllers/admin/timesheet-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
@@ -62,14 +61,6 @@ import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 const auth = new AuthController()
 const admin = new AdminController()
 const client = new ClientController()
-
-/*
- * Auth Routes
- */
-
-adminRouter.route('/google-login').get(passport.authenticate('google', { scope: ['email'] }))
-adminRouter.route('/google-callback').get(passport.authenticate('google', { session: false }), auth.googleCallback)
-adminRouter.route('/google-fallback').get(auth.googleFallback)
 
 adminRouter
     .route('/profile-view')

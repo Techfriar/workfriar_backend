@@ -22,7 +22,7 @@ export default class CreateTimesheetRequest {
         if (!project) throw new CustomValidationError('Project not found');
 
         const user = await this.UserRepo.getUserById(user_id)
-        if (!user) throw new Error('User not found');
+        if (!user) throw new CustomValidationError('User not found');
         // if (!project.team || project.team && !project.team.team_members || (project.team && !project.team.team_members.includes(user_id))) throw new CustomValidationError('User is not part of the project team');
 
         const taskCategory = await this.TaskCategoryRepo.getCategoryById(task_category_id);
