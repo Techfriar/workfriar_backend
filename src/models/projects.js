@@ -8,7 +8,7 @@ const projectSchema = mongoose.Schema(
     client_name: {
       type: String,
       required: true,
-      type: mongoose.Schema.Types.ObjectId, ref: 'client',
+      // type: mongoose.Schema.Types.ObjectId, ref: 'client',
     },
     project_name: {
       type: String,
