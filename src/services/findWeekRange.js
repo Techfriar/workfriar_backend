@@ -28,7 +28,7 @@ export default class FindWeekRange {
 
         const nextSaturday = new Date(date); // Create a copy of the date
         nextSaturday.setDate(date.getDate() + daysUntilSaturday); // Move to the next Saturday
-        console.log(nextSaturday.getTime().toLocaleString())
+
         // Return the earlier of nextSaturday or lastDayOfMonth, ensuring correct time handling
         return nextSaturday.getTime() > lastDayOfMonth.getTime() ? lastDayOfMonth : nextSaturday;
     }
