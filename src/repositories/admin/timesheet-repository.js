@@ -423,9 +423,7 @@ export default class TimesheetRepository {
 			throw new Error(error);
 		}
 	}
-	
-	
-	
+		
 	async employeeDetailReport(start,end,projectIds, userIds) {
 		try {
 			const startDate = new Date(start);
