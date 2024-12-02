@@ -6,7 +6,7 @@ const timesummaryResponse=new TimeSummaryResponse()
 class TimeSheetSummaryController{
     async TimeSummaryController(req,res)
     {
-        const{startDate,endDate,projectId,userId}=req.body
+        const{startDate,endDate,projectId}=req.body
         try
         {
             const data=await timeSheetSummary.getTimeSummary(startDate,endDate,projectId)
