@@ -5,7 +5,9 @@ import ForecastController from '../controllers/forecast-controller.js';
 import ProjectTeamController from '../controllers/project-team-controller.js';
 import ClientController from '../controllers/admin/client-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
+import TimesheetController from '../controllers/admin/timesheet-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
+import AuthController from '../controllers/auth/auth-controller.js'
 
 const adminRouter = express.Router()
 
@@ -57,10 +59,7 @@ adminRouter.route("/editprojectteam/:id").put(projectTeamController.editProjectT
 
 // const auth = new AuthController()
 
-import AuthController from '../controllers/auth/auth-controller.js'
-import AdminController from '../controllers/admin/admin-controller.js'
-import TimesheetController from '../controllers/admin/timesheet-controller.js'
-import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
+
 
 
 adminRouter
