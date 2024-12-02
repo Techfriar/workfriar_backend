@@ -704,7 +704,6 @@ export default class ProjectController {
         data:null
       })
     }
-
-    }
+  }
   }
 }
