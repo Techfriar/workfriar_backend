@@ -71,10 +71,15 @@ adminRouter
 
 // const auth = new AuthController()
 
-adminRouter.route("/profile-view").post(
-  // authenticateAdmin,
-  admin.getMyProfile
-);
+
+
+
+adminRouter
+.route('/profile-view')
+    .post(
+        // authenticateAdmin,
+        admin.getMyProfile
+    )
 
 adminRouter.route("/employee-list").post(
   // authenticateAdmin,
