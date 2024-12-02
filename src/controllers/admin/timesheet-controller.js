@@ -139,7 +139,7 @@ export default class TimesheetController {
 
 			const user_id = '6744a7c9707ecbeea1efd14c'
 
-			const { project_id, task_category_id, task_detail, data_sheet=[], status='in_progress' } = req.body;
+			const { project_id, task_category_id, task_detail, data_sheet = [], status = 'in_progress' } = req.body;
 
 			await TimesheetRequest.validateReferences(project_id, user_id, task_category_id)
 			await TimesheetRequest.validateProjectStatus(project_id)
@@ -348,19 +348,20 @@ export default class TimesheetController {
 			const { timesheets } = req.body;
 
 			// Validate request input and timesheet ownership 
-			const validatedTimesheets = await Promise.all(timesheets.map(async ({ timesheetId, data_sheet }) => { 
+			const validatedTimesheets = await Promise.all(timesheets.map(async ({ timesheetId, data_sheet }) => {
 				const timesheetValidationError = await TimesheetRequest.validateTimesheetAndOwnership(timesheetId, user_id)
 				const { timesheet } = timesheetValidationError; // Extract validated timesheet 
 				// Validate and process data_sheet items 
 				await TimesheetRequest.validateAndProcessDataSheet(data_sheet, timesheet);
-				
+
 				// Validate Project Status
 				await TimesheetRequest.validateProjectStatus(timesheet.project_id)
 
-				return { timesheetId, data_sheet, timesheet }; })); // Update each timesheet 
-				
-			const updatedTimesheets = await Promise.all(validatedTimesheets.map(async ({ timesheetId, data_sheet }) => { 
-				return await TimesheetRepo.updateTimesheetData(timesheetId, { data_sheet, status: 'saved', }); 
+				return { timesheetId, data_sheet, timesheet };
+			})); // Update each timesheet 
+
+			const updatedTimesheets = await Promise.all(validatedTimesheets.map(async ({ timesheetId, data_sheet }) => {
+				return await TimesheetRepo.updateTimesheetData(timesheetId, { data_sheet, status: 'saved', });
 			}));
 
 			return res.status(200).json({
@@ -492,7 +493,7 @@ export default class TimesheetController {
 				})
 			}
 			else {
-				res.status(400).json({
+				res.status(200).json({
 					success: false,
 					message: 'No timesheets found',
 					data: []
@@ -611,24 +612,24 @@ export default class TimesheetController {
 			// In production, decode the token to get the user ID
 			const user_id = '6744a7c9707ecbeea1efd14c'; // Replace with decoded user ID in production
 			const { timesheets } = req.body;
-	
+
 			// Validate request input and timesheet ownership
 			const validatedTimesheets = await Promise.all(
 				timesheets.map(async (timesheetId) => {
 					const timesheetValidationError = await TimesheetRequest.validateTimesheetAndOwnership(timesheetId, user_id);
 					const { timesheet } = timesheetValidationError; // Extract validated timesheet
 					await TimesheetRequest.validateProjectStatus(timesheet.project_id) // Validate Project Status
-					return timesheetId; 
+					return timesheetId;
 				})
 			);
-	
+
 			// Update each timesheet status to "Submit"
 			const updatedTimesheets = await Promise.all(
 				validatedTimesheets.map(async (timesheetId) => {
 					return await TimesheetRepo.submitTimesheet(timesheetId);
 				})
 			);
-	
+
 			return res.status(200).json({
 				status: true,
 				message: 'Timesheets submitted successfully',
@@ -690,20 +691,6 @@ export default class TimesheetController {
 	 *                     type: number
 	 *                     format: float
 	 *                     example: 3
-	 *       '400':
-	 *         description: No timesheets found for the current day
-	 *         schema:
-	 *           type: object
-	 *           properties:
-	 *             success:
-	 *               type: boolean
-	 *               example: false
-	 *             message:
-	 *               type: string
-	 *               example: 'No timesheets found'
-	 *             data:
-	 *               type: array
-	 *               items: {}
 	 *       '401':
 	 *         description: Unauthorized - No token provided
 	 *         schema:
@@ -798,12 +785,7 @@ export default class TimesheetController {
 
 
 			if (resultData.length > 0) {
-				//const data = await Promise.all(
-				//     users.map(
-				//         async (user) =>
-				//             await UserResponse.format(user),
-				//     ),
-				// )
+
 				const data = await Promise.all(
 					resultData.map(async (item) =>
 						await timesheetResponse.currentDateTimesheetResponse(item)
@@ -817,7 +799,7 @@ export default class TimesheetController {
 				})
 			}
 			else {
-				res.status(400).json({
+				res.status(200).json({
 					success: false,
 					message: 'No timesheets found',
 					data: []
@@ -895,22 +877,6 @@ export default class TimesheetController {
 	 *                       status:
 	 *                         type: string
 	 *                         example: saved
-	 *       404:
-	 *         description: No timesheets found for the provided date range.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: No timesheets found for the provided date range
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
 	 *       422:
 	 *         description: Validation error.
 	 *         content:
@@ -968,10 +934,10 @@ export default class TimesheetController {
 			const { startDate, endDate } = req.body
 			const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
 			if (validatedDates.error) {
-                // If there are validation errors, return a error
-                throw new CustomValidationError(validationResult.error)
-                
-            }
+				// If there are validation errors, return a error
+				throw new CustomValidationError(validationResult.error)
+
+			}
 			const start = new Date(startDate)
 			const end = new Date(endDate)
 
@@ -992,7 +958,7 @@ export default class TimesheetController {
 
 			}
 			else {
-				return res.status(404).json({
+				return res.status(200).json({
 					success: false,
 					message: 'No timesheets found for the provided date range',
 					data: []
@@ -1001,19 +967,19 @@ export default class TimesheetController {
 
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
-                res.status(422).json({
-                    success: false,
-                    message: 'Validation error',
-                    errors: err.errors,
-                });
-            }
-            else{
-                return res.status(500).json({
-                    success: false,
-                    message: err.message,
-					data:[]
-                });
-            }
+				res.status(422).json({
+					success: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			}
+			else {
+				return res.status(500).json({
+					success: false,
+					message: err.message,
+					data: []
+				});
+			}
 		}
 	}
 
@@ -1061,22 +1027,6 @@ export default class TimesheetController {
 	 *                       status:
 	 *                         type: string
 	 *                         example: saved
-	 *       404:
-	 *         description: No timesheets found for the current week.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: No timesheets found for the provided date range
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
 	 *       500:
 	 *         description: Server error.
 	 *         content:
@@ -1143,7 +1093,7 @@ export default class TimesheetController {
 
 			}
 			else {
-				return res.status(404).json({
+				return res.status(200).json({
 					success: false,
 					message: 'No timesheets found for the provided date range',
 					data: []
@@ -1195,22 +1145,6 @@ export default class TimesheetController {
 	 *                 totalHours:
 	 *                   type: number
 	 *                   example: 14.5
-	 *       400:
-	 *         description: No due timesheets found.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: No due timesheets
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
 	 *       500:
 	 *         description: Server error.
 	 *         content:
@@ -1258,32 +1192,36 @@ export default class TimesheetController {
 			endDate.setUTCHours(0, 0, 0, 0)
 			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
-			
+
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+			console.log(timesheets);
+			
 			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'approved')))
 
-			let totalHours = 0;
 
-			savedTimesheets.forEach(timesheet => {
-				timesheet.data_sheet.forEach(entry => {
-					totalHours += parseFloat(entry.hours);
-				});
-			});
-
+			const weekDates = [];
+			for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+				weekDates.push(date.toISOString().split('T')[0]); 
+			}
+	
 			const totalHoursPerDate = {};
-
+			weekDates.forEach(date => {
+				totalHoursPerDate[date] = 0;
+			});
+	
+			let totalHours = 0;
+	
 			savedTimesheets.forEach(timesheet => {
 				timesheet.data_sheet.forEach(entry => {
-					const date = entry.date;
+
+					const date = new Date(entry.date).toISOString().split('T')[0];
 					const hours = parseFloat(entry.hours);
 
-					if (totalHoursPerDate[date]) {
-						totalHoursPerDate[date] += hours;
-					} else {
-						totalHoursPerDate[date] = hours;
-					}
+					totalHoursPerDate[date] = (totalHoursPerDate[date] || 0) + hours;
+					totalHours += hours;
 				});
 			});
+			totalHoursPerDate.totalHours = totalHours;
 
 			if (savedTimesheets.length > 0) {
 				res.status(200).json({
@@ -1291,11 +1229,11 @@ export default class TimesheetController {
 					message: "Due timesheets fetched successfully",
 					length: savedTimesheets.length,
 					data: totalHoursPerDate,
-					totalHours
+					
 				})
 			}
 			else {
-				res.status(400).json({
+				res.status(200).json({
 					success: false,
 					message: "No due timesheets",
 					data: []
@@ -1374,22 +1312,6 @@ export default class TimesheetController {
 	 *                       totalHours:
 	 *                         type: number
 	 *                         example: 120.5
-	 *       400:
-	 *         description: Failed to fetch details.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: Failed to fetch details
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
 	 *       422:
 	 *         description: Validation error for input parameters.
 	 *         content:
@@ -1427,21 +1349,21 @@ export default class TimesheetController {
 
 	async getProjectSummaryReport(req, res) {
 		try {
-			const {projectIds, year, month} = req.body
+			const { projectIds, year, month } = req.body
 
-			
+
 			const validatedParams = await TimesheetRequest.validateProjectSummaryParams({ projectIds, year, month });
 			if (validatedParams.error) {
-                // If there are validation errors, return a error
-                throw new CustomValidationError(validatedParams.error)
-                
-            }
+				// If there are validation errors, return a error
+				throw new CustomValidationError(validatedParams.error)
+
+			}
 			const now = new Date();
 			let currentYear = now.getFullYear();
 			let currentMonth = now.getMonth();
-			
-			if(year) currentYear = year
-			if(month) currentMonth = month-1
+
+			if (year) currentYear = year
+			if (month) currentMonth = month - 1
 
 			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
 			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
@@ -1467,27 +1389,27 @@ export default class TimesheetController {
 				})
 			}
 			else {
-				res.status(400).json({
+				res.status(200).json({
 					success: false,
 					message: 'Failed to fetch details',
-					data:[]
+					data: []
 				})
 			}
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
-                res.status(422).json({
-                    success: false,
-                    message: 'Validation error',
-                    errors: err.errors,
-                });
-            }
-            else{
-                return res.status(500).json({
-                    success: false,
-                    message: err.message,
-					data:[]
-                });
-            }
+				res.status(422).json({
+					success: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			}
+			else {
+				return res.status(500).json({
+					success: false,
+					message: err.message,
+					data: []
+				});
+			}
 		}
 	}
 
@@ -1564,22 +1486,6 @@ export default class TimesheetController {
 	 *                       totalHours:
 	 *                         type: number
 	 *                         example: 150.75
-	 *       400:
-	 *         description: Failed to fetch details.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: Failed to fetch details
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
 	 *       422:
 	 *         description: Validation error for input parameters.
 	 *         content:
@@ -1620,18 +1526,18 @@ export default class TimesheetController {
 			const now = new Date();
 			let { year, month, projectIds, startDate, endDate } = req.body;
 			const validatedValues = await TimesheetRequest.validateProjectDetailReportParams({ year, month, projectIds, startDate, endDate })
-			if(validatedValues.error){
+			if (validatedValues.error) {
 				throw new CustomValidationError(validatedValues.error)
 			}
 			if (!year) {
 				year = now.getFullYear();
 			}
 			if (!month) {
-				month = now.getMonth() + 1; 
+				month = now.getMonth() + 1;
 			}
-	
+
 			if (!startDate || !endDate) {
-				const defaultStartDate = new Date(Date.UTC(year, month - 1, 1)); 
+				const defaultStartDate = new Date(Date.UTC(year, month - 1, 1));
 				const defaultEndDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 				startDate = defaultStartDate.toISOString();
 				endDate = defaultEndDate.toISOString();
@@ -1641,14 +1547,14 @@ export default class TimesheetController {
 			}
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
-			
-			const report = await TimesheetRepo.projectDetailReport(startDate, endDate,projectIds);
+
+			const report = await TimesheetRepo.projectDetailReport(startDate, endDate, projectIds);
 
 			if (report.length > 0) {
 				const data = await Promise.all(
 					report.map(async (item) => {
 						if (item.projectName) {
-							return await timesheetResponse.projectDetailTimesheetResponse(item, monthName, year,startDate,endDate);
+							return await timesheetResponse.projectDetailTimesheetResponse(item, monthName, year, startDate, endDate);
 						}
 					}
 					)
@@ -1662,27 +1568,27 @@ export default class TimesheetController {
 				})
 			}
 			else {
-				res.status(400).json({
+				res.status(200).json({
 					success: false,
 					message: 'Failed to fetch details',
-					data:[]
+					data: []
 				})
 			}
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
-                res.status(422).json({
-                    success: false,
-                    message: 'Validation error',
-                    errors: err.errors,
-                });
-            }
-            else{
-                return res.status(500).json({
-                    success: false,
-                    message: err.message,
-					data:[]
-                });
-            }
+				res.status(422).json({
+					success: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			}
+			else {
+				return res.status(500).json({
+					success: false,
+					message: err.message,
+					data: []
+				});
+			}
 		}
 	}
 
@@ -1758,22 +1664,6 @@ export default class TimesheetController {
 	 *                       totalHours:
 	 *                         type: number
 	 *                         example: 120.50
-	 *       400:
-	 *         description: Failed to fetch the details of the given range.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: Failed to fetch details of given range
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
 	 *       422:
 	 *         description: Validation error for input parameters.
 	 *         content:
@@ -1812,23 +1702,23 @@ export default class TimesheetController {
 	async getEmployeeSummaryReport(req, res) {
 		try {
 			const now = new Date();
-			const {projectIds, year, month, userIds } = req.body
+			const { projectIds, year, month, userIds } = req.body
 
 			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ projectIds, year, month, userIds })
 
-			if(validatedValues.error){
+			if (validatedValues.error) {
 				throw new CustomValidationError(validatedValues.error)
 			}
 			let currentYear = now.getFullYear();
 			let currentMonth = now.getMonth();
 
-			if(year) currentYear = year
-			if(month) currentMonth = month-1
+			if (year) currentYear = year
+			if (month) currentMonth = month - 1
 
 			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
 			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
 
-			
+
 			const report = await TimesheetRepo.employeeSummaryReport(startOfMonth, endOfMonth, projectIds, userIds)
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startOfMonth));
@@ -1836,11 +1726,11 @@ export default class TimesheetController {
 			if (report.length > 0) {
 
 				const data = await Promise.all(
-				  report.map(async (item) => {
-					return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, currentYear);
-				  })
+					report.map(async (item) => {
+						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, currentYear);
+					})
 				);
-		  
+
 
 				res.status(200).json({
 					success: true,
@@ -1850,27 +1740,27 @@ export default class TimesheetController {
 				})
 			}
 			else {
-				res.status(400).json({
+				res.status(200).json({
 					success: false,
 					message: 'Failed to fetch details',
-					data:[]
+					data: []
 				})
 			}
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
-                res.status(422).json({
-                    success: false,
-                    message: 'Validation error',
-                    errors: err.errors,
-                });
-            }
-            else{
-                return res.status(500).json({
-                    success: false,
-                    message: err.message,
-					data:[]
-                });
-            }
+				res.status(422).json({
+					success: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			}
+			else {
+				return res.status(500).json({
+					success: false,
+					message: err.message,
+					data: []
+				});
+			}
 		}
 	}
 
@@ -1957,22 +1847,6 @@ export default class TimesheetController {
 	 *                       hoursWorked:
 	 *                         type: number
 	 *                         example: 8
-	 *       400:
-	 *         description: Failed to fetch the details of the given range.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: Failed to fetch details of given range
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
 	 *       422:
 	 *         description: Validation error for input parameters.
 	 *         content:
@@ -2013,19 +1887,19 @@ export default class TimesheetController {
 			const now = new Date();
 			let { year, month, projectIds, startDate, endDate, userIds } = req.body;
 			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ year, month, projectIds, startDate, endDate, userIds })
-			if(validatedValues.error){
+			if (validatedValues.error) {
 				throw new CustomValidationError(validatedValues.error)
 			}
-	
+
 			if (!year) {
 				year = now.getFullYear();
 			}
 			if (!month) {
-				month = now.getMonth() + 1; 
+				month = now.getMonth() + 1;
 			}
-	
+
 			if (!startDate || !endDate) {
-				const defaultStartDate = new Date(Date.UTC(year, month - 1, 1)); 
+				const defaultStartDate = new Date(Date.UTC(year, month - 1, 1));
 				const defaultEndDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 				startDate = defaultStartDate.toISOString();
 				endDate = defaultEndDate.toISOString();
@@ -2036,8 +1910,8 @@ export default class TimesheetController {
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
 
-			const report = await TimesheetRepo.employeeDetailReport(startDate,endDate,projectIds,userIds)
-			
+			const report = await TimesheetRepo.employeeDetailReport(startDate, endDate, projectIds, userIds)
+
 			const range = `${startDate} - ${endDate}`
 
 			if (report.length > 0) {
@@ -2057,27 +1931,27 @@ export default class TimesheetController {
 				})
 			}
 			else {
-				res.status(400).json({
+				res.status(200).json({
 					success: false,
 					message: 'Failed to fetch details of given range',
-					data:[]
+					data: []
 				})
 			}
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
-                res.status(422).json({
-                    success: false,
-                    message: 'Validation error',
-                    errors: err.errors,
-                });
-            }
-            else{
-                return res.status(500).json({
-                    success: false,
-                    message: err.message,
-					data:[]
-                });
-            }
+				res.status(422).json({
+					success: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			}
+			else {
+				return res.status(500).json({
+					success: false,
+					message: err.message,
+					data: []
+				});
+			}
 		}
 	}
 
@@ -2129,22 +2003,6 @@ export default class TimesheetController {
 	 *                       count:
 	 *                         type: integer
 	 *                         example: 5
-	 *       400:
-	 *         description: No timesheets found for the given range
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: No timesheets found for given range
-	 *                 data:
-	 *                   type: array
-	 *                   items: {}
 	 *       422:
 	 *         description: Validation error
 	 *         content:
@@ -2199,27 +2057,27 @@ export default class TimesheetController {
 			const user_id = '6746a473ed7e5979a3a1f891';
 			let { year, month } = req.body;
 			const validatedValues = await TimesheetRequest.validateYearMonth({ year, month })
-			if(validatedValues.error){
+			if (validatedValues.error) {
 				throw new CustomValidationError(validatedValues.error)
 			}
-	
+
 			const currentDate = new Date();
-			year = year || currentDate.getFullYear(); 
+			year = year || currentDate.getFullYear();
 			month = month || currentDate.getMonth() + 1;
-			const startDate = new Date(Date.UTC(year, month - 1, 1)); 
+			const startDate = new Date(Date.UTC(year, month - 1, 1));
 			const start = startDate.toISOString()
 			const endDate = new Date(Date.UTC(year, month, 0));
 			const end = endDate.toISOString()
 
-			const timesheetData = await TimesheetRepo.getMonthlySnapshot(user_id,start, end)
+			const timesheetData = await TimesheetRepo.getMonthlySnapshot(user_id, start, end)
 
 			const defaultStatuses = ['saved', 'approved', 'rejected'];
 			const responseData = defaultStatuses.map(status => {
-			  const existingStatus = timesheetData.find(item => item.status === status);
-			  return {
-				status,
-				count: existingStatus ? existingStatus.count : 0
-			  };
+				const existingStatus = timesheetData.find(item => item.status === status);
+				return {
+					status,
+					count: existingStatus ? existingStatus.count : 0
+				};
 			});
 
 			if (timesheetData.length > 0) {
@@ -2230,7 +2088,7 @@ export default class TimesheetController {
 				})
 			}
 			else {
-				res.status(400).json({
+				res.status(200).json({
 					success: false,
 					message: 'No timesheets found for given range',
 					data: []
@@ -2239,22 +2097,22 @@ export default class TimesheetController {
 
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
-                res.status(422).json({
-                    success: false,
-                    message: 'Validation error',
-                    errors: err.errors,
-                });
-            }
-            else{
-                return res.status(500).json({
-                    success: false,
-                    message: err.message,
-					data:[]
-                });
-            }
+				res.status(422).json({
+					success: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			}
+			else {
+				return res.status(500).json({
+					success: false,
+					message: err.message,
+					data: []
+				});
+			}
 		}
 	}
 
 
-	
+
 }

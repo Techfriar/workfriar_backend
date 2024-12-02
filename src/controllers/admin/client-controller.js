@@ -70,7 +70,7 @@ class ClientController {
      *                       type: string
      *                       description: The ID of the new client.
      *                       example: 12345
-     *       400:
+     *       422:
      *         description: Validation errors occurred
      *         content:
      *           application/json:
@@ -132,7 +132,7 @@ class ClientController {
                 });
             }
             else {
-                res.status(422).json({
+                res.status(400).json({
                     status: false,
                     message: 'Failed to add user.',
                     data: [],
@@ -168,7 +168,7 @@ class ClientController {
      *       - Clients
      *     responses:
      *       200:
-     *         description: A list of clients was retrieved successfully.
+     *         description: Clients were successfully fetched or no clients were found.
      *         content:
      *           application/json:
      *             schema:
@@ -179,7 +179,7 @@ class ClientController {
      *                   example: true
      *                 message:
      *                   type: string
-     *                   example: "Client list retrieved successfully"
+     *                   example: "Clients fetched successfully"
      *                 data:
      *                   type: array
      *                   items:
@@ -200,21 +200,6 @@ class ClientController {
      *                       status:
      *                         type: string
      *                         example: "On hold"
-     *       422:
-     *         description: Failed to retrieve clients.
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 success:
-     *                   type: boolean
-     *                   example: false
-     *                 message:
-     *                   type: string
-     *                   example: "Failed to retrieve clients."
-     *                 data:
-     *                   type: array
      *                   example: []
      *       500:
      *         description: Internal server error.
@@ -242,7 +227,7 @@ class ClientController {
                     data: existingClients,
                 });
             } else {
-                return res.status(400).json({
+                return res.status(200).json({
                     success: false,
                     message: 'No clients found.',
                     data: [],
@@ -331,7 +316,7 @@ class ClientController {
      *                     status:
      *                       type: string
      *                       example: "On hold"
-     *       400:
+     *       422:
      *         description: Validation errors occurred.
      *         content:
      *           application/json:
@@ -348,7 +333,7 @@ class ClientController {
      *                   type: object
      *                   additionalProperties:
      *                     type: string
-     *       422:
+     *       400:
      *         description: Failed to update client.
      *         content:
      *           application/json:
@@ -404,7 +389,7 @@ class ClientController {
                     data: editResponse,
                 });
             } else {
-                return res.status(422).json({
+                return res.status(400).json({
                     success: false,
                     message: 'Failed to update client.',
                 });
