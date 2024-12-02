@@ -40,8 +40,8 @@ projectRouter
   .delete(
     project.deleteProject
   );
-  projectRouter.route("/changetimeentry").put(project.updateTimeEntry)
-  projectRouter.route("/updatestatus").put(project.upddatestatus)
+  projectRouter.route("/changetimeentry").post(project.updateTimeEntry)
+  projectRouter.route("/updatestatus").post(project.upddatestatus)
 
 
 export default projectRouter;

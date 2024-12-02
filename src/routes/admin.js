@@ -6,12 +6,14 @@ import ProjectTeamController from '../controllers/project-team-controller.js';
 import ClientController from '../controllers/admin/client-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
+import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js';
 
 const adminRouter = express.Router()
 
 const categoryController = new CategoryController();
 const forecastController=new ForecastController()
 const projectTeamController=new ProjectTeamController()
+const timeSheetSummary=new TimeSheetSummaryController()
 
 const admin = new AdminController()
 const client = new ClientController()
@@ -32,7 +34,7 @@ const client = new ClientController()
 //Route for adding category
 adminRouter.route("/addcategory").post(categoryController.addCategory)
 // Route for updating Category
-adminRouter.route("/updatecategories/:id").put(categoryController.updateCategories)
+adminRouter.route("/updatecategories").post(categoryController.updateCategories)
 
 //Route for adding new Forecast
 adminRouter.route("/addforecast").post(forecastController.addForecastController)
@@ -41,9 +43,9 @@ adminRouter.route("/getallforecast").post(forecastController.getForecastControll
 //Route for getting a single project forecast
 adminRouter.route("/getforecast").post(forecastController.getForecastbyIdController)
 //Route for deleting a project forecast
-adminRouter.route("/deleteforecast/:id").delete(forecastController.deleteForecastController)
+adminRouter.route("/deleteforecast").post(forecastController.deleteForecastController)
 //Route for updaying an existing project forecast 
-adminRouter.route("/updateforecast/:id").put(forecastController.updateForecast)
+adminRouter.route("/updateforecast").post(forecastController.updateForecast)
 
 //Route for creating new project team
 adminRouter.route("/addprojectteam").post(projectTeamController.addProjectTeam)
@@ -52,16 +54,10 @@ adminRouter.route("/getallprojectteam").post(projectTeamController.getProjectTea
 //Route for getting a team associated with a project
 adminRouter.route("/getprojectteam").post(projectTeamController.getProjectTeambyidController)
 //Route for editing the project team
-adminRouter.route("/editprojectteam/:id").put(projectTeamController.editProjectTeamController)
+adminRouter.route("/editprojectteam").post(projectTeamController.editProjectTeamController)
 
-
-// const auth = new AuthController()
-
-import AuthController from '../controllers/auth/auth-controller.js'
-import AdminController from '../controllers/admin/admin-controller.js'
-import TimesheetController from '../controllers/admin/timesheet-controller.js'
-import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
-
+//Route for displaying time summary
+adminRouter.route("/timesummary").post(timeSheetSummary.TimeSummaryController)
 
 adminRouter
 .route('/profile-view')

@@ -25,6 +25,8 @@ class CreateCategoryRequest {
             }),
     });
     static updateCategorySchema = Joi.object({
+        id:Joi.string()
+            .required(),
         category: Joi.string()
             .min(3) 
             .max(50) 

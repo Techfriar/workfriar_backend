@@ -63,9 +63,8 @@ class ProjectTeamRepository
     }
 
     //Function for editing a project team
-    async updateProjectTeam(projectid, teamData) {
+    async updateProjectTeam(id, teamData) {
         try {
-            const {id}=projectid
             const updateFields = {};
             if (teamData.project !== undefined) updateFields.project = teamData.project;
             if (teamData.status !== undefined) updateFields.status = teamData.status;

@@ -444,7 +444,7 @@ export default class ProjectController {
   /**
  * @swagger
  * /project/changetimeentry:
- *   put:
+ *   post:
  *     tags:
  *       - Project
  *     summary: Update time entry for a project
@@ -562,7 +562,7 @@ export default class ProjectController {
   /**
  * @swagger
  * /project/updatestatus:
- *   put:
+ *   post:
  *     tags:
  *       - Project
  *     summary: Update project status

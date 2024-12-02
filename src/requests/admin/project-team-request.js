@@ -46,6 +46,7 @@ static teamDataSchema = Joi.object({
 });
 
 static teamDataUpdateSchema = Joi.object({
+    id:Joi.string().required(),
     project: Joi.string()
         .optional()
         .regex(/^[0-9a-fA-F]{24}$/)
