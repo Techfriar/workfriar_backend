@@ -24,6 +24,10 @@ const swagger = {
                 url: 'http://localhost:3002/api',
                 description: 'Local server',
             },
+            {
+                url: 'https://api.workfriar.techfriar.xyz/api',
+                description: 'Staging server',
+            }
         ],
         //auth setup start
         components: {

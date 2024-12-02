@@ -1,49 +1,54 @@
-import express from 'express'
-import dotenv from 'dotenv'
-import swaggerUi from 'swagger-ui-express'
-import swaggerJsdoc from 'swagger-jsdoc'
-import { dbErrorHandler } from './src/middlewares/db-error-handler.js'
-import { requestNotFoundCheck } from './src/middlewares/request-not-found-check.js'
-import connectDB from './src/config/db.js'
-import swagger from './src/config/swagger.js'
-import session from 'express-session'
-import bodyParser from 'body-parser'
-import morgan from 'morgan'
-import cors from 'cors'
-import configureRoutes from './src/routes/routes.js'
+import express from "express";
+import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
+import { dbErrorHandler } from "./src/middlewares/db-error-handler.js";
+import { requestNotFoundCheck } from "./src/middlewares/request-not-found-check.js";
+import connectDB from "./src/config/db.js";
+import swagger from "./src/config/swagger.js";
+import session from "express-session";
+import bodyParser from "body-parser";
+import morgan from "morgan";
+import cors from "cors";
+import configureRoutes from "./src/routes/routes.js";
+import seedUsers from "./src/seeders/UserSeeder.js";
 
-
-dotenv.config()
+dotenv.config();
 
 // Create Express app
-const app = express()
+const app = express();
 // Use the cors() middleware to enable CORS support
-app.use(cors())
+app.use(cors());
 
 // Set the port and hostname for the server
-const port = process.env.PORT || 3002
-const hostname = process.env.HOST || 'localhost'
+const port = process.env.PORT || 3002;
+const hostname = process.env.HOST || "localhost";
 
 /**
  * Use Morgan for HTTP request and response logging
  * In a production environment, "combined" or "common" might be more suitable for comprehensive logging while serving requests.
  **/
-app.use(morgan(process.env.LOGGING_FORMAT || 'dev'))
+app.use(morgan(process.env.LOGGING_FORMAT || "dev"));
 
 // Set view engine to 'ejs'
-app.set('view engine', 'ejs')
+app.set("view engine", "ejs");
 
 // Set view path
-app.set('views', './src/views')
-
+app.set("views", "./src/views");
 
 // Import MongoDB connection and establish the database connection
 connectDB()
+  .then(() => {
+    seedUsers();
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB:", error);
+  });
 
 // Middleware to handle JSON data only for a specific route
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 // Set up middleware to parse incoming JSON and urlencoded data
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({ extended: false }));
 
 /**
  * Set up Express session for handling user sessions.
@@ -53,36 +58,36 @@ app.use(express.urlencoded({ extended: false }))
  * The secret option is crucial for signing session IDs to prevent tampering or unauthorized access to session data.
  */
 app.use(
-    session({
-        resave: false, // don't save session if unmodified
-        saveUninitialized: false, // don't create session until something stored
-        secret: process.env.SESSION_SECRET || 'workfriarasesecret', // secret used to sign the session ID cookie
-    }),
-)
+  session({
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something stored
+    secret: process.env.SESSION_SECRET || "workfriarasesecret", // secret used to sign the session ID cookie
+  })
+);
 
 // Rendering index page when accessing the root URL
-app.get('/', (req, res) => {
-    res.render('index')
-    // res.send("joooo")
-})
+app.get("/", (req, res) => {
+  res.render("index");
+  // res.send("joooo")
+});
 
 // Set up Swagger API documentation
-const specs = swaggerJsdoc(swagger)
+const specs = swaggerJsdoc(swagger);
 app.use(
-    '/api/documentation',
-    swaggerUi.serve,
-    swaggerUi.setup(specs, { explorer: true }),
-)
+  "/api/documentation",
+  swaggerUi.serve,
+  swaggerUi.setup(specs, { explorer: true })
+);
 
 /**
  * Define application routes
  */
-configureRoutes(app)
+configureRoutes(app);
 
 // Set the folders as the location for serving static files
-app.use('/storage/invoices', express.static('storage/invoices'))
-app.use('/storage/uploads', express.static('storage/uploads'))
-app.use('/public', express.static('public'))
+app.use("/storage/invoices", express.static("storage/invoices"));
+app.use("/storage/uploads", express.static("storage/uploads"));
+app.use("/public", express.static("public"));
 
 // Middleware to handle 404 Not Found errors
 //app.use(requestNotFoundCheck)
@@ -92,5 +97,5 @@ app.use('/public', express.static('public'))
 
 // Start the server and listen on the specified port and hostname
 app.listen(port, "0.0.0.0", () => {
-	console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Server is running at http://localhost:${port}`);
 });
