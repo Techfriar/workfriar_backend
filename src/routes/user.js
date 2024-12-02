@@ -8,7 +8,6 @@ const user = new UserController()
 userRouter
     .route('/profile-view')
     .post(
-        // authenticateUser,
         user.getMyProfile
     )
 

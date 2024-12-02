@@ -16,7 +16,6 @@ const configureRoutes = (app) => {
     app.use('/api/project-status-report', projectStatusRouter)
 
     app.use('/api/timesheet', 
-        // authenticateEmployee,
         timesheetRouter
     )
 }
