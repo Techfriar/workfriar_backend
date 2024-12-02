@@ -1,5 +1,5 @@
 // repositories/HolidayRepo.js
-import Holiday from '../models/hoilday.js';
+import Holiday from '../models/holidays.js';
 
 class HolidayRepository {
 

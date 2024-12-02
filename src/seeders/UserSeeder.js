@@ -1,9 +1,11 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import User from '../models/user.js';  // Adjust the path to your User model file
+import dotenv from 'dotenv';
 
+dotenv.config();
 // Connect to MongoDB (you should replace the connection string with your actual MongoDB URI)
-mongoose.connect('mongodb+srv://snehaanil03:workfriar@cluster0.ts84e.mongodb.net/workfriar?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect('mongodb+srv://mekryptic:qC707pgH9sYViZR7@cluster0.ypwiy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log('Database connected'))
