@@ -66,6 +66,8 @@ adminRouter.route("/editprojectteam").post(projectTeamController.editProjectTeam
 //Route for displaying time summary
 adminRouter.route("/timesummary").post(timeSheetSummary.TimeSummaryController)
 
+adminRouter.route("/pastdue").post(timeSheetSummary.pastDueController)
+
 adminRouter
 .route('/profile-view')
     .post(
