@@ -210,7 +210,7 @@ export default class HolidayController {
    *
    * @swagger
    * /holiday/update/{id}:
-   *   put:
+   *   post:
    *     tags:
    *       - Holiday
    *     summary: Update holiday

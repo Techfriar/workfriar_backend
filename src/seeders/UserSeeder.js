@@ -18,15 +18,12 @@ const hashPassword = async (password) => {
 // Seed data for users
 const seedUsers = async () => {
   try {
-    // Check if the users collection exists
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    const usersCollectionExists = collections.some(
-      (collection) => collection.name === "users"
-    );
+    // Check if the users collection is empty
+    const userCount = await User.countDocuments();
 
-    // If users collection doesn't exist, create and seed it
-    if (!usersCollectionExists) {
-      console.log("Users collection does not exist. Creating and seeding...");
+    // If users collection is empty, seed it
+    if (userCount === 0) {
+      console.log("Users collection is empty. Seeding data...");
 
       // Create sample users
       const users = [
@@ -72,9 +69,11 @@ const seedUsers = async () => {
         await newUser.save();
       }
 
-      console.log("Users collection created and seeded successfully!");
+      console.log("Users collection seeded successfully!");
     } else {
-      console.log("Users collection already exists. Skipping seeding.");
+      console.log(
+        `Users collection already contains ${userCount} documents. Skipping seeding.`
+      );
     }
   } catch (err) {
     console.error("Error seeding users:", err);
