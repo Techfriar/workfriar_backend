@@ -7,6 +7,7 @@ import ClientController from '../controllers/admin/client-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 import { checkPermissions } from '../middlewares/check-permission.js';
+import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js'
 
 const adminRouter = express.Router();
 
@@ -67,6 +68,8 @@ adminRouter.route("/editprojectteam").post(projectTeamController.editProjectTeam
 adminRouter.route("/timesummary").post(timeSheetSummary.TimeSummaryController)
 
 adminRouter.route("/pastdue").post(timeSheetSummary.pastDueController)
+
+adminRouter.route("/getduetimesheet").post(timeSheetSummary.getDueTimeSheetController)
 
 adminRouter
 .route('/profile-view')

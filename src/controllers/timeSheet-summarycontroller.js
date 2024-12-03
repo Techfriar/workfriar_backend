@@ -7,7 +7,7 @@ const timesummaryResponse=new TimeSummaryResponse()
 const findWeekRange=new FindWeekRange()
 /**
  * @swagger
- * /timesheet:
+ * /admin/timesummary:
  *   post:
  *     summary: Fetch and format the time sheet summary.
  *     description: Returns a formatted time sheet summary based on the provided start date, end date, and project ID.
@@ -106,6 +106,7 @@ class TimeSheetSummaryController{
             const data=await timeSheetSummary.getTimeSummary(startDate,endDate,projectId)
             if(data.length>0)
             {
+               
             const formattedData= await timesummaryResponse.formattedSummary(data)
                 res.status(200).json(
                     {
@@ -117,13 +118,12 @@ class TimeSheetSummaryController{
             else
             {
                 res.status(400).json(
-                    {
+                {
                     status:false,
                     message:"No Data",
                     data:[]
-                    })
-            }
-            
+                })
+            }  
         }
         catch(error)
         {
@@ -136,26 +136,228 @@ class TimeSheetSummaryController{
         }
     }
 
+    /**
+ * @swagger
+ * /admin/pastdue:
+ *   get:
+ *     summary: Get due time sheets for a user
+ *     description: Retrieves due time sheets for a specific user within a date range
+ *     tags:
+ *       - TimeSheet
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: The start date for the time sheet range
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: The end date for the time sheet range
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved due time sheets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Due Time Sheet"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       // Define properties of a time sheet here
+ *       400:
+ *         description: No data available
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No Data"
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ */
+
     async pastDueController(req,res)
     {
-        const userId=req.userId
+        const userId="6746a63bf79ea71d30770de7"
         try
         {
             const {weekStartDate}=await findWeekRange.getWeekRange()
             console.log("date",weekStartDate)
             const data=await timeSheetSummary.getPastDue(userId,weekStartDate)
+            const formattedData= await timesummaryResponse.formattedPastDue(data)
             if(data.length>0)
             {
                 res.status(200).json(
                     {
                     status:true,
                     message:"Past Due",
-                    data:data
+                    data:formattedData
+                    })
+            }
+            else
+            {
+                res.status(400).json(
+                    {
+                    status:false,
+                    message:"No Data",
+                    data:[]
                     })
             }
         }
         catch(error)
         {
+            res.status(500).json(
+                {
+                    status:false,
+                    message:"Internal Server Error",
+                    data:[],
+                })
+        }
+    }
+
+    /**
+ * @swagger
+ * /admin/getduetimesheet:
+ *   get:
+ *     summary: Get past due time sheets for a user
+ *     description: Retrieves past due time sheets for a specific user
+ *     tags:
+ *       - TimeSheet
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved past due time sheets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Past Due"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       // Define properties of a formatted past due time sheet here
+ *       400:
+ *         description: No data available
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No Data"
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ */
+
+    async getDueTimeSheetController(req,res) {
+       // const {userId,startDate,endDate}=req.body
+    try
+    {
+      const  userId="6746a63bf79ea71d30770de7"
+      const  startDate="2024-11-24"
+      const  endDate="2024-11-30"
+            const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate)
+            console.log("data",data)
+            if(data)
+            {
+                res.status(200).json(
+                    {
+                    status:true,
+                    message:"Due Time Sheet",
+                    data:data
+                    })
+            }
+            else
+            {
+                res.status(400).json(
+                    {
+                    status:false,
+                    message:"No Data",
+                    data:[]
+                    })
+            }
+        }
+        catch(error)
+        {
+            console.log(error)
             res.status(500).json(
                 {
                     status:false,
