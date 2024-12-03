@@ -53,6 +53,9 @@ export default class ProjectController {
    *               billing_model:
    *                 type: string
    *                 description: Enter billing model
+   *               categories:
+   *                  type: array of string
+   *                  description: Enter categories
    *               project_logo:
    *                 type: string
    *                 format: binary
