@@ -1,8 +1,13 @@
-import bcrypt from "bcryptjs";
-import User from "../models/user.js";
-import dotenv from "dotenv";
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import User from '../models/user.js';  // Adjust the path to your User model file
 
-dotenv.config();
+// Connect to MongoDB (you should replace the connection string with your actual MongoDB URI)
+mongoose.connect('mongodb://localhost:27017/workfriar', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => console.log('Database connected'))
+  .catch((err) => console.error('Error connecting to the database:', err));
 
 // Function to hash password before saving a user
 const hashPassword = async (password) => {

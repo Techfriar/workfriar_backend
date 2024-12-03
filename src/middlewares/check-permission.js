@@ -1,6 +1,5 @@
-import Role from '../models/Role.js';
+import Role from '../models/role.js';
 import User from '../models/user.js';
-
 /**
  * Middleware function factory to check user permissions
  * @param String requiredCategory, requiredAction
@@ -10,23 +9,27 @@ const checkPermissions = (requiredCategory, requiredAction) => async (req, res, 
     try {
 
         //temporary true for development
-        return true
+        // return true
 
-        const user = req.session.user; // Assuming user data is stored in session
+        // const user = req.session.user; // Assuming user data is stored in session
+        const user = {email: 'john.doe@example.com'}
+        user._id = '6744a7c9707ecbeea1efd14c'
         if (user) {
-            // Populate the user's roles using the virtual field
-            const userWithRoles = await User.findById(user._id).populate({
-            path: 'roles',
-            populate: {
-                path: 'permissions', // Populate the permissions within the roles
-                model: 'Permission',
-            },
-            });
+            // Find the user and populate roles with permissions
+            const userWithRoles = await User.findById(user._id)
+            .populate({
+                path: 'roles',
+                populate: {
+                    path: 'permissions', // Populate permissions within roles
+                    model: 'Permission', // Ensure this matches the Permission model name
+                },
+            })
+            .lean(); // Use lean() for faster query and plain JS object          
   
         if (!userWithRoles || !userWithRoles.roles || userWithRoles.roles.length === 0) {
             return res.status(403).json({ message: 'No roles assigned to the user' });
         }
-  
+        
         // Check if the user has the required permission
         const hasPermission = userWithRoles.roles.some((role) => {
             // Super Admins bypass all checks
@@ -39,11 +42,13 @@ const checkPermissions = (requiredCategory, requiredAction) => async (req, res, 
                 return false;
             }
     
-            // Check permissions within the role
+            // Check permissions within the role            
             return role.permissions.some((permission) => {
+                console.log(permission, requiredCategory, requiredAction);
+                
                 return (
                     permission.category === requiredCategory &&
-                    permission.categories.includes(requiredAction)
+                    permission.actions.includes(requiredAction)
                 );
             });
         });
