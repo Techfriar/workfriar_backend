@@ -1,10 +1,8 @@
 import Joi from "joi";
 import ProjectRepository from "../../repositories/admin/project-repository.js";
-// import UserRepository from "../../repositories/admin/user-repository.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 class AddProjectRequest {
   static projectRepo = new ProjectRepository();
-  // static userRepo = new UserRepository();
 
   static schema = Joi.object({
     client_name: Joi.string().required().messages({
@@ -26,13 +24,6 @@ class AddProjectRequest {
     planned_end_date: Joi.optional().allow("").allow(null),
     actual_start_date: Joi.date().optional().allow("").allow(null),
     actual_end_date: Joi.date().optional().allow("").allow(null),
-    // project_lead: Joi.string()
-    //   .regex(/^[0-9a-fA-F]{24}$/)
-    //   .required()
-    //   .messages({
-    //     "string.empty": "Please specify the project lead.",
-    //     "any.required": "Please specify the project lead.",
-    //   }),
     billing_model: Joi.string().optional().allow("").allow(null),
     project_logo: Joi.object().optional().allow("").allow(null),
     open_for_time_entry: Joi.string().valid("opened", "closed").required(),
@@ -52,7 +43,7 @@ class AddProjectRequest {
       planned_end_date: req.body.planned_end_date,
       actual_start_date: req.body.actual_start_date,
       actual_end_date: req.body.actual_end_date,
-    //   project_lead: req.body.project_lead,
+      project_lead: req.body.project_lead,
       billing_model: req.body.billing_model,
       project_logo: file,
       open_for_time_entry: req.body.open_for_time_entry,
@@ -71,11 +62,6 @@ class AddProjectRequest {
         this.data.project_name,
         this.data.client_name
       );
-
-    // Check if project lead exists
-    // const checkproject_lead = await AddProjectRequest.userRepo.getUserById(
-    //   this.data.project_lead
-    // );
 
     if (error || checkProjectExists) {
       const validationErrors = {};
