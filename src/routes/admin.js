@@ -6,6 +6,7 @@ import ProjectTeamController from '../controllers/project-team-controller.js';
 import ClientController from '../controllers/admin/client-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
+import { checkPermissions } from '../middlewares/check-permission.js';
 
 const adminRouter = express.Router()
 
@@ -54,15 +55,6 @@ adminRouter.route("/getprojectteam").post(projectTeamController.getProjectTeamby
 //Route for editing the project team
 adminRouter.route("/editprojectteam/:id").put(projectTeamController.editProjectTeamController)
 
-
-// const auth = new AuthController()
-
-import AuthController from '../controllers/auth/auth-controller.js'
-import AdminController from '../controllers/admin/admin-controller.js'
-import TimesheetController from '../controllers/admin/timesheet-controller.js'
-import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
-
-
 adminRouter
 .route('/profile-view')
     .post(
@@ -74,7 +66,7 @@ adminRouter
     .route('/employee-list')
     .post(
         // authenticateAdmin,
-        // checkPermissions('user', 'view'),
+        checkPermissions('Users', 'view'),
         admin.employeeList
     )
 /* 
