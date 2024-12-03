@@ -67,7 +67,6 @@ export default class TimesheetRepository {
 			
 				if (existingEntry) {
 					// Update existing entry if date matches
-					console.log('actually teuwww ---')
 					existingEntry.isHoliday = isHoliday;
 					existingEntry.hours = hours;
 				} else {
