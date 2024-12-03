@@ -136,22 +136,28 @@ export default class TimesheetRepository {
         }
 	}
 
-	async getWeeklyTimesheets(user_id,startDate,endDate){
+	async getWeeklyTimesheets(user_id, startDate, endDate) {
 		try {
-			// Use Mongoose to find timesheets where the startDate and endDate match exactly
+			// Use Mongoose to find timesheets where the range overlaps
 			const timesheets = await Timesheet.find({
-			  user_id,
-			  startDate,
-			   endDate
-			}).populate('project_id','projectName').lean()
-			.populate('task_category_id','category').lean()
-	  
+				user_id,
+				$or: [
+					{ startDate: { $gte: startDate, $lte: endDate } }, // Start date is within the range
+					{ endDate: { $gte: startDate, $lte: endDate } },   // End date is within the range
+					{ startDate: { $lte: startDate }, endDate: { $gte: endDate } } // Timesheet spans the range
+				]
+			})
+				.populate('project_id', 'projectName') // Populate project details
+				.populate('task_category_id', 'category') // Populate task category details
+				.lean();
+	
 			return timesheets;
-		  } catch (error) {
+		} catch (error) {
 			console.error('Error fetching timesheets:', error);
 			throw error;
-		  }
+		}
 	}
+	
 	
 	async projectSummaryReport(start, end, projectIds) {
 		try {
