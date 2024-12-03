@@ -1,13 +1,12 @@
 import express from "express";
 
-import AuthController from "../controllers/auth/auth-controller.js";
-import TimesheetController from "../controllers/admin/timesheet-controller.js";
-import CategoryController from "../controllers/category-controller.js";
-import ForecastController from "../controllers/forecast-controller.js";
-import ProjectTeamController from "../controllers/project-team-controller.js";
-import ClientController from "../controllers/admin/client-controller.js";
-import AdminController from "../controllers/admin/admin-controller.js";
-import { authenticateAdmin } from "../middlewares/authenticate-admin.js";
+import CategoryController from '../controllers/category-controller.js'
+import ForecastController from '../controllers/forecast-controller.js';
+import ProjectTeamController from '../controllers/project-team-controller.js';
+import ClientController from '../controllers/admin/client-controller.js'
+import AdminController from '../controllers/admin/admin-controller.js'
+import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
+import { checkPermissions } from '../middlewares/check-permission.js';
 
 const adminRouter = express.Router();
 
@@ -81,16 +80,19 @@ adminRouter
         admin.getMyProfile
     )
 
-adminRouter.route("/employee-list").post(
-  // authenticateAdmin,
-  // checkPermissions('user', 'view'),
-  admin.employeeList
-);
-/*
- * Client Routes
- */
-adminRouter.route("/add-client").post(client.addClient);
-adminRouter.route("/all-clients").post(client.allClient);
-adminRouter.route("/edit-client").put(client.editClient);
+adminRouter
+    .route('/employee-list')
+    .post(
+        // authenticateAdmin,
+        checkPermissions('Users', 'view'),
+        admin.employeeList
+    )
+/* 
+* Client Routes
+*/
+adminRouter.route('/add-client').post(client.addClient)
+adminRouter.route('/all-clients').post(client.allClient)
+adminRouter.route('/edit-client').put(client.editClient)
+
 
 export default adminRouter;

@@ -6,9 +6,9 @@ import mongoose from "mongoose";
 const projectSchema = mongoose.Schema(
   {
     client_name: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "client",
       required: true,
-      type: mongoose.Schema.Types.ObjectId, ref: 'client',
     },
     project_name: {
       type: String,
@@ -37,7 +37,12 @@ const projectSchema = mongoose.Schema(
     },
     billing_model: {
       type: String,
-      enum: ["Bill time (time and materials)", "Bill milestones / Fixed fee", "Retainer", "Non billable"],
+      enum: [
+        "Bill time (time and materials)",
+        "Bill milestones / Fixed fee",
+        "Retainer",
+        "Non billable",
+      ],
     },
     project_logo: {
       type: String,
@@ -53,10 +58,17 @@ const projectSchema = mongoose.Schema(
       required: true,
       enum: ["Not Started", "In Progress", "Completed", "On Hold", "Cancelled"],
     },
-    effective_close_date:{
+    effective_close_date: {
       type: Date,
-      default:null
-    }
+      default: null,
+    },
+    categories: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -64,12 +76,12 @@ const projectSchema = mongoose.Schema(
 );
 
 // Virtual for roles
-projectSchema.virtual('team', {
-  ref: 'Project Team', // Name of the Role model
-  localField: '_id', // Field in the user schema
-  foreignField: 'project', // Field in the Role schema
+projectSchema.virtual("team", {
+  ref: "Project Team", // Name of the Role model
+  localField: "_id", // Field in the user schema
+  foreignField: "project", // Field in the Role schema
   justOne: false, // Set to true if a single role per user; false for an array
-  options: { select: 'team_members' }, // Default fields to include during population
+  options: { select: "team_members" }, // Default fields to include during population
 });
 
 const Project = mongoose.model("Project", projectSchema);

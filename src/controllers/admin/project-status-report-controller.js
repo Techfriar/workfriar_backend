@@ -218,7 +218,7 @@ export default class ProjectStatusReportController {
  * 
  * @swagger
  * /project-status-report/update-report/{id}: 
- *   put:
+ *   post:
  *     tags:
  *       - Project Status Report
  *     summary: Update status report
@@ -361,7 +361,7 @@ export default class ProjectStatusReportController {
      * 
      * @swagger
      * /project-status-report/delete-report/{id}:
-     *   delete:
+     *   post:
      *     tags:
      *       - Project Status Report
      *     summary: Delete status report

@@ -22,7 +22,7 @@ holidayRouter
   );
   holidayRouter
   .route("/update/:id")
-  .put(
+  .post(
     holiday.updateHoliday
   );
 
