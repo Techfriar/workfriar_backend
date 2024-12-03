@@ -67,14 +67,15 @@ export default class TimesheetRepository {
 			
 				if (existingEntry) {
 					// Update existing entry if date matches
+					console.log('actually teuwww ---')
 					existingEntry.isHoliday = isHoliday;
 					existingEntry.hours = hours;
 				} else {
 					// Otherwise, add new entry
 					timesheet.data_sheet.push({
-					date: new Date(date),
-					isHoliday,
-					hours,
+						date: new Date(date),
+						isHoliday,
+						hours,
 					});
 				}
 			});
