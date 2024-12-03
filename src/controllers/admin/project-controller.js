@@ -8,8 +8,7 @@ import UpdateStatusRequest from "../../requests/admin/update-project-status-requ
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 
 const projectRepo = new ProjectRepository();
-const updateStatus=new UpdateStatusRequest()
-//const updateStatusRequest=new  UpdateProjectRequest()
+const updateStatus=new UpdateStatusRequest();
 
 export default class ProjectController {
   /**
