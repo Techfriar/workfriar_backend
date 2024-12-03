@@ -20,7 +20,8 @@ class TimesheetResponse{
             projectName: timesheet.project_id.projectName,
             categoryName: timesheet.task_category_id.category,
             taskDetail: timesheet.task_detail,
-            dataSheet: timesheet.data_sheet
+            dataSheet: timesheet.data_sheet,
+            status:timesheet.status
         }
     }
 

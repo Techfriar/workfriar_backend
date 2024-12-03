@@ -8,13 +8,21 @@ export default class FindSunday {
         nextSunday.setDate(date.getDate() + daysUntilSunday);
         return nextSunday;
     }
-    static getPreviousSunday(date = new Date()) {    
-        const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-        const daysSinceSunday = dayOfWeek; // Number of days since last Sunday
-        const previousSunday = new Date(date); // Copy the provided date
-        previousSunday.setDate(date.getDate() - daysSinceSunday); // Adjust to previous Sunday
-        console.log(previousSunday, "Here is the previous Sunday");
+
+    static getPreviousSunday(date = new Date(), timezone = 'UTC') {
+        const formattedDate = new Date(
+            new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format(date)
+        );
+        const dayOfWeek = formattedDate.getDay(); 
+        if (dayOfWeek === 0) {
+            return new Date(date.setHours(0, 0, 0, 0));
+        }
+        const previousSunday = new Date(date); 
+        previousSunday.setDate(date.getDate() - dayOfWeek);
+        previousSunday.setHours(0, 0, 0, 0);
         return previousSunday;
     }
+    
+    
     
 }

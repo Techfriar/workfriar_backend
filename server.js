@@ -11,7 +11,7 @@ import bodyParser from "body-parser";
 import morgan from "morgan";
 import cors from "cors";
 import configureRoutes from "./src/routes/routes.js";
-import seedUsers from "./src/seeders/UserSeeder.js";
+// import seedUsers from "./src/seeders/UserSeeder.js";
 
 dotenv.config();
 
@@ -39,7 +39,7 @@ app.set("views", "./src/views");
 // Import MongoDB connection and establish the database connection
 connectDB()
   .then(() => {
-    seedUsers();
+    // seedUsers();
   })
   .catch((error) => {
     console.error("Error connecting to MongoDB:", error);

@@ -941,16 +941,42 @@ export default class TimesheetController {
 
 			}
 			const start = new Date(startDate)
-			const end = new Date(endDate)
+
 			const actualWeekStart =  FindS.getPreviousSunday(start)
+			const actualWeekEnd = new Date(actualWeekStart);
 
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, end)
+			actualWeekEnd.setDate(actualWeekStart.getUTCDate() + 6); 
+			actualWeekEnd.setHours(23, 59, 59, 999);
 
-			
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, actualWeekEnd)
 
 			if (timesheets.length > 0) {
+				const modifydata = timesheets.map((item) => {
+					const allDates = FindWeekRange_.getDatesBetween(new Date(item.startDate), new Date(item.endDate));
+				
+					item.data_sheet.forEach(data => {
+						data.normalizedDate = new Date(data.date).toISOString().split('T')[0];
+					});
+
+					allDates.forEach(date => {
+						const dateString = date.toISOString().split('T')[0]; 
+						const existingData = item.data_sheet.find(data => data.normalizedDate === dateString);
+						if (!existingData) {
+							item.data_sheet.push({
+								date: date,
+								hours: '00:00',
+								isHoliday: false,
+								normalizedDate: dateString
+							});
+						}
+					});
+					return item;
+				});
+				
+				
+
 				const data = await Promise.all(
-					timesheets.map(async (item) =>
+					modifydata.map(async (item) =>
 						await timesheetResponse.weeklyTimesheetResponse(item)
 					)
 				)
@@ -958,7 +984,7 @@ export default class TimesheetController {
 					success: true,
 					message: 'Weekly timesheets fetched successfully',
 					length: timesheets.length,
-					data: data
+					data
 				});
 
 			}
