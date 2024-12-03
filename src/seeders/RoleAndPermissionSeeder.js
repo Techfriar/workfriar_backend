@@ -5,11 +5,11 @@ import Permission from '../models/permission.js'; // Adjust the path
 const seedData = async () => {
     try {
         // Connect to MongoDB (adjust URI as needed)
-        await mongoose.connect('mongodb://localhost:27017/workfriar', {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log('Database connected successfully!');
+        // await mongoose.connect('mongodb://localhost:27017/workfriar', {
+        //     useNewUrlParser: true,
+        //     useUnifiedTopology: true,
+        // });
+        // console.log('Database connected successfully!');
 
         // Clear existing data
         await Role.deleteMany({});

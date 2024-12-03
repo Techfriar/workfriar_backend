@@ -4,11 +4,11 @@ import User from '../models/user.js'; // Replace with your User model's path
 
 
 // Connect to MongoDB (you should replace the connection string with your actual MongoDB URI)
-mongoose.connect('mongodb://localhost:27017/workfriar', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log('Database connected'))
-  .catch((err) => console.error('Error connecting to the database:', err));
+// mongoose.connect('mongodb://localhost:27017/workfriar', {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// }).then(() => console.log('Database connected'))
+//   .catch((err) => console.error('Error connecting to the database:', err));
 
 /**
  * Add a user to a role by their IDs.
