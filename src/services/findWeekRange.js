@@ -45,20 +45,19 @@ export default class FindWeekRange {
     }
 
     normalizeToUTCDate = (date) => {
-		const normalizedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+		const normalizedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getUTCDate()));
 		return normalizedDate;
 	};
 
     getDatesBetween(startDate, endDate) {
         const dates = [];
         let currentDate = this.normalizeToUTCDate(startDate)
-
         let end = this.normalizeToUTCDate(endDate)
         
         while (currentDate <= end) {
             dates.push(new Date(currentDate));
             currentDate.setDate(currentDate.getUTCDate() + 1);
-        }
+        }      
         return dates;
     }
 }

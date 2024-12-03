@@ -914,7 +914,6 @@ export default class TimesheetController {
 	 *                   type: array
 	 *                   example: []
 	 */
-
 	async filterWeeklyTimesheet(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -943,16 +942,19 @@ export default class TimesheetController {
 			const start = new Date(startDate)
 
 			const actualWeekStart =  FindS.getPreviousSunday(start)
+			actualWeekStart.setHours(0,0,0,0)
 			const actualWeekEnd = new Date(actualWeekStart);
 
 			actualWeekEnd.setDate(actualWeekStart.getUTCDate() + 6); 
-			actualWeekEnd.setHours(23, 59, 59, 999);
+			actualWeekEnd.setHours(0,0,0,0)
 
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, actualWeekEnd)
 
 			if (timesheets.length > 0) {
 				const modifydata = timesheets.map((item) => {
-					const allDates = FindWeekRange_.getDatesBetween(new Date(item.startDate), new Date(item.endDate));
+					console.log(actualWeekStart,item.startDate);
+					
+					const allDates = FindWeekRange_.getDatesBetween(new Date(actualWeekStart), new Date(actualWeekEnd));
 				
 					item.data_sheet.forEach(data => {
 						data.normalizedDate = new Date(data.date).toISOString().split('T')[0];
@@ -1225,8 +1227,7 @@ export default class TimesheetController {
 			let end = endDate.toISOString()
 
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
-			console.log(timesheets);
-			
+
 			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'approved')))
 
 
