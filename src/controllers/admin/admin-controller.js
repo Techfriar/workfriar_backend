@@ -8,7 +8,7 @@ const employeeRepo = new UserRepository()
 const userRepo = new UserRepository()
 const emailRepo = new EmailRepository()
 
-export default class UserController {
+export default class AdminController {
     /**
      * Get User
      *

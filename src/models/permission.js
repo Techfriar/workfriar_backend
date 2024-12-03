@@ -1,4 +1,3 @@
-import { types } from "joi"
 import mongoose from "mongoose"
 
 const Schema = mongoose.Schema
@@ -15,4 +14,6 @@ const PermissionSchema = new Schema({
     }]
 })
 
-const Permission = mongoose.model()
+const Permission = mongoose.model('Permission', PermissionSchema)
+
+export default Permission

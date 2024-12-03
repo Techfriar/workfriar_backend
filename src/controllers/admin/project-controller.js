@@ -8,8 +8,7 @@ import UpdateStatusRequest from "../../requests/admin/update-project-status-requ
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 
 const projectRepo = new ProjectRepository();
-const updateStatus=new UpdateStatusRequest()
-//const updateStatusRequest=new  UpdateProjectRequest()
+const updateStatus=new UpdateStatusRequest();
 
 export default class ProjectController {
   /**
@@ -53,6 +52,9 @@ export default class ProjectController {
    *               billing_model:
    *                 type: string
    *                 description: Enter billing model
+   *               categories:
+   *                  type: array of string
+   *                  description: Enter categories
    *               project_logo:
    *                 type: string
    *                 format: binary
@@ -257,7 +259,7 @@ export default class ProjectController {
    *
    * @swagger
    * /project/update/{id}:
-   *   put:
+   *   post:
    *     tags:
    *       - Project
    *     summary: Update project
@@ -388,7 +390,7 @@ export default class ProjectController {
    *
    * @swagger
    * /project/delete/{id}:
-   *   delete:
+   *   post:
    *     tags:
    *       - Project
    *     summary: Delete project

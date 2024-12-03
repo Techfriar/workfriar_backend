@@ -31,13 +31,13 @@ projectRouter
   );
   projectRouter
   .route("/update/:id")
-  .put(
+  .post(
     upload.fields([{ name: "project_logo", maxCount: 1 }]),
     project.updateProject
   );
   projectRouter
   .route("/delete/:id")
-  .delete(
+  .post(
     project.deleteProject
   );
   projectRouter.route("/changetimeentry").post(project.updateTimeEntry)
