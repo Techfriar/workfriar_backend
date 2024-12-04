@@ -8,9 +8,13 @@ export default class FindSunday {
         nextSunday.setDate(date.getDate() + daysUntilSunday);
         return nextSunday;
     }
+    static getPreviousSunday(date = new Date()) {    
+        const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+        const daysSinceSunday = dayOfWeek; // Number of days since last Sunday
+        const previousSunday = new Date(date); // Copy the provided date
+        previousSunday.setDate(date.getDate() - daysSinceSunday); // Adjust to previous Sunday
+        console.log(previousSunday, "Here is the previous Sunday");
+        return previousSunday;
+    }
     
-    async   getPreviousSunday(date = new Date()) {    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-            const daysSinceSunday = dayOfWeek === 0 ? 7 : dayOfWeek; // Calculate days since last Sunday    const previousSunday = new Date(date);
-            previousSunday.setDate(date.getDate() - daysSinceSunday); // Move back to the last Sunday
-            return previousSunday;}
 }

@@ -3,6 +3,13 @@ import Role from '../models/role.js'; // Replace with your Role model's path
 import Permission from '../models/permission.js'; // Replace with your Permission model's path
 
 
+// Connect to MongoDB (you should replace the connection string with your actual MongoDB URI)
+// mongoose.connect('mongodb://localhost:27017/workfriar', {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// }).then(() => console.log('Database connected'))
+//   .catch((err) => console.error('Error connecting to the database:', err));
+
 /**
  * Add a permission to a role by their IDs.
  * @param {String} roleId - The ID of the role.
