@@ -4,7 +4,7 @@ import TimesheetRequest from '../../requests/admin/timesheet-request.js'
 import FindWeekRange from '../../utils/findWeekRange.js';
 import TimesheetResponse from '../../responses/timesheet-response.js';
 import findTimezone from '../../utils/findTimeZone.js';
-import FindS from '../../services/findSunday.js'
+import FindS from '../../utils/findSunday.js'
 
 const TimesheetRepo = new TimesheetRepository()
 
@@ -158,7 +158,7 @@ export default class TimesheetController {
 			// const user_id = await authenticateAndGetUserId(req);
 			const user_id = '6744a7c9707ecbeea1efd14c'; // Temporary user ID
 			
-			const timezone = findTimezone(req);
+			const timezone = await findTimezone(req);
 
 			const { timesheets } = req.body;			
 	
@@ -683,15 +683,16 @@ export default class TimesheetController {
 
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
-			const startOfDay = new Date();
+			const timezone = await findTimezone(req);
+
+			const startOfDay = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
 			startOfDay.setUTCHours(0, 0, 0, 0);
 
 			const endOfDay = new Date(startOfDay);
 			endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
 			endOfDay.setMilliseconds(endOfDay.getMilliseconds() - 1);
 
-			const timesheets = await TimesheetRepo.getCurrentDayTimesheets(user_id, startOfDay, endOfDay)
-			console.log('1',timesheets);
+			const timesheets = await TimesheetRepo.getCurrentDayTimesheets(user_id, startOfDay, endOfDay);
 			
 			let totalHours = 0
 			timesheets.forEach((item) => {
@@ -870,7 +871,7 @@ export default class TimesheetController {
 						data.normalizedDate = new Date(data.date).toISOString().split('T')[0];
 						
 					});
-					console.log('total',total_hours);
+
 					item.totalHours = total_hours
 
 					allDates.forEach(date => {
@@ -1010,8 +1011,14 @@ export default class TimesheetController {
 
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
-			const today = new Date(); // Reference date (can be any date)
-			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
+			const timezone = await findTimezone(req);
+			
+			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+			const weekStartDate = FindWeekRange_.getWeekStartDate(today)
+
+			const weekEndDate = FindWeekRange_.getWeekEndDate(today)
+
+	
 
 			const startDate = new Date(weekStartDate)
 			startDate.setUTCHours(0, 0, 0, 0)
@@ -1021,7 +1028,6 @@ export default class TimesheetController {
 			endDate.setUTCHours(0, 0, 0, 0)
 			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
-
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
 
 			if (timesheets.length > 0) {
@@ -1129,6 +1135,12 @@ export default class TimesheetController {
 			const user_id = '6746a473ed7e5979a3a1f891';
 
 			const { fromDate, toDate } = req.body;
+			const validatedValues = await TimesheetRequest.validateDateRangeForDue({ fromDate, toDate });
+			if (validatedValues.error) {
+				// If there are validation errors, return a error
+				throw new CustomValidationError(validatedValues.error)
+
+			}
 
 			const startDate = fromDate ? new Date(fromDate) : new Date();
 			const actualWeekStart =  FindS.getPreviousSunday(startDate);
@@ -1187,11 +1199,20 @@ export default class TimesheetController {
 				})
 			}
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: err.message,
-				data: [],
-			});
+			if (err instanceof CustomValidationError) {
+				res.status(422).json({
+					success: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			}
+			else {
+				return res.status(500).json({
+					success: false,
+					message: err.message,
+					data: []
+				});
+			}
 		}
 	}
 

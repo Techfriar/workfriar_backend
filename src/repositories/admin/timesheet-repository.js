@@ -124,17 +124,6 @@ export default class TimesheetRepository {
 	}
 
 	//get Timesheet based on current date
-	// async getCurrentDayTimesheets(userId,startOfDay,endOfDay){
-	// 	try {
-
-    //         return await Timesheet.find({user_id: userId,"data_sheet.date": {
-	// 			$gte: startOfDay,
-	// 			$lte: endOfDay
-	// 		}}).populate('project_id','projectName').lean()
-    //     } catch (error) {
-    //         throw new Error(error); 
-    //     }
-	// }
 	async getCurrentDayTimesheets(userId, startOfDay, endOfDay) {
 		try {
 			const timesheets = await Timesheet.aggregate([
@@ -210,17 +199,16 @@ export default class TimesheetRepository {
 
 	async getWeeklyTimesheets(user_id, startDate, endDate) {
 		try {
-			// Use Mongoose to find timesheets where the range overlaps
 			const timesheets = await Timesheet.find({
 				user_id,
 				$or: [
-					{ startDate: { $gte: startDate, $lte: endDate } }, // Start date is within the range
-					{ endDate: { $gte: startDate, $lte: endDate } },   // End date is within the range
-					{ startDate: { $lte: startDate }, endDate: { $gte: endDate } } // Timesheet spans the range
+					{ startDate: { $gte: startDate, $lte: endDate } }, 
+					{ endDate: { $gte: startDate, $lte: endDate } }, 
+					{ startDate: { $lte: startDate }, endDate: { $gte: endDate } } 
 				]
 			})
-				.populate('project_id', 'projectName') // Populate project details
-				.populate('task_category_id', 'category') // Populate task category details
+				.populate('project_id', 'projectName') 
+				.populate('task_category_id', 'category') 
 				.lean();
 	
 			return timesheets;
