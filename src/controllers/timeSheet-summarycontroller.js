@@ -340,14 +340,14 @@ class TimeSheetSummaryController{
       const  startDate="2024-11-01"
       const  endDate="2024-12-07"
             const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate)
-            console.log("data",data)
+        const formattedData= await timesummaryResponse.formattedPastDue(data)
             if(data)
             {
                 res.status(200).json(
                     {
                     status:true,
                     message:"Due Time Sheet",
-                    data:data
+                    data:formattedData
                     })
             }
             else

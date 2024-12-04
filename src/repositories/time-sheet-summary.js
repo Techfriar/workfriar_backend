@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Timesheet from "../models/timesheet.js";
 class TimeSheetSummary{
+    //function for retrieveing time logged and appoved time for every members in the project
     async getTimeSummary(startDate, endDate, projectId) {
         try {
             const start = new Date(startDate);
@@ -15,6 +16,8 @@ class TimeSheetSummary{
             throw new Error(error);
         }
     }
+
+    //Function for retrieveing past due timesheets
     async getPastDue(userId,weekStartDate) {
         try {
             const pastDue = await Timesheet.find({
@@ -27,6 +30,8 @@ class TimeSheetSummary{
             throw new Error(error);
         }
     }
+
+    //function for retrieveing timesheets in a period of time
     async getDueTimeSheet(userId, startDate, endDate) {
         try {
             console.log(userId,startDate,endDate)
