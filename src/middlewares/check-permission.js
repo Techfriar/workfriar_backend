@@ -1,5 +1,6 @@
 import Role from '../models/Role.js';
 import User from '../models/user.js';
+import Permission from '../models/permission.js';
 /**
  * Middleware function factory to check user permissions
  * @param String requiredCategory, requiredAction

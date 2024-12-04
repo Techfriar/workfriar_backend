@@ -1,385 +1,328 @@
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
 import TimesheetRepository from '../../repositories/admin/timesheet-repository.js';
 import TimesheetRequest from '../../requests/admin/timesheet-request.js'
-import FindWeekRange from '../../services/findWeekRange.js';
-import ProjectRepository from '../../repositories/admin/project-repository.js';
+import FindWeekRange from '../../utils/findWeekRange.js';
 import TimesheetResponse from '../../responses/timesheet-response.js';
-import moment from 'moment';
-import HolidayRepository from '../../repositories/holiday-repository.js';
-import IsDateInRange from '../../services/isDateInRange.js';
+import findTimezone from '../../utils/findTimeZone.js';
 import FindS from '../../services/findSunday.js'
 
 const TimesheetRepo = new TimesheetRepository()
-const HolidayRepo = new HolidayRepository()
-const ProjectRepo = new ProjectRepository()
-const findS = new FindS()
 
 const FindWeekRange_ = new FindWeekRange()
-const IsDateInRange_ = new IsDateInRange()
 
 const timesheetResponse = new TimesheetResponse()
 
 // Admin controller to add a timesheet
-export default class TimesheetController {
+export default class TimesheetController {	
+
+	constructor() {
+        // Explicitly bind methods to the class instance
+		this.updateTimesheet = this.updateTimesheet.bind(this);
+        this.processTimesheets = this.processTimesheets.bind(this);
+        this.resolveTimesheetId = this.resolveTimesheetId.bind(this);
+        this.updateTimesheetRecords = this.updateTimesheetRecords.bind(this);
+        this.handleTimesheetError = this.handleTimesheetError.bind(this);
+    }
 
 	/**
-	 * @swagger
-	 * /timesheet/add-timesheet:
-	 *   post:
-	 *     summary: Add a new timesheet
-	 *     description: Adds a new timesheet entry for the current user. Requires a valid JWT in the `Authorization` header.
-	 *     tags:
-	 *       - Timesheet
-	 *     security:
-	 *       - BearerAuth: []
-	 *     requestBody:
-	 *       description: Payload for adding a timesheet
-	 *       required: true
-	 *       content:
-	 *         application/json:
-	 *           schema:
-	 *             type: object
-	 *             properties:
-	 *               project_id:
-	 *                 type: string
-	 *                 description: ID of the project.
-	 *                 example: "6487b93f2d3e4a0c8c2b32a9"
-	 *               task_category_id:
-	 *                 type: string
-	 *                 description: ID of the task category.
-	 *                 example: "6487b9402d3e4a0c8c2b32aa"
-	 *               task_detail:
-	 *                 type: string
-	 *                 description: Description of the task.
-	 *                 example: "Worked on front-end feature X."
-	 *     responses:
-	 *       201:
-	 *         description: Timesheet successfully created
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 status:
-	 *                   type: boolean
-	 *                   example: true
-	 *                 message:
-	 *                   type: string
-	 *                   example: "Timesheet added successfully"
-	 *                 data:
-	 *                   type: array
-	 *                   items:
-	 *                     type: object
-	 *       400:
-	 *         description: Validation error
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 status:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: "Validation error"
-	 *                 data:
-	 *                   type: array
-	 *                   items:
-	 *                     type: object
-	 *       401:
-	 *         description: Unauthorized (missing or invalid token)
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 message:
-	 *                   type: string
-	 *                   example: "No token provided"
-	 *       500:
-	 *         description: Internal server error
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 status:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: "Internal server error"
-	 * components:
-	 *   securitySchemes:
-	 *     BearerAuth:
-	 *       type: http
-	 *       scheme: bearer
-	 *       bearerFormat: JWT
-	 */
-
-
-	// Controller method to handle adding a timesheet
-	async addTimesheet(req, res) {
-
-		try {
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const user_id = decoded.UserId; 
-
-			const user_id = '6746a63bf79ea71d30770de7'
-
-			const { project_id, task_category_id, task_detail, data_sheet = [], status = 'in_progress' } = req.body;
-
-			await TimesheetRequest.validateReferences(project_id, user_id, task_category_id)
-			await TimesheetRequest.validateProjectStatus(project_id)
-
-			const today = new Date(); // Reference date (can be any date)
-			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
-			// Call the Repository to create the timesheet
-			await TimesheetRepo.createTimesheet(project_id, user_id, task_category_id, task_detail, weekStartDate, weekEndDate, data_sheet, status);
-
-			return res.status(201).json({
-				status: true,
-				message: 'Timesheet added successfully',
-				data: []
-			});
-		} catch (err) {
-
-			if (err instanceof CustomValidationError) {
-				return res.status(400).json({
-					status: false,
-					message: err.errors,
-					data: []
-				});
-			}
-			return res.status(500).json({
-				status: false,
-				message: err.message,
-				data: []
-			});
-		}
-	}
+ * @swagger
+ * /timesheet/save-timesheets:
+ *   post:
+ *     summary: Update or create timesheets
+ *     description: Updates existing timesheets or creates new ones based on the provided data
+ *     tags:
+ *       - Timesheet
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               timesheets:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     timesheetId:
+ *                       type: string
+ *                       description: Existing timesheet ID (optional for new timesheets)
+ *                     project_id:
+ *                       type: string
+ *                       description: Project ID (required for new timesheets)
+ *                     task_category_id:
+ *                       type: string
+ *                       description: Task category ID (required for new timesheets)
+ *                     task_detail:
+ *                       type: string
+ *                       description: Details of the task
+ *                     status:
+ *                       type: string
+ *                       enum: [in_progress, saved]
+ *                       default: in_progress
+ *                     data_sheet:
+ *                       type: array
+ *                       description: Array of timesheet entries
+ *                       items:
+ *                         type: object
+ *                         required:
+ *                           - date
+ *                           - hours
+ *                         properties:
+ *                           date:
+ *                             type: string
+ *                             format: date
+ *                             description: Date of the timesheet entry (must be within timesheet's date range)
+ *                           hours:
+ *                             type: number
+ *                             description: Hours worked on the given date
+ *     responses:
+ *       200:
+ *         description: Timesheets updated or created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Timesheets saved successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       data_sheet:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             date:
+ *                               type: string
+ *                               format: date
+ *                             hours:
+ *                               type: number
+ *                             isHoliday:
+ *                               type: boolean
+ *       400:
+ *         description: Bad request due to invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Invalid or empty timesheets array
+ *                 data:
+ *                   type: array
+ *                   example: []
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: An unexpected error occurred
+ *                 data:
+ *                   type: array
+ *                   example: []
+ */
 
 	/**
-	 * @swagger
-	 * /timesheet/save-timesheets:
-	 *   post:
-	 *     summary: Update multiple timesheet entries
-	 *     description: Update the `data_sheet` of multiple timesheets. Ensures each timesheet is not in `submitted` or `accepted` status before allowing updates.
-	 *     tags:
-	 *       - Timesheet
-	 *     requestBody:
-	 *       required: true
-	 *       content:
-	 *         application/json:
-	 *           schema:
-	 *             type: object
-	 *             properties:
-	 *               timesheets:
-	 *                 type: array
-	 *                 description: Array of timesheets to update
-	 *                 items:
-	 *                   type: object
-	 *                   properties:
-	 *                     timesheetId:
-	 *                       type: string
-	 *                       description: ID of the timesheet to update
-	 *                       example: "64f6c25e97f847001c24f7c9"
-	 *                     data_sheet:
-	 *                       type: array
-	 *                       description: Array of data_sheet entries to add or update
-	 *                       items:
-	 *                         type: object
-	 *                         properties:
-	 *                           date:
-	 *                             type: string
-	 *                             format: date
-	 *                             description: Date of the timesheet entry (YYYY-MM-DD format)
-	 *                             example: "2024-11-29"
-	 *                           hours:
-	 *                             type: string
-	 *                             description: Hours worked on the date
-	 *                             example: "8"
-	 *     responses:
-	 *       200:
-	 *         description: Successfully updated the timesheets
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 status:
-	 *                   type: boolean
-	 *                   example: true
-	 *                 message:
-	 *                   type: string
-	 *                   example: "All timesheets updated successfully"
-	 *                 data:
-	 *                   type: object
-	 *                   properties:
-	 *                     updatedTimesheets:
-	 *                       type: array
-	 *                       description: List of successfully updated timesheets
-	 *                       items:
-	 *                         type: object
-	 *                         properties:
-	 *                           timesheetId:
-	 *                             type: string
-	 *                             example: "64f6c25e97f847001c24f7c9"
-	 *                           status:
-	 *                             type: string
-	 *                             example: "saved"
-	 *                     errors:
-	 *                       type: array
-	 *                       description: List of errors for timesheets that failed to update
-	 *                       items:
-	 *                         type: object
-	 *                         properties:
-	 *                           timesheetId:
-	 *                             type: string
-	 *                             example: "64f6c25e97f847001c24f7d0"
-	 *                           message:
-	 *                             type: string
-	 *                             example: "Unauthorized to update this timesheet"
-	 *       207:
-	 *         description: Partial success - some timesheets failed to update
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 status:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: "Some timesheets failed to save"
-	 *                 data:
-	 *                   type: object
-	 *                   properties:
-	 *                     updatedTimesheets:
-	 *                       type: array
-	 *                       description: List of successfully updated timesheets
-	 *                       items:
-	 *                         type: object
-	 *                         properties:
-	 *                           timesheetId:
-	 *                             type: string
-	 *                             example: "64f6c25e97f847001c24f7c9"
-	 *                           status:
-	 *                             type: string
-	 *                             example: "saved"
-	 *                     errors:
-	 *                       type: array
-	 *                       description: List of errors for timesheets that failed to update
-	 *                       items:
-	 *                         type: object
-	 *                         properties:
-	 *                           timesheetId:
-	 *                             type: string
-	 *                             example: "64f6c25e97f847001c24f7d0"
-	 *                           message:
-	 *                             type: string
-	 *                             example: "Unauthorized to update this timesheet"
-	 *       400:
-	 *         description: Bad request due to invalid input
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 status:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: "Invalid input: timesheets should be a non-empty array"
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
-	 *       500:
-	 *         description: Server error
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 status:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: "Internal server error"
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
+	 * Updates timesheets for a user
+	 * @param {Object} req - Express request object
+	 * @param {Object} res - Express response object
+	 * @returns {Promise<Object>} Response object with status and message
 	 */
 
 	async updateTimesheet(req, res) {
 		try {
-			// // Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+			// Authentication (uncomment and implement proper token verification in production)
+			// const user_id = await authenticateAndGetUserId(req);
+			const user_id = '6744a7c9707ecbeea1efd14c'; // Temporary user ID
+			
+			const timezone = findTimezone(req);
 
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const user_id = decoded.UserId; 
-
-			const user_id = '6746a63bf79ea71d30770de7'; // Replace this with decoded user ID from the token in production
-			const { timesheets } = req.body;
-
-			// Validate request input and timesheet ownership 
-			const validatedTimesheets = await Promise.all(timesheets.map(async ({ timesheetId, data_sheet }) => {
-				const timesheetValidationError = await TimesheetRequest.validateTimesheetAndOwnership(timesheetId, user_id)
-				const { timesheet } = timesheetValidationError; // Extract validated timesheet 
-				// Validate and process data_sheet items 
-				await TimesheetRequest.validateAndProcessDataSheet(data_sheet, timesheet);
-
-				// Validate Project Status
-				await TimesheetRequest.validateProjectStatus(timesheet.project_id)
-
-				return { timesheetId, data_sheet, timesheet };
-			})); // Update each timesheet 
-
-			const updatedTimesheets = await Promise.all(validatedTimesheets.map(async ({ timesheetId, data_sheet }) => {
-				return await TimesheetRepo.updateTimesheetData(timesheetId, { data_sheet, status: 'saved', });
-			}));
-
+			const { timesheets } = req.body;			
+	
+			// Input validation
+			if (!Array.isArray(timesheets) || timesheets.length === 0) {
+				throw new CustomValidationError('Invalid or empty timesheets array');
+			}
+	
+			// Validate and process timesheets
+			const processedTimesheets = await this.processTimesheets(user_id, timesheets, timezone);
+	
+			// Update timesheets
+			const updatedTimesheets = await this.updateTimesheetRecords(processedTimesheets);
+	
 			return res.status(200).json({
 				status: true,
 				message: 'Timesheets saved successfully',
 				data: updatedTimesheets,
 			});
 		} catch (err) {
-			return res.status(500).json({
-				status: false,
-				message: err.message,
-				data: [],
-			});
+			this.handleTimesheetError(res, err);
 		}
 	}
+	
+	/**
+	 * Validates and prepares timesheets for update
+	 * @param {string} user_id - User's identifier
+	 * @param {Array} timesheets - Array of timesheet data
+	 * @returns {Promise<Array>} Processed timesheets
+	 */
+	async processTimesheets(user_id, timesheets, timezone) {
+		return Promise.all(timesheets.map(async (timesheetData) => {
+			const {
+				timesheetId, 
+				data_sheet, 
+				project_id, 
+				task_category_id, 
+				task_detail, 
+				status = 'in_progress'
+			} = timesheetData;			
+			
+			// Create new timesheet if necessary
+			const resolvedTimesheetId = await this.resolveTimesheetId({
+				timesheetId,
+				user_id,
+				project_id,
+				task_category_id,
+				task_detail,
+				status,
+				timezone
+			});
+	
+			// Validate existing timesheet
+			const { timesheet } = await TimesheetRequest.validateTimesheetAndOwnership(
+				resolvedTimesheetId, 
+				user_id
+			);
+	
+			// Validate project and data sheet
+			await Promise.all([
+				TimesheetRequest.validateProjectStatus(timesheet.project_id),
+				TimesheetRequest.validateAndProcessDataSheet(data_sheet, timesheet)
+			]);
+	
+			return { 
+				timesheetId: resolvedTimesheetId, 
+				data_sheet 
+			};
+		}));
+	}
+	
+	/**
+	 * Resolves timesheet ID, creating a new timesheet if necessary
+	 * @param {Object} params - Timesheet creation parameters
+	 * @returns {Promise<string>} Timesheet ID
+	 */
+	async resolveTimesheetId({
+		timesheetId, 
+		user_id, 
+		project_id, 
+		task_category_id, 
+		task_detail, 
+		status,
+		timezone
+	}) {
+		// If no timesheetId is provided but required parameters exist, create a new timesheet		
+		if (!timesheetId) {
 
+			if (!project_id || !task_category_id) {
+				throw new CustomValidationError('Project ID and Task Category ID are required to create a new timesheet');
+			}
+
+			// Validate references before creating
+			await Promise.all([
+				TimesheetRequest.validateReferences(project_id, user_id, task_category_id),
+				TimesheetRequest.validateProjectStatus(project_id)
+			]);
+	
+			// Create a date object for today in the user's timezone, set to start of day
+			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+			
+			// Determine week range
+			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
+	
+			// Create new timesheet
+			const newTimesheet = await TimesheetRepo.createTimesheet(
+				project_id, 
+				user_id, 
+				task_category_id, 
+				task_detail, 
+				weekStartDate, 
+				weekEndDate, 
+				[], // Empty data_sheet initially
+				status
+			);
+	
+			return newTimesheet._id;
+		}
+	
+		return timesheetId;
+	}
+	
+	/**
+	 * Updates timesheet records
+	 * @param {Array} processedTimesheets - Processed timesheet data
+	 * @returns {Promise<Array>} Updated timesheets
+	 */
+	async updateTimesheetRecords(processedTimesheets) {
+		return Promise.all(processedTimesheets.map(async ({ timesheetId, data_sheet }) => {
+			return await TimesheetRepo.updateTimesheetData(timesheetId, { 
+				data_sheet, 
+				status: 'saved' 
+			});
+		}));
+	}
+
+	async handleTimesheetError(res, err) {
+		console.error('Timesheet Update Error:', err);
+	
+		if (err instanceof CustomValidationError) {
+			return res.status(400).json({
+				status: false,
+				message: err.errors || 'Validation Error',
+				data: []
+			});
+		}
+	
+		// Distinguish between different types of errors
+		if (err.name === 'ValidationError') {
+			return res.status(400).json({
+				status: false,
+				message: 'Invalid input data',
+				data: []
+			});
+		}
+	
+		// Catch-all for unexpected errors
+		return res.status(500).json({
+			status: false,
+			message: 'An unexpected error occurred',
+			data: []
+		});
+	}
+	
 	//get all timesheets of a user
 	/**
 	 * @swagger
@@ -1198,8 +1141,7 @@ export default class TimesheetController {
 			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
 
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
-			console.log(timesheets);
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end) 
 			
 			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'approved')))
 

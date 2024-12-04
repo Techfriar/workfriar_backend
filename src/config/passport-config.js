@@ -1,7 +1,7 @@
 import passport from 'passport';
 import dotenv from 'dotenv';
 import googleStrategy from 'passport-google-oauth20';
-import jwtService from '../services/jwt-servise.js';
+import jwtService from '../utils/jwt-service.js';
 import UserRepository from '../repositories/user-repository.js';
 
 dotenv.config();
