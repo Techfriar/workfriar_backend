@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import Role from '../models/role.js'; // Replace with your Role model's path
 import User from '../models/user.js'; // Replace with your User model's path
 
-
 /**
  * Add a user to a role by their IDs.
  * @param {String} roleId - The ID of the role.

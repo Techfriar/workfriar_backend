@@ -4,7 +4,6 @@ import Permission from '../models/permission.js'; // Adjust the path
 
 const seedData = async () => {
     try {
-
         // Clear existing data
         await Role.deleteMany({});
         await Permission.deleteMany({});

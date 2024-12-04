@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import Role from '../models/role.js'; // Replace with your Role model's path
 import Permission from '../models/permission.js'; // Replace with your Permission model's path
 
-
 /**
  * Add a permission to a role by their IDs.
  * @param {String} roleId - The ID of the role.
