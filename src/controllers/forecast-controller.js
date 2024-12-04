@@ -11,7 +11,7 @@ const forecastResponse=new ForecastResponse()
 export default class ForecastController{
 
    
-    //Function for mapping items from cline side to database entries
+//Function for mapping items from cline side to database entries
    static async formattedForecast(input) {
         const allowedKeys = {
             name: "opportunity_name",

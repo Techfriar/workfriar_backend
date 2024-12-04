@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import Project from '../../models/projects.js';
 class ProjectTeamRequest {
 
 static teamDataSchema = Joi.object({
@@ -94,6 +95,11 @@ static teamDataUpdateSchema = Joi.object({
 //function for validating project team
     async validateProjectTeam(input) {
         const { error } = ProjectTeamRequest.teamDataSchema.validate(input);
+        const isExisting=await Project.findOne({_id:input.project})
+        if(!isExisting)
+        {
+            return { isValid: false, message: "Project does not exist" };
+        }
         if (error) {
             return { isValid: false, message: error.details.map(err => err.message) };
         }
