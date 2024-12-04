@@ -92,7 +92,7 @@ adminRouter
 */
 adminRouter.route('/add-client').post(client.addClient)
 adminRouter.route('/all-clients').post(client.allClient)
-adminRouter.route('/edit-client').put(client.editClient)
+adminRouter.route('/edit-client').post(client.editClient)
 
 
 export default adminRouter;

@@ -124,31 +124,91 @@ export default class TimesheetRepository {
 	}
 
 	//get Timesheet based on current date
-	async getCurrentDayTimesheets(userId,startOfDay,endOfDay){
+	async getCurrentDayTimesheets(userId, startOfDay, endOfDay) {
 		try {
-
-            return await Timesheet.find({user_id: userId,"data_sheet.date": {
-				$gte: startOfDay,
-				$lte: endOfDay
-			}}).populate('project_id','projectName').lean()
-        } catch (error) {
-            throw new Error(error); 
-        }
+			const timesheets = await Timesheet.aggregate([
+				{
+					$match: {
+						user_id: new mongoose.Types.ObjectId(userId),
+						"data_sheet.date": {
+							$gte: startOfDay,
+							$lte: endOfDay,
+						},
+					},
+				},
+				{
+					$unwind: "$data_sheet", // Deconstruct data_sheet array
+				},
+				{
+					$match: {
+						"data_sheet.date": {
+							$gte: startOfDay,
+							$lte: endOfDay,
+						},
+					},
+				},
+				{
+					$group: {
+						_id: {
+							project_id: "$project_id",
+							date: "$data_sheet.date",
+						},
+						total_hours: { $sum: { $toDouble: "$data_sheet.hours" } },
+					},
+				},
+				{
+					$group: {
+						_id: "$_id.project_id",
+						total_hours: { $sum: "$total_hours" },
+						entries: {
+							$push: {
+								date: "$_id.date",
+								hours: "$total_hours",
+							},
+						},
+					},
+				},
+				{
+					$lookup: {
+						from: "projects",
+						localField: "_id",
+						foreignField: "_id",
+						as: "project",
+					},
+				},
+				{
+					$unwind: "$project",
+				},
+				{
+					$project: {
+						_id: 1,
+						project_id: "$_id",
+						projectName: "$project.projectName",
+						total_hours: 1,
+						entries: 1,
+					},
+				},
+			]);
+	
+			return timesheets;
+		} catch (error) {
+			throw new Error(error.message);
+		}
 	}
+	
 
 	async getWeeklyTimesheets(user_id, startDate, endDate) {
 		try {
-			// Use Mongoose to find timesheets where the range overlaps
 			const timesheets = await Timesheet.find({
 				user_id,
 				$or: [
-					{ startDate: { $gte: startDate, $lte: endDate } }, // Start date is within the range
-					{ endDate: { $gte: startDate, $lte: endDate } },   // End date is within the range
-					{ startDate: { $lte: startDate }, endDate: { $gte: endDate } } // Timesheet spans the range
+					{ startDate: { $gte: startDate, $lte: endDate } }, 
+					{ endDate: { $gte: startDate, $lte: endDate } }, 
+					{ startDate: { $lte: startDate }, endDate: { $gte: endDate } } 
 				]
 			})
-				.populate('project_id', 'projectName') // Populate project details
-				.populate('task_category_id', 'category') // Populate task category details
+				.populate('project_id', 'projectName') 
+				.populate('task_category_id', 'category') 
 				.lean();
 	
 			return timesheets;
