@@ -4,6 +4,7 @@ import TimesheetRequest from '../../requests/admin/timesheet-request.js'
 import FindWeekRange from '../../utils/findWeekRange.js';
 import TimesheetResponse from '../../responses/timesheet-response.js';
 import findTimezone from '../../utils/findTimeZone.js';
+import FindS from '../../services/findSunday.js'
 
 const TimesheetRepo = new TimesheetRepository()
 
@@ -884,8 +885,11 @@ export default class TimesheetController {
 			}
 			const start = new Date(startDate)
 			const end = new Date(endDate)
+			const actualWeekStart =  FindS.getPreviousSunday(start)
 
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, end)
+
+			
 
 			if (timesheets.length > 0) {
 				const data = await Promise.all(

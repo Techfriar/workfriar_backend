@@ -110,6 +110,9 @@ export default class CreateTimesheetRequest {
 		for (const item of data_sheet) {
       console.log(item,'item')
 			if (!item.date || !item.hours) throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')
+
+      if(item.hours < 0) throw new CustomValidationError('Hours cannot be negative')
+      if(item.hours > 24) throw new CustomValidationError('Hours cannot be greater than 24')
 	
 			if (!IsDateInRange.isDateInRange(item.date, timesheet.startDate, timesheet.endDate)) {
 				throw new CustomValidationError(`Date ${item.date} is outside the timesheet's start and end date range`)
