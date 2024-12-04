@@ -72,9 +72,9 @@ export default class TimesheetRepository {
 				} else {
 					// Otherwise, add new entry
 					timesheet.data_sheet.push({
-					date: new Date(date),
-					isHoliday,
-					hours,
+						date: new Date(date),
+						isHoliday,
+						hours,
 					});
 				}
 			});
