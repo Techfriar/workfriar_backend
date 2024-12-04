@@ -15,7 +15,7 @@ export default class CategoryController {
      *   description: API for managing categories
      */
 
-    /**
+     /**
      * Add Category
      * 
      * @swagger
@@ -173,17 +173,10 @@ export default class CategoryController {
  * Update category details (time entry or category)
  * 
  * @swagger
- * /admin/updatecategories/{id}:
- *   put:
+ * /admin/updatecategories:
+ *   post:
  *     summary: Update a category's time entry, category name, or both
  *     tags: [Categories]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the category to update
- *         schema:
- *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -191,6 +184,10 @@ export default class CategoryController {
  *           schema:
  *             type: object
  *             properties:
+ *               id:
+ *                 type:String
+ *                 description:Id of the category that needs t be updated
+ *                 example:6749422a6fbcf04ebe87e8e3
  *               category:
  *                 type: string
  *                 description: The name of the category
@@ -292,7 +289,7 @@ export default class CategoryController {
 
 async updateCategories(req, res) {
     try {
-        const { id } = req.params; 
+       const{id}=req.body
         const updateFields = req.body; 
         const validationResult = await createCategoryRequest.validateUpdateCategory(updateFields);
         if (!validationResult.isValid) {
@@ -330,8 +327,8 @@ async updateCategories(req, res) {
                     status: false,
                     message: "Internal Server Error",
                     errors: error.message || error,
-                });
-            }
+            });
+        }
     }
 }
 

@@ -124,6 +124,7 @@ class CreateForecastRequest {
   });
 
   static forecastUpdateValidation = Joi.object({
+    id:Joi.string().required(),
     name: Joi.string().optional().min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/),
     description: Joi.string().optional().min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/),
     clientName: Joi.string().optional().min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/),
