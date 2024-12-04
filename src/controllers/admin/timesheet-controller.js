@@ -739,7 +739,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a474ed7e5979a3a1f896';
+			const user_id = '6746a473ed7e5979a3a1f891';
 			const startOfDay = new Date();
 			startOfDay.setUTCHours(0, 0, 0, 0);
 
@@ -748,52 +748,25 @@ export default class TimesheetController {
 			endOfDay.setMilliseconds(endOfDay.getMilliseconds() - 1);
 
 			const timesheets = await TimesheetRepo.getCurrentDayTimesheets(user_id, startOfDay, endOfDay)
-
-			const filteredData = timesheets.map(timesheet => {
-				const filteredDataSheet = timesheet.data_sheet.filter(data => {
-					const dataDate = new Date(data.date).toISOString().split('T')[0];
-					const startOfDayDate = new Date(startOfDay).toISOString().split('T')[0];
-					return dataDate === startOfDayDate;
-				});
-				return {
-					project_id: timesheet.project_id,
-					data_sheet: filteredDataSheet
-				}
+			console.log('1',timesheets);
+			
+			let totalHours = 0
+			timesheets.forEach((item) => {
+				totalHours+=item.total_hours
 			})
-
-			const groupedData = filteredData.reduce((acc, item) => {
-				// Check if the project_id already exists in the accumulator
-				if (!acc[item.project_id]) {
-					acc[item.project_id] = {
-						project_id: item.project_id,
-						data_sheet: [],
-						total_hours: 0
-					};
-				}
-
-				// Add each timesheet's data to the respective project_id group
-				item.data_sheet.forEach(data => {
-					acc[item.project_id].data_sheet.push(data);
-					acc[item.project_id].total_hours += parseFloat(data.hours); // Sum hours
-				});
-
-				return acc;
-			}, {});
-
-			// Convert the grouped data to an array
-			const resultData = Object.values(groupedData);
-
-			if (resultData.length > 0) {
+			
+		
+			if (timesheets.length > 0) {
 				const data = await Promise.all(
-					resultData.map(async (item) =>
+					timesheets.map(async (item) =>
 						await timesheetResponse.currentDateTimesheetResponse(item)
 					)
 				)
 				res.status(200).json({
 					success: true,
 					message: 'Current Date timesheets fetched successfully',
-					length: resultData.length,
-					data: data
+					length: timesheets.length,
+					data
 				})
 			}
 			else {
@@ -937,10 +910,10 @@ export default class TimesheetController {
 			const start = new Date(startDate)
 
 			const actualWeekStart = FindS.getPreviousSunday(start)
-			actualWeekStart.setHours(0, 0, 0, 0)
+			actualWeekStart.setUTCHours(0, 0, 0, 0)
 			const actualWeekEnd = new Date(actualWeekStart);
-			actualWeekEnd.setDate(actualWeekStart.getUTCDate() + 6);
-			actualWeekEnd.setHours(0, 0, 0, 0)
+			actualWeekEnd.setUTCDate(actualWeekStart.getUTCDate() + 6);
+			actualWeekEnd.setUTCHours(0, 0, 0, 0)
 
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, actualWeekEnd)
 
@@ -948,9 +921,14 @@ export default class TimesheetController {
 				const modifydata = timesheets.map((item) => {
 					const allDates = FindWeekRange_.getDatesBetween(new Date(actualWeekStart), new Date(actualWeekEnd));
 
+					let total_hours = 0
 					item.data_sheet.forEach(data => {
+						total_hours+=parseFloat(data.hours)
 						data.normalizedDate = new Date(data.date).toISOString().split('T')[0];
+						
 					});
+					console.log('total',total_hours);
+					item.totalHours = total_hours
 
 					allDates.forEach(date => {
 						const dateString = date.toISOString().split('T')[0];
@@ -964,6 +942,9 @@ export default class TimesheetController {
 							});
 						}
 					});
+
+					
+					
 					return item;
 				});
 

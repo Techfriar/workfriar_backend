@@ -6,10 +6,21 @@ class TimesheetResponse{
      * @return {Object} - An object containing selected properties from the client.
      */
     async currentDateTimesheetResponse(timesheet){
-          
+        // {
+        //     "_id": "67480cc6892b9268a9637439",
+        //     "total_hours": 2,
+        //     "entries": [
+        //       {
+        //         "date": "2024-12-04T00:00:00.000Z",
+        //         "hours": 2
+        //       }
+        //     ],
+        //     "project_id": "67480cc6892b9268a9637439",
+        //     "projectName": "Danti Deals"
+        //   }
         return{
-            projectId: timesheet.project_id._id,
-            projectName: timesheet.project_id.projectName || '',
+            projectId: timesheet.project_id,
+            projectName: timesheet.projectName || '',
             hours: timesheet.total_hours
         }
     }
@@ -21,6 +32,7 @@ class TimesheetResponse{
             categoryName: timesheet.task_category_id.category,
             taskDetail: timesheet.task_detail,
             dataSheet: timesheet.data_sheet,
+            totalHours: timesheet.totalHours,
             status:timesheet.status
         }
     }
