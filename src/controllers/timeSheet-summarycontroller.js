@@ -1,6 +1,6 @@
 import TimeSheetSummary from "../repositories/time-sheet-summary.js";
 import TimeSummaryResponse from "../responses/formatted-summary.js";
-import FindWeekRange from "../services/findWeekRange.js";
+import FindWeekRange from "../utils/findWeekRange.js";
 
 const timeSheetSummary=new TimeSheetSummary()
 const timesummaryResponse=new TimeSummaryResponse()
