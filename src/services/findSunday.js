@@ -15,11 +15,11 @@ export default class FindSunday {
         );
         const dayOfWeek = formattedDate.getDay(); 
         if (dayOfWeek === 0) {
-            return new Date(date.setHours(0, 0, 0, 0));
+            return new Date(date.setUTCHours(0, 0, 0, 0));
         }
         const previousSunday = new Date(date); 
         previousSunday.setDate(date.getDate() - dayOfWeek);
-        previousSunday.setHours(0, 0, 0, 0);
+        previousSunday.setUTCHours(0, 0, 0, 0);
         return previousSunday;
     }
     

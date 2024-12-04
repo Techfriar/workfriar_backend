@@ -761,8 +761,6 @@ export default class TimesheetController {
 				}
 			})
 
-
-
 			const groupedData = filteredData.reduce((acc, item) => {
 				// Check if the project_id already exists in the accumulator
 				if (!acc[item.project_id]) {
@@ -785,9 +783,7 @@ export default class TimesheetController {
 			// Convert the grouped data to an array
 			const resultData = Object.values(groupedData);
 
-
 			if (resultData.length > 0) {
-
 				const data = await Promise.all(
 					resultData.map(async (item) =>
 						await timesheetResponse.currentDateTimesheetResponse(item)
@@ -937,31 +933,27 @@ export default class TimesheetController {
 			if (validatedDates.error) {
 				// If there are validation errors, return a error
 				throw new CustomValidationError(validationResult.error)
-
 			}
 			const start = new Date(startDate)
 
-			const actualWeekStart =  FindS.getPreviousSunday(start)
-			actualWeekStart.setHours(0,0,0,0)
+			const actualWeekStart = FindS.getPreviousSunday(start)
+			actualWeekStart.setHours(0, 0, 0, 0)
 			const actualWeekEnd = new Date(actualWeekStart);
-
-			actualWeekEnd.setDate(actualWeekStart.getUTCDate() + 6); 
-			actualWeekEnd.setHours(0,0,0,0)
+			actualWeekEnd.setDate(actualWeekStart.getUTCDate() + 6);
+			actualWeekEnd.setHours(0, 0, 0, 0)
 
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, actualWeekEnd)
 
 			if (timesheets.length > 0) {
 				const modifydata = timesheets.map((item) => {
-					console.log(actualWeekStart,item.startDate);
-					
 					const allDates = FindWeekRange_.getDatesBetween(new Date(actualWeekStart), new Date(actualWeekEnd));
-				
+
 					item.data_sheet.forEach(data => {
 						data.normalizedDate = new Date(data.date).toISOString().split('T')[0];
 					});
 
 					allDates.forEach(date => {
-						const dateString = date.toISOString().split('T')[0]; 
+						const dateString = date.toISOString().split('T')[0];
 						const existingData = item.data_sheet.find(data => data.normalizedDate === dateString);
 						if (!existingData) {
 							item.data_sheet.push({
@@ -974,8 +966,6 @@ export default class TimesheetController {
 					});
 					return item;
 				});
-				
-				
 
 				const data = await Promise.all(
 					modifydata.map(async (item) =>
@@ -1108,7 +1098,6 @@ export default class TimesheetController {
 			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
 
-
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
 
 			if (timesheets.length > 0) {
@@ -1142,7 +1131,7 @@ export default class TimesheetController {
 		}
 	}
 
-	//get timesheet with are not submitted in current week
+	//get timesheet with are not submitted
 	/**
 	 * @swagger
 	 * /timesheet/get-due-timesheets:
@@ -1214,43 +1203,46 @@ export default class TimesheetController {
 
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
-			const today = new Date(); // Reference date (can be any date)
-			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
 
-			const startDate = new Date(weekStartDate)
-			startDate.setUTCHours(0, 0, 0, 0)
-			let start = startDate.toISOString()
+			const { fromDate, toDate } = req.body;
 
-			const endDate = new Date(weekEndDate)
-			endDate.setUTCHours(0, 0, 0, 0)
-			endDate.setUTCDate(endDate.getUTCDate());
-			let end = endDate.toISOString()
+			const startDate = fromDate ? new Date(fromDate) : new Date();
+			const actualWeekStart =  FindS.getPreviousSunday(startDate);
+			const actualWeekEnd = new Date(actualWeekStart);
+			actualWeekEnd.setDate(actualWeekStart.getDate() + 6);
+			actualWeekEnd.setUTCHours(23, 59, 59, 999); 
 
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, actualWeekEnd)
 
 			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'approved')))
 
-
 			const weekDates = [];
-			for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+			for (let date = new Date(actualWeekStart); date <= actualWeekEnd; date.setDate(date.getDate() + 1)) {
 				weekDates.push(date.toISOString().split('T')[0]); 
 			}
-	
+
+			const allDates = FindWeekRange_.getDatesBetween(new Date(fromDate), new Date(toDate));
+			const normalizedAllDates = allDates.map(date => new Date(date).toISOString().split('T')[0]);
+			
 			const totalHoursPerDate = {};
-			weekDates.forEach(date => {
-				totalHoursPerDate[date] = 0;
+			weekDates.forEach(date => {		
+				totalHoursPerDate[date] = {
+					hours: 0,
+					isDisable: !normalizedAllDates.includes(date),
+				}
+				
 			});
-	
 			let totalHours = 0;
-	
+
 			savedTimesheets.forEach(timesheet => {
 				timesheet.data_sheet.forEach(entry => {
-
 					const date = new Date(entry.date).toISOString().split('T')[0];
 					const hours = parseFloat(entry.hours);
-
-					totalHoursPerDate[date] = (totalHoursPerDate[date] || 0) + hours;
-					totalHours += hours;
+					if (totalHoursPerDate[date]) {
+						totalHoursPerDate[date].hours += hours;
+						totalHours += hours;
+					}
+					
 				});
 			});
 			totalHoursPerDate.totalHours = totalHours;
@@ -1259,9 +1251,8 @@ export default class TimesheetController {
 				res.status(200).json({
 					success: true,
 					message: "Due timesheets fetched successfully",
-					length: savedTimesheets.length,
 					data: totalHoursPerDate,
-					
+
 				})
 			}
 			else {
@@ -1382,7 +1373,6 @@ export default class TimesheetController {
 	async getProjectSummaryReport(req, res) {
 		try {
 			const { projectIds, year, month } = req.body
-
 
 			const validatedParams = await TimesheetRequest.validateProjectSummaryParams({ projectIds, year, month });
 			if (validatedParams.error) {
@@ -1750,7 +1740,6 @@ export default class TimesheetController {
 			const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
 			const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0, 23, 59, 59, 999))
 
-
 			const report = await TimesheetRepo.employeeSummaryReport(startOfMonth, endOfMonth, projectIds, userIds)
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startOfMonth));
@@ -1762,7 +1751,6 @@ export default class TimesheetController {
 						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, currentYear);
 					})
 				);
-
 
 				res.status(200).json({
 					success: true,

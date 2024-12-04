@@ -13,7 +13,7 @@ const TimesheetSchema = new Schema({
 		isHoliday: { type: Boolean, required: true },
 		hours: { type: String, required: true },
 	}],
-	status: { 
+	status: {
 		type: String, 
 		required: true,
 		enum: ["in_progress", "saved", "submitted", "accepted", "rejected"]
