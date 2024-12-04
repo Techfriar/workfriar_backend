@@ -5,7 +5,7 @@ import TaskCateogryRepository from '../../repositories/admin/category-repository
 import UserRepository from '../../repositories/user-repository.js';
 import HolidayRepository from '../../repositories/holiday-repository.js';
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
-import IsDateInRange from '../../services/isDateInRange.js';
+import IsDateInRange from '../../utils/isDateInRange.js';
 import TimesheetRepository from '../../repositories/admin/timesheet-repository.js';
 import ProjectTeamRepository from '../../repositories/admin/project-team-repository.js';
 
@@ -108,6 +108,7 @@ export default class CreateTimesheetRequest {
 		if (!Array.isArray(data_sheet)) throw new CustomValidationError('Data sheet should be an array')
 		
 		for (const item of data_sheet) {
+      console.log(item,'item')
 			if (!item.date || !item.hours) throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')
 	
 			if (!IsDateInRange.isDateInRange(item.date, timesheet.startDate, timesheet.endDate)) {

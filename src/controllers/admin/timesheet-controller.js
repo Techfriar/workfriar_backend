@@ -1,19 +1,13 @@
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
 import TimesheetRepository from '../../repositories/admin/timesheet-repository.js';
 import TimesheetRequest from '../../requests/admin/timesheet-request.js'
-import FindWeekRange from '../../services/findWeekRange.js';
-import ProjectRepository from '../../repositories/admin/project-repository.js';
+import FindWeekRange from '../../utils/findWeekRange.js';
 import TimesheetResponse from '../../responses/timesheet-response.js';
-import moment from 'moment';
-import HolidayRepository from '../../repositories/holiday-repository.js';
-import IsDateInRange from '../../services/isDateInRange.js';
+import findTimezone from '../../utils/findTimeZone.js';
 
 const TimesheetRepo = new TimesheetRepository()
-const HolidayRepo = new HolidayRepository()
-const ProjectRepo = new ProjectRepository()
 
 const FindWeekRange_ = new FindWeekRange()
-const IsDateInRange_ = new IsDateInRange()
 
 const timesheetResponse = new TimesheetResponse()
 
@@ -162,7 +156,9 @@ export default class TimesheetController {
 			// Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
 			const user_id = '6744a7c9707ecbeea1efd14c'; // Temporary user ID
-	
+			
+			const timezone = findTimezone(req);
+
 			const { timesheets } = req.body;			
 	
 			// Input validation
@@ -171,7 +167,7 @@ export default class TimesheetController {
 			}
 	
 			// Validate and process timesheets
-			const processedTimesheets = await this.processTimesheets(user_id, timesheets);
+			const processedTimesheets = await this.processTimesheets(user_id, timesheets, timezone);
 	
 			// Update timesheets
 			const updatedTimesheets = await this.updateTimesheetRecords(processedTimesheets);
@@ -192,7 +188,7 @@ export default class TimesheetController {
 	 * @param {Array} timesheets - Array of timesheet data
 	 * @returns {Promise<Array>} Processed timesheets
 	 */
-	async processTimesheets(user_id, timesheets) {
+	async processTimesheets(user_id, timesheets, timezone) {
 		return Promise.all(timesheets.map(async (timesheetData) => {
 			const {
 				timesheetId, 
@@ -210,7 +206,8 @@ export default class TimesheetController {
 				project_id,
 				task_category_id,
 				task_detail,
-				status
+				status,
+				timezone
 			});
 	
 			// Validate existing timesheet
@@ -243,13 +240,10 @@ export default class TimesheetController {
 		project_id, 
 		task_category_id, 
 		task_detail, 
-		status
+		status,
+		timezone
 	}) {
-		// If no timesheetId is provided but required parameters exist, create a new timesheet
-		console.log('timesheetId:', timesheetId);
-		console.log('project_id:', project_id);
-		console.log('task_category_id:', task_category_id);
-		
+		// If no timesheetId is provided but required parameters exist, create a new timesheet		
 		if (!timesheetId) {
 
 			if (!project_id || !task_category_id) {
@@ -262,8 +256,10 @@ export default class TimesheetController {
 				TimesheetRequest.validateProjectStatus(project_id)
 			]);
 	
+			// Create a date object for today in the user's timezone, set to start of day
+			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+			
 			// Determine week range
-			const today = new Date();
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
 	
 			// Create new timesheet
