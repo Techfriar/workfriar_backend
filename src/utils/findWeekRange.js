@@ -39,6 +39,7 @@ export default class FindWeekRange {
      * @returns {Object} - An object with `weekStartDate` and `weekEndDate`.
      */
     getWeekRange(date = new Date()) {
+        date.setHours(0, 0, 0, 0); // Set time to midnight
         const weekStartDate = this.getWeekStartDate(date);
         const weekEndDate = this.getWeekEndDate(weekStartDate);
         return { weekStartDate, weekEndDate };

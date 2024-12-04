@@ -6,10 +6,6 @@ const timesheetRouter = express.Router()
 const timesheet = new TimesheetController()
 
 timesheetRouter
-    .route('/add-timesheet')
-    .post( timesheet.addTimesheet )
-
-timesheetRouter
     .route('/save-timesheets')
     .post( timesheet.updateTimesheet )
 
