@@ -7,10 +7,12 @@ import TimesheetResponse from '../../responses/timesheet-response.js';
 import moment from 'moment';
 import HolidayRepository from '../../repositories/holiday-repository.js';
 import IsDateInRange from '../../services/isDateInRange.js';
+import FindS from '../../services/findSunday.js'
 
 const TimesheetRepo = new TimesheetRepository()
 const HolidayRepo = new HolidayRepository()
 const ProjectRepo = new ProjectRepository()
+const findS = new FindS()
 
 const FindWeekRange_ = new FindWeekRange()
 const IsDateInRange_ = new IsDateInRange()
@@ -940,8 +942,11 @@ export default class TimesheetController {
 			}
 			const start = new Date(startDate)
 			const end = new Date(endDate)
+			const actualWeekStart =  FindS.getPreviousSunday(start)
 
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, end)
+
+			
 
 			if (timesheets.length > 0) {
 				const data = await Promise.all(

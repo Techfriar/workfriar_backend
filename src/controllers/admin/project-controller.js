@@ -46,6 +46,14 @@ export default class ProjectController {
    *                 type: string
    *                 format: date
    *                 description: Enter planned end date
+   *               actual_start_date:
+   *                 type: string
+   *                 format: date
+   *                 description: Enter actual start date
+   *               actual_end_date:
+   *                 type: string
+   *                 format: date
+   *                 description: Enter actual end date
    *               project_lead:
    *                 type: string
    *                 description: Enter project lead user id
