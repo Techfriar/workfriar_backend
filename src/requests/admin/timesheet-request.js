@@ -16,7 +16,7 @@ export default class CreateTimesheetRequest {
 	static TimesheetRepo = new TimesheetRepository()
 	static HolidayRepo = new HolidayRepository()
 	static  TaskCategoryRepo = new TaskCateogryRepository()
-  	static ProjectTeamRepo = new ProjectTeamRepository()
+  static ProjectTeamRepo = new ProjectTeamRepository()
 
     // Validate Project, User, and TaskCategory references
     static async validateReferences(project_id, user_id, task_category_id) {

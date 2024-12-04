@@ -7,6 +7,7 @@ import ClientController from '../controllers/admin/client-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 import { checkPermissions } from '../middlewares/check-permission.js';
+import RoleController from "../controllers/admin/role-controller.js";
 
 const adminRouter = express.Router();
 
@@ -16,6 +17,7 @@ const projectTeamController = new ProjectTeamController();
 
 const admin = new AdminController();
 const client = new ClientController();
+const role = new RoleController();
 
 // import multer from 'multer'
 // // import {
@@ -93,6 +95,11 @@ adminRouter
 adminRouter.route('/add-client').post(client.addClient)
 adminRouter.route('/all-clients').post(client.allClient)
 adminRouter.route('/edit-client').put(client.editClient)
+
+/*
+* Role Routes
+*/
+adminRouter.route('/add-role').post(role.createRole)
 
 
 export default adminRouter;

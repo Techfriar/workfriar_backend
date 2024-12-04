@@ -13,6 +13,7 @@ const RoleSchema = new Schema(
         },
         department: {
             type: String,
+            enum: ['Management', 'Finance', 'HR', 'Operations', 'Technical'],
             required: true,
         },
         permissions: [

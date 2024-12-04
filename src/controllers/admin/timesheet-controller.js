@@ -4,7 +4,7 @@ import TimesheetRequest from '../../requests/admin/timesheet-request.js'
 import FindWeekRange from '../../utils/findWeekRange.js';
 import TimesheetResponse from '../../responses/timesheet-response.js';
 import findTimezone from '../../utils/findTimeZone.js';
-import FindS from '../../services/findSunday.js'
+import FindS from '../../utils/findSunday.js';
 
 const TimesheetRepo = new TimesheetRepository()
 
