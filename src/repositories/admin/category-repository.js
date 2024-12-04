@@ -17,7 +17,7 @@ export default class CategoryRepository{
    {
     throw new Error(error)
    }
-  }
+   }
   /*get all Categories */
  async  getAllCategories()
  {

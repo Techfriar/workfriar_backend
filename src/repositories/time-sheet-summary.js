@@ -29,6 +29,7 @@ class TimeSheetSummary{
     }
     async getDueTimeSheet(userId, startDate, endDate) {
         try {
+            console.log(userId,startDate,endDate)
             const userObjectId =new mongoose.Types.ObjectId(userId); 
             const start = new Date(startDate); 
             const end = new Date(endDate);

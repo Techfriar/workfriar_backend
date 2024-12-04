@@ -127,6 +127,7 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
+            console.log(error)
             res.status(500).json(
                 {
                     status:false,
@@ -136,35 +137,35 @@ class TimeSheetSummaryController{
         }
     }
 
-    /**
+  /**
  * @swagger
  * /admin/pastdue:
- *   get:
+ *   post:
  *     summary: Get due time sheets for a user
  *     description: Retrieves due time sheets for a specific user within a date range
  *     tags:
  *       - TimeSheet
- *     parameters:
- *       - in: query
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the user
- *       - in: query
- *         name: startDate
- *         required: true
- *         schema:
- *           type: string
- *           format: date
- *         description: The start date for the time sheet range
- *       - in: query
- *         name: endDate
- *         required: true
- *         schema:
- *           type: string
- *           format: date
- *         description: The end date for the time sheet range
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user
+ *                 example: "6746a63bf79ea71d30770de9"
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 description: The start date for the time sheet range
+ *                 example: "2024-12-01"
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *                 description: The end date for the time sheet range
+ *                 example: "2024-12-07"
  *     responses:
  *       200:
  *         description: Successfully retrieved due time sheets
@@ -219,9 +220,10 @@ class TimeSheetSummaryController{
  *                   items: {}
  */
 
+
     async pastDueController(req,res)
     {
-        const userId="6746a63bf79ea71d30770de7"
+        const userId="6746a63bf79ea71d30770de9"
         try
         {
             const {weekStartDate}=await findWeekRange.getWeekRange()
@@ -258,21 +260,25 @@ class TimeSheetSummaryController{
         }
     }
 
-    /**
+   /**
  * @swagger
  * /admin/getduetimesheet:
- *   get:
+ *   post:
  *     summary: Get past due time sheets for a user
  *     description: Retrieves past due time sheets for a specific user
  *     tags:
  *       - TimeSheet
- *     parameters:
- *       - in: query
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user
+ *                 example: "6746a63bf79ea71d30770de9"
  *     responses:
  *       200:
  *         description: Successfully retrieved past due time sheets
@@ -292,7 +298,7 @@ class TimeSheetSummaryController{
  *                   items:
  *                     type: object
  *                     properties:
- *                       // Define properties of a formatted past due time sheet here
+ *                       // Define properties of a past due time sheet here
  *       400:
  *         description: No data available
  *         content:
@@ -326,14 +332,13 @@ class TimeSheetSummaryController{
  *                   type: array
  *                   items: {}
  */
-
-    async getDueTimeSheetController(req,res) {
+ async getDueTimeSheetController(req,res) {
        // const {userId,startDate,endDate}=req.body
     try
     {
-      const  userId="6746a63bf79ea71d30770de7"
-      const  startDate="2024-11-24"
-      const  endDate="2024-11-30"
+      const  userId="6746a63bf79ea71d30770de9"
+      const  startDate="2024-11-01"
+      const  endDate="2024-12-07"
             const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate)
             console.log("data",data)
             if(data)

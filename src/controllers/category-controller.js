@@ -15,7 +15,7 @@ export default class CategoryController {
      *   description: API for managing categories
      */
 
-    /**
+     /**
      * Add Category
      * 
      * @swagger
@@ -327,8 +327,8 @@ async updateCategories(req, res) {
                     status: false,
                     message: "Internal Server Error",
                     errors: error.message || error,
-                });
-            }
+            });
+        }
     }
 }
 
