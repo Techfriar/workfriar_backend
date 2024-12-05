@@ -24,15 +24,19 @@ export default class CreateTimesheetRequest {
 			const project = await this.ProjectRepo.getProjectById(project_id);
 			if (!project) throw new CustomValidationError('Project not found');
 	
-			const team = await this.ProjectTeamRepo.getProjectTeambyId(project_id);
+			const team = await this.ProjectTeamRepo.getTeamMembersbyId(project_id);
 			if (!team) throw new CustomValidationError('Project team not found');
 	
 			const user = await this.UserRepo.getUserById(user_id)
 			if (!user) throw new CustomValidationError('User not found');
-			
-			if (!team.team_members || !team.team_members.includes(user_id)) {
-				throw new CustomValidationError('User is not part of the project team');
-			}
+
+      // Convert `ObjectId` instances to strings for comparison
+      const teamMemberIds = team.team_members.map(member => member.toString());
+      const userId = user._id.toString();
+
+      if (!teamMemberIds.includes(userId)) {
+        throw new CustomValidationError('User is not part of the project team');
+      }
 	
 			const taskCategory = await this.TaskCategoryRepo.getCategoryById(task_category_id);
 			if (!taskCategory) throw new CustomValidationError('Task Category not found');
@@ -305,9 +309,10 @@ export default class CreateTimesheetRequest {
           startDate: Joi.date().iso().optional().messages({
             'date.base': '"startDate" must be a valid ISO 8601 date string if provided.',
           }),
-          endDate: Joi.date().iso().optional().messages({
+          endDate: Joi.date().iso().optional().greater(Joi.ref('startDate')).messages({
             'date.base': '"endDate" must be a valid ISO 8601 date string if provided.',
-          }),
+            'date.greater': '"endDate" must be greater than "startDate".',
+        }),
           userId: Joi.string().custom((value, helpers) => {
             if (value && !mongoose.Types.ObjectId.isValid(value)) {
               return helpers.message('Invalid "userId".');
@@ -390,6 +395,29 @@ export default class CreateTimesheetRequest {
       // Return validated values
       return value;
   }
+  
+  static async  validateTimesheetDelete(timesheetId, user_id) {
+		try {
+			if (!timesheetId) throw new CustomValidationError('timesheetId is required')
+		
+			const timesheet = await this.TimesheetRepo.getTimesheetById(timesheetId);
+		
+			if (!timesheet) throw new CustomValidationError('Timesheet not found')
+			
+			if (!timesheet.user_id.equals(new mongoose.Types.ObjectId(user_id))) {
+				throw new CustomValidationError('Unauthorized to delete this timesheet')
+			}
+	
+			// Check if the timesheet is already submitted or accepted
+			if (['submitted', 'accepted','rejected'].includes(timesheet.status)) {
+				throw new Error('Timesheet cannot be deleted as it is already submitted');
+			}
+		
+			return { error: false, timesheet };
+		} catch (error) {
+			throw new CustomValidationError(error.message)
+		}
+	}
   
     
 

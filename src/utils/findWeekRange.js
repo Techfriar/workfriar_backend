@@ -8,10 +8,8 @@ export default class FindWeekRange {
         const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
         const dayOfWeek = date.getDay(); // 0 = Sunday, ..., 6 = Saturday
         const daysSinceSunday = dayOfWeek === 0 ? 0 : dayOfWeek; // Days back to the nearest Sunday
-
         const previousSunday = new Date(date);
         previousSunday.setDate(date.getDate() - daysSinceSunday);
-
         // If the previous Sunday is before the start of the month, return the first day of the month
         return previousSunday < firstDayOfMonth ? firstDayOfMonth : previousSunday;
     }
@@ -62,4 +60,6 @@ export default class FindWeekRange {
         }
         return dates;
     }
+
+
 }
