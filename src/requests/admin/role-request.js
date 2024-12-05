@@ -1,10 +1,24 @@
-import RoleRepository from '../../repositories/role-repository.js';
+import RoleRepository from '../../repositories/admin/role-repository.js';
 import UserRepository from '../../repositories/user-repository.js';
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
 
 export default class RoleRequest {
     static RoleRepo = RoleRepository;
     static UserRepo = new UserRepository();
+    
+    /**
+     * Convert a string to Title Case
+     * @param {string} str - The input string
+     * @returns {string} - The string in Title Case
+     */
+     static toTitleCase(str) {
+        return str.trim().split(/\s+/).map(word => {
+            if (word.length === 2) {
+                return word.toUpperCase();
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }).join(' ');
+    }
 
     /**
      * Validate the request to create a new role
@@ -24,6 +38,8 @@ export default class RoleRequest {
             if (!role || typeof role !== 'string' || role.trim() === '') {
                 throw new CustomValidationError('Invalid role name');
             }
+            this.role = this.toTitleCase(role);
+            this.department = this.toTitleCase(department);
 
             // Check if role with the same name and department already exists
             const existingRole = await this.RoleRepo.getRoleByNameAndDepartment(role.trim(), department);
@@ -47,16 +63,9 @@ export default class RoleRequest {
                     throw new CustomValidationError('Invalid permission format');
                 }
 
-                // const existingPerm = await this.PermissionRepo.getPermissionByCategory(perm.category);
-                // if (existingPerm) {
-                //     // Validate actions
-                //     const invalidActions = perm.actions.filter(action => !existingPerm.actions.includes(action));
-                //     if (invalidActions.length > 0) {
-                //         throw new CustomValidationError(`Invalid actions for category ${perm.category}: ${invalidActions.join(', ')}`);
-                //     }
-                // } else {
-                    
-                // }
+                perm.category = this.toTitleCase(perm.category);
+                perm.actions = perm.actions.map(action => action.toLowerCase());
+
                 // If it's a new permission category, ensure it has 'view' action
                 if (!perm.actions.includes('view')) {
                     throw new CustomValidationError(`New permission category ${perm.category} must include 'view' action`);
@@ -87,30 +96,43 @@ export default class RoleRequest {
      * @returns {Promise<{role: Object, users: Object[]}>}
      * @throws {CustomValidationError}
      */
-    static async validateMapUsersToRole(roleId, userIds) {
+    static async validateMapUsersToRole(roleData) {
+        try {
+            const { roleId, userIds } = roleData;
+            const role = await this.RoleRepo.getRoleById(roleId);
+            if (!role) {
+                throw new CustomValidationError('Role not found');
+            }
+
+            const userResults = await Promise.all(userIds.map(async userId => {
+                const user = await this.UserRepo.getUserById(userId);
+                return { userId, user };
+            }));
+
+            const invalidUsers = userResults.filter(result => !result.user).map(result => result.userId);
+
+            if (invalidUsers.length > 0) {
+                throw new CustomValidationError(`Some users were not found: ${invalidUsers.join(', ')}`);
+            }
+
+            return { roleId, userIds };
+        } catch (error) {
+            throw new CustomValidationError(error.message);
+        }
+    }
+
+   static async validateDeleteRole(body) {
+    
+        const { roleId } = body;
         try {
             const role = await this.RoleRepo.getRoleById(roleId);
             if (!role) {
                 throw new CustomValidationError('Role not found');
             }
 
-            const users = await Promise.all(userIds.map(userId => this.UserRepo.getUserById(userId)));
-            const invalidUsers = users.filter(user => !user);
-            if (invalidUsers.length > 0) {
-                throw new CustomValidationError(`Some users were not found: ${invalidUsers.join(', ')}`);
-            }
-
-            return { role, users };
+            return role._id;
         } catch (error) {
             throw new CustomValidationError(error.message);
         }
     }
-
-    /**
-     * Validate the request to add a role to a user
-     * @param {string} userId - The ID of the user
-     * @param {string} roleId - The ID of the role to be added
-     * @returns {Promise<{user: Object, role: Object}>}
-     * @throws {CustomValidationError}
-     */
-    }
+}

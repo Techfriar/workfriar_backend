@@ -1,4 +1,4 @@
-import Role from "../models/role.js";
+import Role from "../../models/role.js";
 export default class RoleRepository{
     static async createRole(role){
         try{
@@ -28,16 +28,19 @@ export default class RoleRepository{
 
     static async getRoleByNameAndDepartment(roleName, department){
         try{
-            const role = await Role.findOne({ role: roleName, department: department });
+            const role = await Role.findOne({ 
+                role: { $regex: new RegExp(`^${roleName}$`, 'i') },
+                department: { $regex: new RegExp(`^${department}$`, 'i') }
+            });
             return role;
         }catch(error){
             throw error;
         }
     }
 
-    static async getRoleByName(role){
+    static async getRoleByName(roleName){
         try{
-            const role = await Role.findOne({ role: role });
+            const role = await Role.findOne({ role: roleName });
             return role;
         }catch(error){
             throw error;
@@ -79,6 +82,7 @@ export default class RoleRepository{
         }
     }
 
+    // Add users to a role
     static async addUsersToRole(roleId, userIds) {
         try {
             const updatedRole = await Role.findByIdAndUpdate(

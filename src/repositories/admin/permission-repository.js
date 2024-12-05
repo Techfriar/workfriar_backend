@@ -10,13 +10,4 @@ export default  class PermissionRepository {
             throw error;
         }
     }
-
-    static async getPermissionByCategory(category) {
-        try {
-            const permission = await Permission.findOne({ category });
-            return permission;
-        } catch (error) {
-            throw error;
-        }
-    }
 }

@@ -1,7 +1,9 @@
-import RoleRepository from "../../repositories/role-repository.js";
+import RoleRepository from "../../repositories/admin/role-repository.js";
 import RoleRequest from "../../requests/admin/role-request.js";
 import Permission from "../../models/permission.js";
 import Role from "../../models/role.js";
+import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
+import RoleResponse from "../../responses/role-responses.js";
 
 export default class RoleController {
     
@@ -27,6 +29,7 @@ export default class RoleController {
  *             required:
  *               - role
  *               - department
+ *             optional:
  *               - permissions
  *             properties:
  *               role:
@@ -51,7 +54,7 @@ export default class RoleController {
  *                       type: array
  *                       items:
  *                         type: string
- *                       example: ["view", "create", "edit", "delete"]
+ *                       example: ["view", "review", "edit", "delete"]
  *               status:
  *                 type: boolean
  *                 example: true
@@ -113,48 +116,16 @@ export default class RoleController {
 
             const { role, department, permissions, status } = validatedData;
 
-            console.log(validatedData, 'validatedData');
-            
-            // Validate role and department
-            if (!role || !department) {
-                return res.status(400).json({ message: "Role and department are required." });
-            }
-
-            // Step 1: Process permissions
+            //Process permissions
             const permissionIds = await Promise.all(
-                permissions.map(async (permission) => {
-                    const { category, actions } = permission;
-
-                    // Check if the permission already exists
-                    let existingPermission = await Permission.findOne({ category });
-
-                    if (existingPermission) {
-                        // Only add actions if "view" is present in existing actions
-                        if (!existingPermission.actions.includes("view")) {
-                            throw new Error(
-                                `Cannot add actions to permission "${category}" without the "view" action.`
-                            );
-                        }
-
-                        // Merge actions, ensuring no duplicates
-                        const updatedActions = Array.from(
-                            new Set([...existingPermission.actions, ...actions])
-                        );
-
-                        // Update the permission in the database
-                        existingPermission.actions = updatedActions;
-                        await existingPermission.save();
-
-                        return existingPermission._id;
-                    } else {
-                        // Create a new permission if it doesn't exist
-                        const newPermission = await Permission.create(permission);
-                        return newPermission._id;
-                    }
+                permissions.map(async (permission) => {  
+                    // Create a new permission if it doesn't exist
+                    const newPermission = await Permission.create(permission);
+                    return newPermission._id;    
                 })
             );
 
-            // Step 2: Create the role with the associated permissions
+            //Create the role with the associated permissions
             const newRole = await Role.create({
                 role,
                 department,
@@ -169,8 +140,15 @@ export default class RoleController {
                 date: [newRole],
             });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ 
+
+            if(error instanceof CustomValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.message,
+                    data: []
+                })
+            }
+            return res.status(500).json({ 
                 status: false,
                 message: 'Error creating role', 
                 data: []
@@ -178,11 +156,95 @@ export default class RoleController {
         }
     }
     
+/**
+ * Map Users to Role
+ *
+ * @swagger
+ * /admin/map-role:
+ *   post:
+ *     tags:
+ *       - Role
+ *     summary: Map users to a role
+ *     security:
+ *       - bearerAuth: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - roleId
+ *               - userIds
+ *             properties:
+ *               roleId:
+ *                 type: string
+ *                 example: "674d7882d16f166e7fc2979e"
+ *               userIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["64b7a1234cdef567890ab124", "64b7a1234cdef567890ab125"]
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Role mapped successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "64b7a1234cdef567890ab123"
+ *                     role:
+ *                       type: string
+ *                       example: "Project Manager"
+ *                     department:
+ *                       type: string
+ *                       example: "Management"
+ *                     permissions:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["64b7a1234cdef567890ab126", "64b7a1234cdef567890ab127"]
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["64b7a1234cdef567890ab124", "64b7a1234cdef567890ab125"]
+ *                     status:
+ *                       type: boolean
+ *                       example: true
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-07-19T10:00:00.000Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-07-19T11:00:00.000Z"
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthenticated
+ *       500:
+ *         description: Internal Server Error
+ */
     async mapRole(req, res) {
         try {
-            const { roleId, userIds } = req.body;
+            const { roleId, userIds } = await RoleRequest.validateMapUsersToRole(req.body);
 
-            await RoleRequest.validateMapUsersToRole(roleId, userIds);
             const updatedRole = await RoleRepository.addUsersToRole(roleId, userIds);
            
             res.status(200).json({
@@ -191,7 +253,7 @@ export default class RoleController {
                 data: updatedRole
             })
         } catch (error) {
-            if (error.name === 'ValidationError') {
+            if (error instanceof CustomValidationError) {
                 return res.status(400).json({
                     status: false,
                     message: error.message,
@@ -205,5 +267,196 @@ export default class RoleController {
             });
         }
     }
-    
+
+/**
+ * View All Roles
+ *
+ * @swagger
+ * /admin/all-roles:
+ *   post:
+ *     tags:
+ *       - Role
+ *     summary: Retrieve all roles
+ *     security:
+ *       - bearerAuth: []
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Roles fetched successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "64b7a1234cdef567890ab123"
+ *                       role:
+ *                         type: string
+ *                         example: "Project Manager"
+ *                       department:
+ *                         type: string
+ *                         example: "Management"
+ *                       permissions:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             category:
+ *                               type: string
+ *                               example: "Projects"
+ *                             actions:
+ *                               type: array
+ *                               items:
+ *                                 type: string
+ *                               example: ["view", "edit", "delete"]
+ *                       status:
+ *                         type: boolean
+ *                         example: true
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2023-07-19T10:00:00.000Z"
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2023-07-19T10:00:00.000Z"
+ *       401:
+ *         description: Unauthenticated
+ *       500:
+ *         description: Internal Server Error
+ */
+    async viewAllRoles(req, res) {
+        try {
+            const roles = await RoleRepository.getAllRoles();
+            const formattedRoles = await Promise.all(roles.map(async(roles) => await RoleResponse.formatRole(roles)))
+            res.status(200).json({
+                status: true,
+                message: "Roles fetched successfully",
+                data: formattedRoles
+            })
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                message: 'Error fetching roles',
+                data: []
+            });
+        }
+    }
+
+/**
+ * Delete Role
+ *
+ * @swagger
+ * /admin/delete-role:
+ *   post:
+ *     tags:
+ *       - Role
+ *     summary: Delete a role
+ *     security:
+ *       - bearerAuth: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - roleId
+ *             properties:
+ *               roleId:
+ *                 type: string
+ *                 example: "64b7a1234cdef567890ab123"
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Role deleted successfully"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ *       400:
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid role ID"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ *       401:
+ *         description: Unauthenticated
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Error deleting role"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ */
+    async deleteRole (req, res) {
+        try {
+            const { roleId } = await RoleRequest.validateDeleteRole(req.body);
+
+            await RoleRepository.deleteRole(roleId);
+
+            res.status(200).json({
+                status: true,
+                message: "Role deleted successfully",
+                data: []
+            })
+        } catch (error) {
+            if (error instanceof CustomValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.message,
+                    data: []
+                })
+            }
+            res.status(500).json({
+                status: false,
+                message: 'Error deleting role',
+                data: []
+            });
+        }
+    }
 }

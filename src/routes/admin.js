@@ -70,17 +70,18 @@ adminRouter
   .route("/editprojectteam/:id")
   .put(projectTeamController.editProjectTeamController);
 
-// const auth = new AuthController()
-
-
-
-
+/**
+ * Admin profile view
+ */
 adminRouter
 .route('/profile-view')
     .post(
         // authenticateAdmin,
         admin.getMyProfile
     )
+/*
+* List Employees
+*/
 
 adminRouter
     .route('/employee-list')
@@ -100,6 +101,8 @@ adminRouter.route('/edit-client').put(client.editClient)
 * Role Routes
 */
 adminRouter.route('/add-role').post(role.createRole)
-
+adminRouter.route('/map-role').post(role.mapRole)
+adminRouter.route('/all-roles').post(role.viewAllRoles)
+adminRouter.route('/delete-role').post(role.deleteRole)
 
 export default adminRouter;
