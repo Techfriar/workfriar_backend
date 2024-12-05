@@ -2253,7 +2253,91 @@ export default class TimesheetController {
 		}
 	}
 
-	async getStatusCount(req,res){
+//get the status of timesheets previously submitted or saved by user
+	/**
+	 * @swagger
+	 * /timesheet/get-timesheet-status:
+	 *   post:
+	 *     summary: Get timesheet status count
+	 *     description: Retrieves the count of timesheets grouped by status for the current week
+	 *     tags:
+	 *       - Timesheet
+	 *     responses:
+	 *       200:
+	 *         description: Successful response
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Timesheet count fetched successfully
+	 *                 data:
+	 *                   type: object
+	 *                   properties:
+	 *                     groupedCounts:
+	 *                       type: array
+	 *                       items:
+	 *                         type: object
+	 *                         properties:
+	 *                           startDate:
+	 *                             type: string
+	 *                             format: date
+	 *                             example: "2023-05-01"
+	 *                           endDate:
+	 *                             type: string
+	 *                             format: date
+	 *                             example: "2023-05-07"
+	 *                           totalCount:
+	 *                             type: integer
+	 *                             example: 5
+	 *                           savedCount:
+	 *                             type: integer
+	 *                             example: 2
+	 *                           approvedCount:
+	 *                             type: integer
+	 *                             example: 2
+	 *                           rejectedCount:
+	 *                             type: integer
+	 *                             example: 1
+	 *                     totalCounts:
+	 *                       type: object
+	 *                       properties:
+	 *                         totalTimesheets:
+	 *                           type: integer
+	 *                           example: 20
+	 *                         totalSaved:
+	 *                           type: integer
+	 *                           example: 8
+	 *                         totalApproved:
+	 *                           type: integer
+	 *                           example: 10
+	 *                         totalRejected:
+	 *                           type: integer
+	 *                           example: 2
+	 *       500:
+	 *         description: Server error
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: An error occurred while fetching timesheet count
+	 *                 data:
+	 *                   type: array
+	 *                   items: {}
+	 */
+		
+async getStatusCount(req,res){
 		try {
 			// Extract token from Authorization header
 			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'

@@ -706,7 +706,7 @@ export default class TimesheetRepository {
 										$sum: { $cond: [{ $eq: ["$status", "saved"] }, 1, 0] }
 									},
 									totalApproved: {
-										$sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] }
+										$sum: { $cond: [{ $eq: ["$status", "accepted"] }, 1, 0] }
 									},
 									totalRejected: {
 										$sum: { $cond: [{ $eq: ["$status", "rejected"] }, 1, 0] }
@@ -726,9 +726,7 @@ export default class TimesheetRepository {
 					}
 				}
 			]);
-	
-			// Extracting the results
-			const groupedCounts = result[0].groupedCounts;
+
 			const totalCounts = result[0].totalCounts[0] || {
 				totalTimesheets: 0,
 				totalSaved: 0,
@@ -736,10 +734,7 @@ export default class TimesheetRepository {
 				totalRejected: 0
 			};
 	
-			return {
-				groupedCounts,
-				totalCounts
-			};
+			return totalCounts;
 		} catch (error) {
 			throw new Error(error.message);
 		}
