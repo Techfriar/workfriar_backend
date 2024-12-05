@@ -13,7 +13,6 @@ class TimeSheetSummary{
                 endDate: { $eq: end },     
             }).populate('user_id', 'full_name'); 
 
-            console.log(timeSummary);
             return timeSummary;
         } catch (error) {
             throw new Error(error.message);
@@ -51,8 +50,8 @@ class TimeSheetSummary{
             ]);
             return data;
         } catch (error) {
-            console.error("Error fetching grouped timesheets:", error);
-            throw error;
+
+            throw new Error(error);
         }
     }
     
@@ -74,7 +73,6 @@ class TimeSheetSummary{
     
             return dueTimeSheets;
         } catch (error) {
-            console.error("Error fetching due timesheets:", error.message);
             throw new Error(error.message);
         }
     }
