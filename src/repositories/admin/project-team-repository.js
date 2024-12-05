@@ -42,7 +42,7 @@ class ProjectTeamRepository
 
     //Function for getting team of a particular project
     async getProjectTeambyId(projectid) {
-        const {id}=projectid
+        const id = projectid
         try {
             const data = await projectTeam
                 .find({ project: id })
@@ -58,6 +58,19 @@ class ProjectTeamRepository
             return data[0];
         } catch (error) {
            throw new Error(error)
+            
+        }
+    }
+
+    /*
+    *here i fetch just team members array of ids
+    */
+    async getTeamMembersbyId(projectId) {
+        try {
+            const data = await projectTeam.find({project: projectId}).lean()
+
+            return data[0]
+        } catch (error) {
             
         }
     }

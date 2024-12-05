@@ -49,4 +49,12 @@ timesheetRouter
     .route('/get-timesheet-snapshot')
     .post(timesheet.getTimesheetSnapshot)
 
+timesheetRouter
+    .route('/delete-timesheet')
+    .post(timesheet.deleteTimesheet)
+
+timesheetRouter
+    .route('/get-timesheet-status')
+    .post(timesheet.getStatusCount)
+
 export default timesheetRouter

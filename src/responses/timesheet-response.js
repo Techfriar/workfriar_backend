@@ -6,67 +6,56 @@ class TimesheetResponse{
      * @return {Object} - An object containing selected properties from the client.
      */
     async currentDateTimesheetResponse(timesheet){
-        // {
-        //     "_id": "67480cc6892b9268a9637439",
-        //     "total_hours": 2,
-        //     "entries": [
-        //       {
-        //         "date": "2024-12-04T00:00:00.000Z",
-        //         "hours": 2
-        //       }
-        //     ],
-        //     "project_id": "67480cc6892b9268a9637439",
-        //     "projectName": "Danti Deals"
-        //   }
         return{
-            projectId: timesheet.project_id,
-            projectName: timesheet.projectName || '',
+            project_id: timesheet.project_id,
+            project_name: timesheet.projectName || '',
             hours: timesheet.total_hours
         }
     }
 
     async weeklyTimesheetResponse(timesheet){
         return{
-            timesheetId: timesheet._id,
-            projectName: timesheet.project_id.projectName,
-            categoryName: timesheet.task_category_id.category,
-            taskDetail: timesheet.task_detail,
-            dataSheet: timesheet.data_sheet,
-            totalHours: timesheet.totalHours,
+            timesheet_id: timesheet._id,
+            project_name: timesheet.project_id.projectName,
+            category_name: timesheet.task_category_id.category,
+            task_detail: timesheet.task_detail,
+            data_sheet: timesheet.data_sheet,
+            total_hours: timesheet.totalHours,
             status:timesheet.status
         }
     }
 
     async projectSummaryTimesheetResponse(report,month,year){
         return{
-            projectName: report.projectName,
+            project_name: report.projectName,
             year,
             month,
-            loggedHours: report.loggedHours,
-            approvedHours: report.approvedHours
+            logged_hours: report.loggedHours,
+            approved_hours: report.approvedHours
         }
     }
 
     async projectDetailTimesheetResponse(report,month,year,startDate,endDate){
         return{
-            dateRange:`${startDate}-${endDate}`,
-            projectName: report.projectName,
+            date_range:`${startDate}-${endDate}`,
+            project_name: report.projectName,
             year,
             month,
-            loggedHours: report.loggedHours,
-            approvedHours: report.approvedHours
+            logged_hours: report.loggedHours,
+            approved_hours: report.approvedHours
         }
     }
 
-    async employeeSummaryTimesheetResponse(report,month,year){
+    async employeeSummaryTimesheetResponse(report,month,year,range){
         return{
+            date_range: range,
             employee: report._id,
             year,
             month,
             projects: report.projects.map(item => ({
-                projectName:item.projectName,
-                loggedHours: item.loggedHours,
-                approvedHours: item.approvedHours,
+                project_name:item.projectName,
+                logged_hours: item.loggedHours,
+                approved_hours: item.approvedHours,
             }))
         }
     }

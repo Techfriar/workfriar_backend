@@ -13,16 +13,16 @@ const FindWeekRange_ = new FindWeekRange()
 const timesheetResponse = new TimesheetResponse()
 
 // Admin controller to add a timesheet
-export default class TimesheetController {	
+export default class TimesheetController {
 
 	constructor() {
-        // Explicitly bind methods to the class instance
+		// Explicitly bind methods to the class instance
 		this.updateTimesheet = this.updateTimesheet.bind(this);
-        this.processTimesheets = this.processTimesheets.bind(this);
-        this.resolveTimesheetId = this.resolveTimesheetId.bind(this);
-        this.updateTimesheetRecords = this.updateTimesheetRecords.bind(this);
-        this.handleTimesheetError = this.handleTimesheetError.bind(this);
-    }
+		this.processTimesheets = this.processTimesheets.bind(this);
+		this.resolveTimesheetId = this.resolveTimesheetId.bind(this);
+		this.updateTimesheetRecords = this.updateTimesheetRecords.bind(this);
+		this.handleTimesheetError = this.handleTimesheetError.bind(this);
+	}
 
 	/**
  * @swagger
@@ -156,23 +156,23 @@ export default class TimesheetController {
 		try {
 			// Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6744a7c9707ecbeea1efd14c'; // Temporary user ID
-			
+			const user_id = '6746a474ed7e5979a3a1f898'; // Temporary user ID
+
 			const timezone = await findTimezone(req);
 
-			const { timesheets } = req.body;			
-	
+			const { timesheets } = req.body;
+
 			// Input validation
 			if (!Array.isArray(timesheets) || timesheets.length === 0) {
 				throw new CustomValidationError('Invalid or empty timesheets array');
 			}
-	
+
 			// Validate and process timesheets
 			const processedTimesheets = await this.processTimesheets(user_id, timesheets, timezone);
-	
+
 			// Update timesheets
 			const updatedTimesheets = await this.updateTimesheetRecords(processedTimesheets);
-	
+
 			return res.status(200).json({
 				status: true,
 				message: 'Timesheets saved successfully',
@@ -182,7 +182,7 @@ export default class TimesheetController {
 			this.handleTimesheetError(res, err);
 		}
 	}
-	
+
 	/**
 	 * Validates and prepares timesheets for update
 	 * @param {string} user_id - User's identifier
@@ -192,14 +192,14 @@ export default class TimesheetController {
 	async processTimesheets(user_id, timesheets, timezone) {
 		return Promise.all(timesheets.map(async (timesheetData) => {
 			const {
-				timesheetId, 
-				data_sheet, 
-				project_id, 
-				task_category_id, 
-				task_detail, 
+				timesheetId,
+				data_sheet,
+				project_id,
+				task_category_id,
+				task_detail,
 				status = 'in_progress'
-			} = timesheetData;			
-			
+			} = timesheetData;
+
 			// Create new timesheet if necessary
 			const resolvedTimesheetId = await this.resolveTimesheetId({
 				timesheetId,
@@ -210,37 +210,37 @@ export default class TimesheetController {
 				status,
 				timezone
 			});
-	
+
 			// Validate existing timesheet
 			const { timesheet } = await TimesheetRequest.validateTimesheetAndOwnership(
-				resolvedTimesheetId, 
+				resolvedTimesheetId,
 				user_id
 			);
-	
+
 			// Validate project and data sheet
 			await Promise.all([
 				TimesheetRequest.validateProjectStatus(timesheet.project_id),
 				TimesheetRequest.validateAndProcessDataSheet(data_sheet, timesheet)
 			]);
-	
-			return { 
-				timesheetId: resolvedTimesheetId, 
-				data_sheet 
+
+			return {
+				timesheetId: resolvedTimesheetId,
+				data_sheet
 			};
 		}));
 	}
-	
+
 	/**
 	 * Resolves timesheet ID, creating a new timesheet if necessary
 	 * @param {Object} params - Timesheet creation parameters
 	 * @returns {Promise<string>} Timesheet ID
 	 */
 	async resolveTimesheetId({
-		timesheetId, 
-		user_id, 
-		project_id, 
-		task_category_id, 
-		task_detail, 
+		timesheetId,
+		user_id,
+		project_id,
+		task_category_id,
+		task_detail,
 		status,
 		timezone
 	}) {
@@ -256,31 +256,31 @@ export default class TimesheetController {
 				TimesheetRequest.validateReferences(project_id, user_id, task_category_id),
 				TimesheetRequest.validateProjectStatus(project_id)
 			]);
-	
+
 			// Create a date object for today in the user's timezone, set to start of day
 			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
-			
+
 			// Determine week range
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
-	
+
 			// Create new timesheet
 			const newTimesheet = await TimesheetRepo.createTimesheet(
-				project_id, 
-				user_id, 
-				task_category_id, 
-				task_detail, 
-				weekStartDate, 
-				weekEndDate, 
+				project_id,
+				user_id,
+				task_category_id,
+				task_detail,
+				weekStartDate,
+				weekEndDate,
 				[], // Empty data_sheet initially
 				status
 			);
-	
+
 			return newTimesheet._id;
 		}
-	
+
 		return timesheetId;
 	}
-	
+
 	/**
 	 * Updates timesheet records
 	 * @param {Array} processedTimesheets - Processed timesheet data
@@ -288,16 +288,16 @@ export default class TimesheetController {
 	 */
 	async updateTimesheetRecords(processedTimesheets) {
 		return Promise.all(processedTimesheets.map(async ({ timesheetId, data_sheet }) => {
-			return await TimesheetRepo.updateTimesheetData(timesheetId, { 
-				data_sheet, 
-				status: 'saved' 
+			return await TimesheetRepo.updateTimesheetData(timesheetId, {
+				data_sheet,
+				status: 'saved'
 			});
 		}));
 	}
 
 	async handleTimesheetError(res, err) {
 		console.error('Timesheet Update Error:', err);
-	
+
 		if (err instanceof CustomValidationError) {
 			return res.status(400).json({
 				status: false,
@@ -305,7 +305,7 @@ export default class TimesheetController {
 				data: []
 			});
 		}
-	
+
 		// Distinguish between different types of errors
 		if (err.name === 'ValidationError') {
 			return res.status(400).json({
@@ -314,7 +314,7 @@ export default class TimesheetController {
 				data: []
 			});
 		}
-	
+
 		// Catch-all for unexpected errors
 		return res.status(500).json({
 			status: false,
@@ -322,7 +322,7 @@ export default class TimesheetController {
 			data: []
 		});
 	}
-	
+
 	//get all timesheets of a user
 	/**
 	 * @swagger
@@ -693,13 +693,13 @@ export default class TimesheetController {
 			endOfDay.setMilliseconds(endOfDay.getMilliseconds() - 1);
 
 			const timesheets = await TimesheetRepo.getCurrentDayTimesheets(user_id, startOfDay, endOfDay);
-			
+
 			let totalHours = 0
 			timesheets.forEach((item) => {
-				totalHours+=item.total_hours
+				totalHours += item.total_hours
 			})
-			
-		
+
+
 			if (timesheets.length > 0) {
 				const data = await Promise.all(
 					timesheets.map(async (item) =>
@@ -852,45 +852,56 @@ export default class TimesheetController {
 				throw new CustomValidationError(validationResult.error)
 			}
 			const start = new Date(startDate)
+			const end = new Date(endDate);
+			start.setUTCHours(0, 0, 0, 0);
+			end.setUTCHours(0, 0, 0, 0)
 
-			const actualWeekStart = FindS.getPreviousSunday(start)
-			actualWeekStart.setUTCHours(0, 0, 0, 0)
-			const actualWeekEnd = new Date(actualWeekStart);
-			actualWeekEnd.setUTCDate(actualWeekStart.getUTCDate() + 6);
-			actualWeekEnd.setUTCHours(0, 0, 0, 0)
+			const weekStartDate = FindS.getPreviousSunday(start)
+			const weekEndDate = new Date(weekStartDate);
+			weekEndDate.setDate(weekStartDate.getDate() + 6);
 
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, actualWeekEnd)
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
 
 			if (timesheets.length > 0) {
 				const modifydata = timesheets.map((item) => {
-					const allDates = FindWeekRange_.getDatesBetween(new Date(actualWeekStart), new Date(actualWeekEnd));
+					// Get all dates for the week
+					const allDates = FindWeekRange_.getDatesBetween(new Date(weekStartDate), new Date(weekEndDate));
 
-					let total_hours = 0
-					item.data_sheet.forEach(data => {
-						total_hours+=parseFloat(data.hours)
-						data.normalizedDate = new Date(data.date).toISOString().split('T')[0];
-						
+					let total_hours = 0;
+
+					// Process existing data_sheet entries
+					item.data_sheet.forEach((data) => {
+						total_hours += parseFloat(data.hours);
+						const normalizedDate = new Date(data.date).toISOString().split('T')[0];
+						data.normalizedDate = normalizedDate;
+						data.dayOfWeek = new Date(normalizedDate).toLocaleDateString('en-US', { weekday: 'short' });
+						data.isDisable = !(normalizedDate >= startDate.split('T')[0] && normalizedDate <= endDate.split('T')[0]);
 					});
 
-					item.totalHours = total_hours
-
+					// Add missing dates to data_sheet
 					allDates.forEach(date => {
 						const dateString = date.toISOString().split('T')[0];
+						const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
 						const existingData = item.data_sheet.find(data => data.normalizedDate === dateString);
 						if (!existingData) {
 							item.data_sheet.push({
 								date: date,
 								hours: '00:00',
+								normalizedDate: dateString,
+								dayOfWeek: dayOfWeek,
 								isHoliday: false,
-								normalizedDate: dateString
+								isDisable: !(dateString >= startDate.split('T')[0] && dateString <= endDate.split('T')[0]),
 							});
 						}
 					});
 
-					
-					
+					// Sort data_sheet by normalizedDate to match the weekly order
+					item.data_sheet.sort((a, b) => new Date(a.normalizedDate) - new Date(b.normalizedDate));
+
+					item.totalHours = total_hours;
 					return item;
 				});
+
 
 				const data = await Promise.all(
 					modifydata.map(async (item) =>
@@ -1010,15 +1021,14 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
+			const user_id = '6746a474ed7e5979a3a1f898';
 			const timezone = await findTimezone(req);
-			
+
 			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
-			const weekStartDate = FindWeekRange_.getWeekStartDate(today)
 
-			const weekEndDate = FindWeekRange_.getWeekEndDate(today)
-
-	
+			const weekStartDate = FindS.getPreviousSunday(today)
+			const weekEndDate = new Date(weekStartDate);
+			weekEndDate.setDate(weekStartDate.getDate() + 6);
 
 			const startDate = new Date(weekStartDate)
 			startDate.setUTCHours(0, 0, 0, 0)
@@ -1028,11 +1038,53 @@ export default class TimesheetController {
 			endDate.setUTCHours(0, 0, 0, 0)
 			endDate.setUTCDate(endDate.getUTCDate());
 			let end = endDate.toISOString()
+
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
 
+
 			if (timesheets.length > 0) {
+				const modifydata = timesheets.map((item) => {
+					// Get all dates for the week
+					const allDates = FindWeekRange_.getDatesBetween(new Date(weekStartDate), new Date(weekEndDate));
+					
+					let total_hours = 0;
+
+					// Process existing data_sheet entries
+					item.data_sheet.forEach((data) => {
+						total_hours += parseFloat(data.hours);
+						const normalizedDate = new Date(data.date).toISOString().split('T')[0];
+						data.normalizedDate = normalizedDate;
+						data.dayOfWeek = new Date(normalizedDate).toLocaleDateString('en-US', { weekday: 'short' });
+						data.isDisable = !(normalizedDate >= start.split('T')[0] && normalizedDate <= end.split('T')[0]);
+					});
+
+
+					// Add missing dates to data_sheet
+					allDates.forEach(date => {
+						const dateString = date.toISOString().split('T')[0];
+						const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+						const existingData = item.data_sheet.find(data => data.normalizedDate === dateString);
+						if (!existingData) {
+							item.data_sheet.push({
+								date: date,
+								hours: '00:00',
+								normalizedDate: dateString,
+								dayOfWeek: dayOfWeek,
+								isHoliday: false,
+								isDisable: !(dateString >= start.split('T')[0] && dateString <= end.split('T')[0]),
+							});
+						}
+					});
+
+					// Sort data_sheet by normalizedDate to match the weekly order
+					item.data_sheet.sort((a, b) => new Date(a.normalizedDate) - new Date(b.normalizedDate));
+
+					item.totalHours = total_hours;
+					return item;
+				});
+
 				const data = await Promise.all(
-					timesheets.map(async (item) =>
+					modifydata.map(async (item) =>
 						await timesheetResponse.weeklyTimesheetResponse(item)
 					)
 				)
@@ -1143,30 +1195,30 @@ export default class TimesheetController {
 			}
 
 			const startDate = fromDate ? new Date(fromDate) : new Date();
-			const actualWeekStart =  FindS.getPreviousSunday(startDate);
+			const actualWeekStart = FindS.getPreviousSunday(startDate);
 			const actualWeekEnd = new Date(actualWeekStart);
 			actualWeekEnd.setDate(actualWeekStart.getDate() + 6);
-			actualWeekEnd.setUTCHours(23, 59, 59, 999); 
+			actualWeekEnd.setUTCHours(23, 59, 59, 999);
 
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, actualWeekEnd)
 
-			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'approved')))
+			const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'accepted')))
 
 			const weekDates = [];
 			for (let date = new Date(actualWeekStart); date <= actualWeekEnd; date.setDate(date.getDate() + 1)) {
-				weekDates.push(date.toISOString().split('T')[0]); 
+				weekDates.push(date.toISOString().split('T')[0]);
 			}
 
 			const allDates = FindWeekRange_.getDatesBetween(new Date(fromDate), new Date(toDate));
 			const normalizedAllDates = allDates.map(date => new Date(date).toISOString().split('T')[0]);
-			
+
 			const totalHoursPerDate = {};
-			weekDates.forEach(date => {		
+			weekDates.forEach(date => {
 				totalHoursPerDate[date] = {
 					hours: 0,
 					isDisable: !normalizedAllDates.includes(date),
 				}
-				
+
 			});
 			let totalHours = 0;
 
@@ -1178,7 +1230,7 @@ export default class TimesheetController {
 						totalHoursPerDate[date].hours += hours;
 						totalHours += hours;
 					}
-					
+
 				});
 			});
 			totalHoursPerDate.totalHours = totalHours;
@@ -1851,7 +1903,8 @@ export default class TimesheetController {
 		try {
 			const now = new Date();
 			let { year, month, projectIds, startDate, endDate, userIds } = req.body;
-			const validatedValues = await TimesheetRequest.validateEmployeeSummaryParams({ year, month, projectIds, startDate, endDate, userIds })
+
+			const validatedValues = await TimesheetRequest.validateEmployeeDetailParams({ year, month, projectIds, startDate, endDate, userIds })
 			if (validatedValues.error) {
 				throw new CustomValidationError(validatedValues.error)
 			}
@@ -1882,7 +1935,7 @@ export default class TimesheetController {
 			if (report.length > 0) {
 				const data = await Promise.all(
 					report.map(async (item) => {
-						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, year);
+						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, year, range);
 					}
 					)
 				)
@@ -1891,7 +1944,6 @@ export default class TimesheetController {
 					success: true,
 					message: 'Project detail report fetched successfully',
 					length: report.length,
-					range,
 					data
 				})
 			}
@@ -2036,7 +2088,7 @@ export default class TimesheetController {
 
 			const timesheetData = await TimesheetRepo.getMonthlySnapshot(user_id, start, end)
 
-			const defaultStatuses = ['saved', 'approved', 'rejected'];
+			const defaultStatuses = ['saved', 'accepted', 'rejected'];
 			const responseData = defaultStatuses.map(status => {
 				const existingStatus = timesheetData.find(item => item.status === status);
 				return {
@@ -2078,6 +2130,173 @@ export default class TimesheetController {
 		}
 	}
 
+	//delete timesheet
+	/**
+	 * @swagger
+	 * /timesheet/delete-timesheet:
+	 *   post:
+	 *     summary: Delete a timesheet entry
+	 *     description: Deletes a timesheet entry based on the provided `timesheetId` for the authenticated user.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               timesheetId:
+	 *                 type: string
+	 *                 description: The ID of the timesheet to be deleted.
+	 *                 example: "647f1b3e1234567890abcdef"
+	 *     responses:
+	 *       200:
+	 *         description: Timesheet deleted successfully.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: "Timesheet deleted successfully"
+	 *                 data:
+	 *                   type: array
+	 *                   items: {}
+	 *       422:
+	 *         description: Validation error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: "Validation error"
+	 *                 errors:
+	 *                   type: string
+	 *                   example: "Invalid timesheetId"
+	 *       500:
+	 *         description: Server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: "An internal server error occurred"
+	 *                 data:
+	 *                   type: array
+	 *                   items: {}
+	 */
+	async deleteTimesheet(req, res) {
+		try {
+			// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const user_id = decoded.UserId;
+			const user_id = '6746a473ed7e5979a3a1f891';
+			const { timesheetId } = req.body
+			const validatedValues = await TimesheetRequest.validateTimesheetDelete(timesheetId, user_id)
+			if (validatedValues.error) {
+				throw new CustomValidationError(validatedValues.error)
+			}
+
+			const deleteTimesheet = await TimesheetRepo.deleteTimesheet(timesheetId)
+			if (deleteTimesheet) {
+				res.status(200).json({
+					success: true,
+					message: 'Timesheet deleted successfully',
+					data: []
+				})
+			}
+
+
+		}
+		catch (err) {
+			if (err instanceof CustomValidationError) {
+				res.status(422).json({
+					success: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			}
+			else {
+				return res.status(500).json({
+					success: false,
+					message: err.message,
+					data: []
+				});
+			}
+		}
+	}
+
+	async getStatusCount(req,res){
+		try {
+			// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const user_id = decoded.UserId;
+			const user_id = '6746a474ed7e5979a3a1f896';
+			const timezone = await findTimezone(req);
+
+			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+
+			const weekStartDate = FindS.getPreviousSunday(today)
+			const weekEndDate = new Date(weekStartDate);
+			weekEndDate.setDate(weekStartDate.getDate() + 6);
+
+			const startDate = new Date(weekStartDate)
+			startDate.setUTCHours(0, 0, 0, 0)
+			let start = startDate.toISOString()	
+
+			const timesheet = await TimesheetRepo.timesheetCount(user_id,start)
+			res.status(200).json({
+				success: true,
+				message: 'Timesheet count fetched successfully',
+				data: timesheet
+			})
+		} catch (error) {
+			return res.status(500).json({
+				success: false,
+				message: error.message,
+				data: [],
+			});
+		}
+	}
 
 
 }

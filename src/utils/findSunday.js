@@ -13,13 +13,15 @@ export default class FindSunday {
         const formattedDate = new Date(
             new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format(date)
         );
-        const dayOfWeek = formattedDate.getDay(); 
+        const dayOfWeek = formattedDate.getDay();
+
         if (dayOfWeek === 0) {
             return new Date(date.setUTCHours(0, 0, 0, 0));
         }
         const previousSunday = new Date(date); 
         previousSunday.setDate(date.getDate() - dayOfWeek);
         previousSunday.setUTCHours(0, 0, 0, 0);
+
         return previousSunday;
     }
     

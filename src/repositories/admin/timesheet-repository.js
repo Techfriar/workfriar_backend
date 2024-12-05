@@ -245,7 +245,7 @@ export default class TimesheetRepository {
 				approvedHours: {
 					$sum: {
 					  $cond: [
-						{ $eq: ["$status", "approved"] }, 
+						{ $eq: ["$status", "accepted"] }, 
 						{ $toDouble: "$data_sheet.hours" }, 
 						0, 
 					  ],
@@ -325,7 +325,7 @@ export default class TimesheetRepository {
 						approvedHours: {
 							$sum: {
 							  $cond: [
-								{ $eq: ["$status", "approved"] }, 
+								{ $eq: ["$status", "accepted"] }, 
 								{ $toDouble: "$data_sheet.hours" }, 
 								0, 
 							  ],
@@ -406,7 +406,7 @@ export default class TimesheetRepository {
 						approvedHours: {
 							$sum: {
 								$cond: [
-									{ $eq: ["$status", "approved"] },
+									{ $eq: ["$status", "accepted"] },
 									{ $toDouble: "$data_sheet.hours" },
 									0,
 								],
@@ -525,7 +525,7 @@ export default class TimesheetRepository {
 						approvedHours: {
 							$sum: {
 							  $cond: [
-								{ $eq: ["$status", "approved"] }, 
+								{ $eq: ["$status", "accepted"] }, 
 								{ $toDouble: "$data_sheet.hours" }, 
 								0, 
 							  ],
@@ -641,6 +641,109 @@ export default class TimesheetRepository {
 		}
 	  }
 	  
+	async deleteTimesheet(timesheetId){
+		try{
+			const timesheet = await Timesheet.findByIdAndDelete(timesheetId)
+			return timesheet
+		}catch (error) {
+			throw new Error(error);
+		}
+	}
+
+	async timesheetCount(userId, start) {
+		try {
+			const startDate = new Date(start);
+	
+			const result = await Timesheet.aggregate([
+				{
+					$match: {
+						user_id: new mongoose.Types.ObjectId(userId),
+						startDate: { $lt: startDate }
+					}
+				},
+				{
+					$facet: {
+						groupedCounts: [
+							{
+								$group: {
+									_id: {
+										startDate: { $dateToString: { format: "%Y-%m-%d", date: "$startDate" } },
+										endDate: { $dateToString: { format: "%Y-%m-%d", date: "$endDate" } }
+									},
+									totalCount: { $sum: 1 },
+									savedCount: {
+										$sum: { $cond: [{ $eq: ["$status", "saved"] }, 1, 0] }
+									},
+									approvedCount: {
+										$sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] }
+									},
+									rejectedCount: {
+										$sum: { $cond: [{ $eq: ["$status", "rejected"] }, 1, 0] }
+									}
+								}
+							},
+							{
+								$project: {
+									_id: 0,
+									startDate: "$_id.startDate",
+									endDate: "$_id.endDate",
+									totalCount: 1,
+									savedCount: 1,
+									approvedCount: 1,
+									rejectedCount: 1
+								}
+							},
+							{
+								$sort: { startDate: -1, endDate: -1 }
+							}
+						],
+						totalCounts: [
+							{
+								$group: {
+									_id: null,
+									totalTimesheets: { $sum: 1 },
+									totalSaved: {
+										$sum: { $cond: [{ $eq: ["$status", "saved"] }, 1, 0] }
+									},
+									totalApproved: {
+										$sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] }
+									},
+									totalRejected: {
+										$sum: { $cond: [{ $eq: ["$status", "rejected"] }, 1, 0] }
+									}
+								}
+							},
+							{
+								$project: {
+									_id: 0,
+									totalTimesheets: 1,
+									totalSaved: 1,
+									totalApproved: 1,
+									totalRejected: 1
+								}
+							}
+						]
+					}
+				}
+			]);
+	
+			// Extracting the results
+			const groupedCounts = result[0].groupedCounts;
+			const totalCounts = result[0].totalCounts[0] || {
+				totalTimesheets: 0,
+				totalSaved: 0,
+				totalApproved: 0,
+				totalRejected: 0
+			};
+	
+			return {
+				groupedCounts,
+				totalCounts
+			};
+		} catch (error) {
+			throw new Error(error.message);
+		}
+	}
 	
 
 }
