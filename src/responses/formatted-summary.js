@@ -59,7 +59,7 @@ export default class TimeSummaryResponse {
                 if (hasRejected) {
                     finalStatus = "rejected";
                 } else {
-                    return null; s
+                    return null; 
                 }
             }
     
