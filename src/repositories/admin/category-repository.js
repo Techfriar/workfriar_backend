@@ -17,7 +17,7 @@ export default class CategoryRepository{
    {
     throw new Error(error)
    }
-  }
+   }
   /*get all Categories */
  async  getAllCategories()
  {
@@ -33,6 +33,7 @@ export default class CategoryRepository{
 
  //Update the time entry for category
  async updateCategory(updateFields, id) {
+    console.log(updateFields,id)
     try {
         const updatedCategory = await Category.findByIdAndUpdate(
             id,

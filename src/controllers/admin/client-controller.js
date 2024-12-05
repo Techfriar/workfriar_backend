@@ -245,7 +245,7 @@ class ClientController {
     /**
      * @swagger
      * /admin/edit-client:
-     *   put:
+     *   post:
      *     summary: Edit an existing client
      *     description: Updates the details of an existing client.
      *     tags:

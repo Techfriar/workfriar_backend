@@ -7,7 +7,7 @@ export default class ProjectResponse {
    * @param {Object} project - The project object to transform
    * @return {Object} - Formatted project object
    */
-  static async format(project) {
+  static async formatGetByIdProjectResponse(project) {
     return {
       id: project._id,
       client_name: capitalizeWords(project.client_name),
@@ -24,6 +24,18 @@ export default class ProjectResponse {
       status: project.status,
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
+    };
+  }
+  static async formatGetAllProjectResponse(project) {
+    return {
+      id: project._id,
+      client_name: capitalizeWords(project.client_name),
+      project_name: project.project_name,
+      actual_start_date: project.actual_start_date,
+      actual_end_date: project.actual_end_date,
+      project_lead: project.project_lead,
+      open_for_time_entry: project.open_for_time_entry,
+      status: project.status,
     };
   }
 }

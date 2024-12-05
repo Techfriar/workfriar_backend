@@ -368,6 +368,29 @@ export default class CreateTimesheetRequest {
         return value; // Return validated and sanitized values
     }
     
+    static async validateDateRangeForDue({fromDate, toDate}) {
+      // Joi Validation for Date Format with optional dates
+      const schema = Joi.object({
+          fromDate: Joi.date().iso().optional().messages({
+              'date.base': `"fromDate" must be a valid ISO date if provided`,
+          }),
+          toDate: Joi.date().iso().optional().greater(Joi.ref('fromDate')).messages({
+              'date.base': `"toDate" must be a valid ISO date if provided`,
+              'date.greater': `"toDate" must be greater than "fromDate" if both are provided`,
+          })
+      });
+  
+      // Perform Joi validation
+      const { error, value } = schema.validate({ fromDate, toDate });
+  
+      if (error) {
+          throw new CustomValidationError(error.details[0].message); // Customize error message if validation fails
+      }
+  
+      // Return validated values
+      return value;
+  }
+  
     
 
 

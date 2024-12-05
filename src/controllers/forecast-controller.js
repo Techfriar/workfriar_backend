@@ -11,7 +11,7 @@ const forecastResponse=new ForecastResponse()
 export default class ForecastController{
 
    
-    //Function for mapping items from cline side to database entries
+//Function for mapping items from cline side to database entries
    static async formattedForecast(input) {
         const allowedKeys = {
             name: "opportunity_name",
@@ -542,18 +542,21 @@ export default class ForecastController{
  * Delete Project Forecast by ID
  * 
  * @swagger
- * /admin/deleteforecast/{id}:
- *   delete:
+ * /admin/deleteforecast:
+ *   post:
  *     summary: Delete a project forecast by its ID
  *     tags: [Forecast]
- *     parameters:
- *       - name: id
- *         in: path
- *         description: The ID of the project forecast to delete
- *         required: true
- *         schema:
- *           type: string
- *           example: "6746b68444117998965847ff"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The ID of the project forecast to retrieve
+ *                 example: "6746b68444117998965847ff"
  *     responses:
  *       200:
  *         description: Forecast deleted successfully
@@ -602,7 +605,7 @@ export default class ForecastController{
 
     async deleteForecastController(req,res)
     {
-        const { id } = req.params;
+        const { id } = req.body;
         try {
           const deletedForecast = await forecastRepo.deleteForecast(id);
       
@@ -628,18 +631,10 @@ export default class ForecastController{
  * Update an existing project forecast by ID
  * 
  * @swagger
- * /admin/updateforecast/{id}:
- *   put:
+ * /admin/updateforecast:
+ *   post:
  *     summary: Update an existing project forecast
  *     tags: [Forecast]
- *     parameters:
- *       - name: id
- *         in: path
- *         description: The ID of the project forecast to update
- *         required: true
- *         schema:
- *           type: string
- *           example: "6746e9bbaf88b6fea9ada851"
  *     requestBody:
  *       required: true
  *       content:
@@ -794,7 +789,7 @@ export default class ForecastController{
  */
     async updateForecast(req,res)
     {
-        const {id} =req.params
+        const {id}=req.body
         try
         {
      

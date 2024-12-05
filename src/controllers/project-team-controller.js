@@ -348,17 +348,10 @@ class ProjectTeamController{
 
 /**
  * @swagger
- * /admin/editprojectteam/{id}:
- *   put:
+ * /admin/editprojectteam:
+ *   post:
  *     summary: Edit an existing project team
  *     tags: [ProjectTeams]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the project team to update
- *         schema:
- *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -366,9 +359,10 @@ class ProjectTeamController{
  *           schema:
  *             type: object
  *             properties:
+ *              
  *               project:
  *                 type: string
- *                 example: "Project Alpha"
+ *                 example: "67481220d2193ae713064508"
  *               status:
  *                 type: string
  *                 example: "In Progress"
@@ -430,8 +424,8 @@ class ProjectTeamController{
 
     async editProjectTeamController(req,res)
     {
-        const id=req.params
         try {
+            const{id}=req.body
             const validationResult = await projectTeamRequest.validateUpdateProjectteam(req.body);
             if (!validationResult.isValid) {
                 throw new CustomValidationError(validationResult.message);
