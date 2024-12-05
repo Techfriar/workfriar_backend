@@ -1,6 +1,6 @@
 import Joi from 'joi'
 import UserRepository from '../../repositories/user-repository.js'
-import RoleRepository from '../../repositories/role-repository.js'
+import RoleRepository from '../../repositories/admin/role-repository.js'
 // import cleanErrorMessage from '../../../utils/cleanErrorMessage.js'
 
 class AddUserRequest {

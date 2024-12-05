@@ -1,4 +1,4 @@
-import Role from '../models/Role.js';
+import Role from '../models/role.js';
 import User from '../models/user.js';
 import Permission from '../models/permission.js';
 /**
