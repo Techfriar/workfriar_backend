@@ -127,7 +127,6 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
-            console.log(error)
             res.status(500).json(
                 {
                     status:false,
@@ -156,16 +155,10 @@ class TimeSheetSummaryController{
  *                 type: string
  *                 description: The ID of the user
  *                 example: "6746a63bf79ea71d30770de9"
- *               startDate:
- *                 type: string
- *                 format: date
- *                 description: The start date for the time sheet range
- *                 example: "2024-12-01"
- *               endDate:
- *                 type: string
- *                 format: date
- *                 description: The end date for the time sheet range
- *                 example: "2024-12-07"
+ *               status:
+ *                 type:string
+ *                 description:"Status of timesheet"
+ *                 example:"accepted" 
  *     responses:
  *       200:
  *         description: Successfully retrieved due time sheets
@@ -223,13 +216,13 @@ class TimeSheetSummaryController{
 
     async pastDueController(req,res)
     {
-        const userId="6746a63bf79ea71d30770de9"
+        const userId="6746a63bf79ea71d30770de7"
+        const {status}=req.body
         try
         {
             const {weekStartDate}=await findWeekRange.getWeekRange()
-            console.log("date",weekStartDate)
-            const data=await timeSheetSummary.getPastDue(userId,weekStartDate)
-            const formattedData= await timesummaryResponse.formattedPastDue(data)
+            const data=await timeSheetSummary.getTimeSheet(userId,weekStartDate,status)
+            const formattedData= await timesummaryResponse.formattedPastDueList(data,status)
             if(data.length>0)
             {
                 res.status(200).json(
@@ -260,12 +253,12 @@ class TimeSheetSummaryController{
         }
     }
 
-   /**
+/**
  * @swagger
  * /admin/getduetimesheet:
  *   post:
- *     summary: Get past due time sheets for a user
- *     description: Retrieves past due time sheets for a specific user
+ *     summary: Get due time sheets for a specific user
+ *     description: Retrieves due time sheets for a specific user within a given date range.
  *     tags:
  *       - TimeSheet
  *     requestBody:
@@ -277,11 +270,25 @@ class TimeSheetSummaryController{
  *             properties:
  *               userId:
  *                 type: string
- *                 description: The ID of the user
+ *                 description: The ID of the user whose due time sheets are to be retrieved.
  *                 example: "6746a63bf79ea71d30770de9"
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 description: The start date of the range to search for time sheets (in YYYY-MM-DD format).
+ *                 example: "2024-11-01"
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *                 description: The end date of the range to search for time sheets (in YYYY-MM-DD format).
+ *                 example: "2024-12-07"
+ *               status:
+ *                 type:string
+ *                 description:"Status of timesheet"
+ *                 example:"accepted" 
  *     responses:
  *       200:
- *         description: Successfully retrieved past due time sheets
+ *         description: Successfully retrieved due time sheets for the user.
  *         content:
  *           application/json:
  *             schema:
@@ -292,15 +299,28 @@ class TimeSheetSummaryController{
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Past Due"
+ *                   example: "Due Time Sheet"
  *                 data:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
- *                       // Define properties of a past due time sheet here
+ *                       startDate:
+ *                         type: string
+ *                         format: date
+ *                         description: The start date of the time sheet range.
+ *                         example: "2024-11-01"
+ *                       endDate:
+ *                         type: string
+ *                         format: date
+ *                         description: The end date of the time sheet range.
+ *                         example: "2024-12-07"
+ *                       totalHours:
+ *                         type: number
+ *                         description: Total hours logged in the time sheet range.
+ *                         example: 40
  *       400:
- *         description: No data available
+ *         description: No due time sheets found for the user within the given date range.
  *         content:
  *           application/json:
  *             schema:
@@ -316,7 +336,7 @@ class TimeSheetSummaryController{
  *                   type: array
  *                   items: {}
  *       500:
- *         description: Internal Server Error
+ *         description: Internal server error while processing the request.
  *         content:
  *           application/json:
  *             schema:
@@ -332,14 +352,12 @@ class TimeSheetSummaryController{
  *                   type: array
  *                   items: {}
  */
+
  async getDueTimeSheetController(req,res) {
-       // const {userId,startDate,endDate}=req.body
+        const {userId,startDate,endDate,status}=req.body
     try
     {
-      const  userId="6746a63bf79ea71d30770de9"
-      const  startDate="2024-11-01"
-      const  endDate="2024-12-07"
-            const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate)
+        const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate,status)
         const formattedData= await timesummaryResponse.formattedPastDue(data)
             if(data)
             {
@@ -362,7 +380,6 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
-            console.log(error)
             res.status(500).json(
                 {
                     status:false,

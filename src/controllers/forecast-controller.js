@@ -9,8 +9,6 @@ const forecastResponse=new ForecastResponse()
 
 
 export default class ForecastController{
-
-   
 //Function for mapping items from cline side to database entries
    static async formattedForecast(input) {
         const allowedKeys = {
@@ -218,7 +216,6 @@ export default class ForecastController{
         if (!validationResult.isValid) {
             throw new CustomValidationError(validationResult.message)
         } 
-       
         const forecastData=await ForecastController.formattedForecast(req.body)
             const newForecast=await forecastRepo.createForecast(forecastData)
             if(newForecast)
@@ -242,7 +239,6 @@ export default class ForecastController{
         }
         catch(error)
             {
-               
                 if (error instanceof CustomValidationError) {
                     return res.status(422).json({
                         status: false,
@@ -540,7 +536,6 @@ export default class ForecastController{
 
 /**
  * Delete Project Forecast by ID
- * 
  * @swagger
  * /admin/deleteforecast:
  *   post:
@@ -602,7 +597,6 @@ export default class ForecastController{
  *                   items: []
  */
 
-
     async deleteForecastController(req,res)
     {
         const { id } = req.body;
@@ -629,7 +623,6 @@ export default class ForecastController{
     }
 /**
  * Update an existing project forecast by ID
- * 
  * @swagger
  * /admin/updateforecast:
  *   post:

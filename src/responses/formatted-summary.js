@@ -35,6 +35,75 @@ export default class TimeSummaryResponse {
         }
     }
 
+    // Function for formatting all timesheets that are overdue
+  
+    async formattedPastDueList(data, status) {
+        return data.map((week) => {
+            const timesheets = week.timesheets;
+            
+            // If status is "accepted", we need to check if all timesheets are accepted
+            if (status === "accepted") {
+                const allAccepted = timesheets.every((ts) => ts.status === "accepted");
+    
+                // If not all timesheets are accepted, return null to exclude this week
+                if (!allAccepted) {
+                    return null;
+                }
+            }
+    
+            let finalStatus = "";
+    
+            if (status === "rejected") {
+                const hasRejected = timesheets.some((ts) => ts.status === "rejected");
+    
+                if (hasRejected) {
+                    finalStatus = "rejected";
+                } else {
+                    return null; 
+                }
+            }
+    
+            const allAccepted = timesheets.every((ts) => ts.status === "accepted");
+            const hasSaved = timesheets.some((ts) => ts.status === "saved");
+            
+            if (status !== "rejected") {
+                if (hasSaved) {
+                    finalStatus = "saved"; 
+                } else if (allAccepted) {
+                    finalStatus = "accepted"; 
+                }
+            }
+            const totalHours = timesheets.reduce((weekTotal, ts) => {
+                const sheetHours = ts.data_sheet.reduce(
+                    (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
+                    0
+                );
+                return weekTotal + sheetHours;
+            }, 0);
+    
+            let rejectedHours = 0;
+            if (finalStatus === "rejected") {
+                rejectedHours = timesheets
+                    .filter((ts) => ts.status === "rejected")
+                    .reduce((rejectTotal, ts) => {
+                        const sheetHours = ts.data_sheet.reduce(
+                            (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
+                            0
+                        );
+                        return rejectTotal + sheetHours;
+                    }, 0);
+            }
+            return {
+                startDate: week.startDate,
+                endDate: week.endDate,
+                status: finalStatus,
+                totalHours,
+                ...(finalStatus === "rejected" ? { rejectedHours } : {}), 
+            };
+        }).filter((week) => week !== null); 
+    }
+
+    
     //Function for formatting a past due
     async formattedPastDue(data) {
         try {
