@@ -1,5 +1,11 @@
 import Role from "../../models/role.js";
 export default class RoleRepository{
+    /**
+     * Create a new role
+     * @param {Object} role - The role object to create
+     * @returns {Promise<Role>} - The created role
+     */
+
     static async createRole(role){
         try{
             const newRole = new Role(role);
@@ -9,6 +15,12 @@ export default class RoleRepository{
             throw error;
         }
     }
+
+    /**
+     * Get a role by ID
+     * @param {String} id - The ID of the role to retrieve
+     * @returns {Promise<Role>} - The retrieved role
+     */
     static async getRoleById(id){
         try{
             const role = await Role.findById(id);
@@ -17,6 +29,11 @@ export default class RoleRepository{
             throw error;
         }
     }
+     
+    /**
+     * Get all roles
+     * @returns {Promise<Role[]>} - The retrieved roles
+     */
     static async getAllRoles(){
         try{
             const roles = await Role.find();
@@ -26,6 +43,12 @@ export default class RoleRepository{
         }
     }
 
+    /**
+     * Get a role by name and department
+     * @param {String} roleName - The name of the role to retrieve
+     * @param {String} department - The department of the role to retrieve
+     * @returns {Promise<Role>} - The retrieved role
+     */
     static async getRoleByNameAndDepartment(roleName, department){
         try{
             const role = await Role.findOne({ 
@@ -38,6 +61,11 @@ export default class RoleRepository{
         }
     }
 
+    /**
+     * Get a role by name
+     * @param {String} roleName - The name of the role to retrieve
+     * @returns {Promise<Role>} - The retrieved role
+     */
     static async getRoleByName(roleName){
         try{
             const role = await Role.findOne({ role: roleName });
@@ -47,6 +75,12 @@ export default class RoleRepository{
         }
     }
 
+    /**
+     * Update a role by ID
+     * @param {String} id - The ID of the role to update
+     * @param {Object} role - The updated role object
+     * @returns {Promise<Role>} - The updated role
+     */
     static async updateRole(id, role){
         try{
             const updatedRole = await Role.findByIdAndUpdate(id, role, { new: true });
@@ -55,6 +89,11 @@ export default class RoleRepository{
             throw error;
         }
     }
+    /**
+     * Delete a role by ID
+     * @param {String} id - The ID of the role to delete
+     * @returns {Promise<Role>} - The deleted role
+     */
     static async deleteRole(id){
         try{
             const deletedRole = await Role.findByIdAndDelete(id);
@@ -64,6 +103,12 @@ export default class RoleRepository{
         }
     }
 
+    /**
+     * Add permissions to a role
+     * @param {String} roleId - The ID of the role to add permissions to
+     * @param {String[]} permissionIds - The IDs of the permissions to add
+     * @returns {Promise<Role>} - The updated role
+     */
     static async addPermissionsToRole(roleId, permissionIds) {
         try {
             const updatedRole = await Role.findByIdAndUpdate(
@@ -82,7 +127,12 @@ export default class RoleRepository{
         }
     }
 
-    // Add users to a role
+    /**
+     * Add users to a role
+     * @param {String} roleId - The ID of the role to add users to
+     * @param {String[]} userIds - The IDs of the users to add
+     * @returns {Promise<Role>} - The updated role
+     */
     static async addUsersToRole(roleId, userIds) {
         try {
             const updatedRole = await Role.findByIdAndUpdate(

@@ -89,6 +89,7 @@ export default class RoleRequest {
             throw new CustomValidationError(error.message);
         }
     }
+
     /**
      * Validate the request to map users to a role
      * @param {string} roleId - The ID of the role
@@ -121,7 +122,14 @@ export default class RoleRequest {
         }
     }
 
-   static async validateDeleteRole(body) {
+    /**
+     * Validate the request to delete a role
+     * @param {Object} body - The request body
+     * @param {string} body.roleId - The ID of the role to be deleted
+     * @returns {Promise<string>} The validated role ID
+     * @throws {CustomValidationError} If the role is not found or validation fails
+     */
+    static async validateDeleteRole(body) {
     
         const { roleId } = body;
         try {

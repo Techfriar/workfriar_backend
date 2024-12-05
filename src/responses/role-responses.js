@@ -1,4 +1,9 @@
 export default class RoleResponse {
+    /**
+     * Format the role object
+     * @param {Object} role - The role object to format
+     * @returns {Object} - The formatted role object
+     */
     static async formatRole(role) {
         try {
             const formattedRole = {
