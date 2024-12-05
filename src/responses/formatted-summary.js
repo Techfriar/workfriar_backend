@@ -35,6 +35,90 @@ export default class TimeSummaryResponse {
         }
     }
 
+    // Function for formatting all timesheets that are overdue
+  
+    async formattedPastDueList(data, status) {
+        return data.map((week) => {
+            const timesheets = week.timesheets;
+            
+            // If status is "accepted", we need to check if all timesheets are accepted
+            if (status === "accepted") {
+                const allAccepted = timesheets.every((ts) => ts.status === "accepted");
+    
+                // If not all timesheets are accepted, return null to exclude this week
+                if (!allAccepted) {
+                    return null;
+                }
+            }
+    
+            // Determine the week's status if not checking for "accepted"
+            let finalStatus = "";
+    
+            // If the status is "rejected", return the week if any timesheet is rejected
+            if (status === "rejected") {
+                const hasRejected = timesheets.some((ts) => ts.status === "rejected");
+    
+                if (hasRejected) {
+                    finalStatus = "rejected";
+                } else {
+                    return null; // Exclude week if no rejected timesheets
+                }
+            }
+    
+            // For other statuses like "saved", check if any saved or submitted
+            const allAccepted = timesheets.every((ts) => ts.status === "accepted");
+            const hasSaved = timesheets.some((ts) => ts.status === "saved");
+            
+            if (status !== "rejected") {
+                // For "saved" or "submitted" or other cases
+                if (hasSaved) {
+                    finalStatus = "saved"; // If any timesheet is saved, mark as saved
+                } else if (allAccepted) {
+                    finalStatus = "accepted"; // If all timesheets are accepted, mark as accepted
+                }
+            }
+    
+            // Calculate total hours for the week
+            const totalHours = timesheets.reduce((weekTotal, ts) => {
+                const sheetHours = ts.data_sheet.reduce(
+                    (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
+                    0
+                );
+                return weekTotal + sheetHours;
+            }, 0);
+    
+            // Calculate rejected hours if the week has rejected timesheets
+            let rejectedHours = 0;
+            if (finalStatus === "rejected") {
+                rejectedHours = timesheets
+                    .filter((ts) => ts.status === "rejected")
+                    .reduce((rejectTotal, ts) => {
+                        const sheetHours = ts.data_sheet.reduce(
+                            (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
+                            0
+                        );
+                        return rejectTotal + sheetHours;
+                    }, 0);
+            }
+    
+            // Return week details with status and hours
+            return {
+                startDate: week.startDate,
+                endDate: week.endDate,
+                status: finalStatus,
+                totalHours,
+                ...(finalStatus === "rejected" ? { rejectedHours } : {}), // Add rejectedHours only if the week is rejected
+            };
+        }).filter((week) => week !== null); // Remove null weeks (if not all timesheets were accepted or no rejected)
+    }
+    
+    
+    
+     
+    
+    
+      
+    
     //Function for formatting a past due
     async formattedPastDue(data) {
         try {
