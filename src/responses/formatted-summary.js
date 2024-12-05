@@ -51,34 +51,28 @@ export default class TimeSummaryResponse {
                 }
             }
     
-            // Determine the week's status if not checking for "accepted"
             let finalStatus = "";
     
-            // If the status is "rejected", return the week if any timesheet is rejected
             if (status === "rejected") {
                 const hasRejected = timesheets.some((ts) => ts.status === "rejected");
     
                 if (hasRejected) {
                     finalStatus = "rejected";
                 } else {
-                    return null; // Exclude week if no rejected timesheets
+                    return null; s
                 }
             }
     
-            // For other statuses like "saved", check if any saved or submitted
             const allAccepted = timesheets.every((ts) => ts.status === "accepted");
             const hasSaved = timesheets.some((ts) => ts.status === "saved");
             
             if (status !== "rejected") {
-                // For "saved" or "submitted" or other cases
                 if (hasSaved) {
-                    finalStatus = "saved"; // If any timesheet is saved, mark as saved
+                    finalStatus = "saved"; 
                 } else if (allAccepted) {
-                    finalStatus = "accepted"; // If all timesheets are accepted, mark as accepted
+                    finalStatus = "accepted"; 
                 }
             }
-    
-            // Calculate total hours for the week
             const totalHours = timesheets.reduce((weekTotal, ts) => {
                 const sheetHours = ts.data_sheet.reduce(
                     (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
@@ -87,7 +81,6 @@ export default class TimeSummaryResponse {
                 return weekTotal + sheetHours;
             }, 0);
     
-            // Calculate rejected hours if the week has rejected timesheets
             let rejectedHours = 0;
             if (finalStatus === "rejected") {
                 rejectedHours = timesheets
@@ -100,24 +93,16 @@ export default class TimeSummaryResponse {
                         return rejectTotal + sheetHours;
                     }, 0);
             }
-    
-            // Return week details with status and hours
             return {
                 startDate: week.startDate,
                 endDate: week.endDate,
                 status: finalStatus,
                 totalHours,
-                ...(finalStatus === "rejected" ? { rejectedHours } : {}), // Add rejectedHours only if the week is rejected
+                ...(finalStatus === "rejected" ? { rejectedHours } : {}), 
             };
-        }).filter((week) => week !== null); // Remove null weeks (if not all timesheets were accepted or no rejected)
+        }).filter((week) => week !== null); 
     }
-    
-    
-    
-     
-    
-    
-      
+
     
     //Function for formatting a past due
     async formattedPastDue(data) {
