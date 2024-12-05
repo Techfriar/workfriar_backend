@@ -5,6 +5,7 @@ import { CustomValidationError } from '../../exceptions/custom-validation-error.
 export default class RoleRequest {
     static RoleRepo = RoleRepository;
     static UserRepo = new UserRepository();
+    static allowedActions = ['view', 'edit', 'review', 'delete'];
     
     /**
      * Convert a string to Title Case
@@ -65,7 +66,14 @@ export default class RoleRequest {
 
                 perm.category = this.toTitleCase(perm.category);
                 perm.actions = perm.actions.map(action => action.toLowerCase());
-
+                
+                // Validate each action
+                perm.actions.forEach(action => {
+                    if (!this.allowedActions.includes(action)) {
+                        throw new CustomValidationError(`Invalid action: ${action}. Allowed actions are: ${this.allowedActions.join(', ')}`);
+                    }
+                });
+                
                 // If it's a new permission category, ensure it has 'view' action
                 if (!perm.actions.includes('view')) {
                     throw new CustomValidationError(`New permission category ${perm.category} must include 'view' action`);
@@ -139,6 +147,110 @@ export default class RoleRequest {
             }
 
             return role._id;
+        } catch (error) {
+            throw new CustomValidationError(error.message);
+        }
+    }
+
+    /**
+     * Validate the request to update an existing role
+     * @param {Object} roleData - The data for updating the role
+     * @param {string} roleData.roleId - The ID of the role to update
+     * @param {string} [roleData.role] - The new name of the role (optional)
+     * @param {string} [roleData.department] - The new department of the role (optional)
+     * @param {Array} [roleData.permissions] - Array of new permission objects (optional)
+     * @param {boolean} [roleData.status] - The new status of the role (optional)
+     * @returns {Promise<Object>} - Validated role data
+     * @throws {CustomValidationError}
+     */
+    static async validateUpdateRole(roleData) {
+        try {
+
+            const { roleId, role, department, permissions, status } = roleData;
+
+
+            // Validate roleId
+            if (!roleId || typeof roleId !== 'string') {
+                throw new CustomValidationError('Invalid role ID');
+            }
+            
+            // Check if the role exists
+            const existingRole = await this.RoleRepo.getRoleById(roleId);
+            if (!existingRole) {
+                throw new CustomValidationError('Role not found');
+            }
+            console.log(existingRole, 'existing role')
+            let updatedData = { roleId };
+
+            // Validate and update role name if provided
+            if (role !== undefined) {
+                if (typeof role !== 'string' || role.trim() === '') {
+                    throw new CustomValidationError('Invalid role name');
+                }
+                updatedData.role = this.toTitleCase(role);
+            }
+
+            // Validate and update department if provided
+            if (department !== undefined) {
+                const validDepartments = ['Management', 'Finance', 'HR', 'Operations', 'Technical'];
+                if (!validDepartments.includes(department)) {
+                    throw new CustomValidationError('Invalid department');
+                }
+                updatedData.department = department;
+            }
+
+            // Check if there's a role with the same name and department
+            if(department || role) {
+                const roleWithSameName = await this.RoleRepo.getRoleByNameAndDepartment(
+                    updatedData.role  || existingRole.role,
+                    updatedData.department || existingRole.department
+                );
+                if (roleWithSameName && roleWithSameName._id.toString() !== roleId) {
+                    throw new CustomValidationError('A role with this name already exists in the specified department');
+                }
+            }
+
+            // Validate and update permissions if provided
+            if (permissions !== undefined) {
+                if (!Array.isArray(permissions)) {
+                    throw new CustomValidationError('Permissions must be a non-empty array');
+                }
+
+                const validatedPermissions = await Promise.all(permissions.map(async (perm) => {
+                    if (!perm.category || !perm.actions || !Array.isArray(perm.actions)) {
+                        throw new CustomValidationError('Invalid permission format');
+                    }
+
+                    perm.category = this.toTitleCase(perm.category);
+                    perm.actions = perm.actions.map(action => action.toLowerCase());
+
+                     // Validate each action
+                    perm.actions.forEach(action => {
+                        if (!this.allowedActions.includes(action)) {
+                            throw new CustomValidationError(`Invalid action: ${action}. Allowed actions are: ${this.allowedActions.join(', ')}`);
+                        }
+                    });
+
+                    // Ensure 'view' action is included
+                    if (!perm.actions.includes('view')) {
+                        throw new CustomValidationError(`Permission category ${perm.category} must include 'view' action`);
+                    }
+
+                    return perm;
+                }));
+
+                updatedData.permissions = validatedPermissions;
+            }
+
+            // Validate and update status if provided
+            if (status !== undefined) {
+                if (typeof status !== 'boolean') {
+                    throw new CustomValidationError('Invalid status');
+                }
+                updatedData.status = status;
+            }
+
+            return updatedData;
         } catch (error) {
             throw new CustomValidationError(error.message);
         }

@@ -97,6 +97,7 @@ export default class RoleRepository{
     static async deleteRole(id){
         try{
             const deletedRole = await Role.findByIdAndDelete(id);
+            console.log(id)
             return deletedRole;
         }catch(error){
             throw error;
