@@ -7,6 +7,7 @@ import ClientController from '../controllers/admin/client-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
 import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 import { checkPermissions } from '../middlewares/check-permission.js';
+import RoleController from "../controllers/admin/role-controller.js";
 import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js'
 
 const adminRouter = express.Router();
@@ -18,6 +19,7 @@ const timeSheetSummary=new TimeSheetSummaryController()
 
 const admin = new AdminController();
 const client = new ClientController();
+const role = new RoleController();
 
 // import multer from 'multer'
 // // import {
@@ -71,12 +73,18 @@ adminRouter.route("/pastdue").post(timeSheetSummary.pastDueController)
 
 adminRouter.route("/getduetimesheet").post(timeSheetSummary.getDueTimeSheetController)
 
+/**
+ * Admin profile view
+ */
 adminRouter
 .route('/profile-view')
     .post(
         // authenticateAdmin,
         admin.getMyProfile
     )
+/*
+* List Employees
+*/
 
 adminRouter
     .route('/employee-list')
@@ -92,5 +100,12 @@ adminRouter.route('/add-client').post(client.addClient)
 adminRouter.route('/all-clients').post(client.allClient)
 adminRouter.route('/edit-client').post(client.editClient)
 
+/*
+* Role Routes
+*/
+adminRouter.route('/add-role').post(role.createRole)
+adminRouter.route('/map-role').post(role.mapRole)
+adminRouter.route('/all-roles').post(role.viewAllRoles)
+adminRouter.route('/delete-role').post(role.deleteRole)
 
 export default adminRouter;

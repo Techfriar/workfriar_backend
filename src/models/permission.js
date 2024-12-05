@@ -14,6 +14,14 @@ const PermissionSchema = new Schema({
     }]
 })
 
+PermissionSchema.virtual('role', {
+    ref: 'Role',
+    localField: '_id',
+    foreignField: 'permissions',
+    justOne: false,
+    options: { select: '_id' },
+});
+
 const Permission = mongoose.model('Permission', PermissionSchema)
 
 export default Permission

@@ -22,6 +22,12 @@ export default class UserResponse {
             }
     }
 
+    /**
+     * Transform the user resource into an object.
+     *
+     * @param {Object} user - The user object to transform.
+     * @return {Object} - An object containing selected properties from the user.
+     */
     static async formatEmployee(user) {
         return {
             id: user._id,
