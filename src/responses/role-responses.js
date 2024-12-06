@@ -18,4 +18,27 @@ export default class RoleResponse {
             throw error;
         }
     }
+
+    /**
+     * Format the Permission object
+     * @param {Object} permission - The permission object to format
+     * @returns {Object} - The formatted permission object
+     */
+    static async formatPermission(permission) {
+        try {
+            const formattedPermission = {
+                id: permission._id,
+                category: permission.category,
+                actions: {
+                    view: permission.actions.includes('view'),
+                    edit: permission.actions.includes('edit'),
+                    review: permission.actions.includes('review'),
+                    delete: permission.actions.includes('delete'),
+                },
+            };
+            return formattedPermission;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

@@ -22,12 +22,13 @@ export default  class PermissionRepository {
      * 
      * @param {string} category - The category of the permission
      * @param {string[]} actions - The actions for the permission
+     * @param {string} roleId - The ID of the role associated with the permission
      * @returns {Promise<Object>} The updated or newly created permission
      */
-    static async findOneAndUpdatePermission(category, actions) {
+    static async findOneAndUpdatePermission(category, actions, roleId) {
         try {
             const permission = await Permission.findOneAndUpdate(
-                { category },
+                { category, role: roleId  },
                 { $set: { actions } },
                 { upsert: true, new: true }
             );
@@ -35,6 +36,27 @@ export default  class PermissionRepository {
             return permission;
         } catch (error) {
             console.error('Error in findOneAndUpdatePermission:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Find all permissions by category and role ID
+     * @param {string} category - The category of the permission (optional)
+     * @param {string} roleId - The ID of the role associated with the permission 
+     * @returns {Promise<Object>} The permission
+     *
+     */
+    static async findPermissionsByRoleId(roleId) {
+        try {
+            const permissions = await Permission.find().populate({
+                path: 'role',
+                match: { _id: roleId },
+                select: '_id',
+            });
+            const filterdPermission = permissions.filter(per => per.role)
+            return filterdPermission;
+        } catch (error) {
             throw error;
         }
     }

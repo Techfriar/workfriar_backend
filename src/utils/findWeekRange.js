@@ -5,14 +5,19 @@ export default class FindWeekRange {
      * @returns {Date} - The week's start date.
      */
     getWeekStartDate(date = new Date()) {
+
+        const firstDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
         const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
         const dayOfWeek = date.getDay(); // 0 = Sunday, ..., 6 = Saturday
         const daysSinceSunday = dayOfWeek === 0 ? 0 : dayOfWeek; // Days back to the nearest Sunday
         const previousSunday = new Date(date);
         previousSunday.setDate(date.getDate() - daysSinceSunday);
+
         // If the previous Sunday is before the start of the month, return the first day of the month
         return previousSunday < firstDayOfMonth ? firstDayOfMonth : previousSunday;
     }
+
+    
 
     /**
      * Get the end date of the week.
@@ -60,6 +65,5 @@ export default class FindWeekRange {
         }
         return dates;
     }
-
 
 }
