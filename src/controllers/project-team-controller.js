@@ -91,9 +91,9 @@ class ProjectTeamController{
                 throw new CustomValidationError(validationResult.message);
             } 
             const newTeam = await projectTeamRepo.createTeam(req.body);
-            if(newTeam)
+            if(newTeam.status)
             {
-                const  data=await projectTeamResponse.formattedResponse(newTeam)
+                const  data=await projectTeamResponse.formattedResponse(newTeam.data)
                 res.status(200).json(
                     {
                         status:true,
@@ -431,9 +431,9 @@ class ProjectTeamController{
                 throw new CustomValidationError(validationResult.message);
             } 
             const newTeam = await projectTeamRepo.updateProjectTeam(id,req.body);
-            if(newTeam)
+            if(newTeam.status)
             {
-                const  data=await projectTeamResponse.formattedResponse(newTeam)
+                const  data=await projectTeamResponse.formattedResponse(newTeam.data)
                 res.status(200).json(
                     {
                         status:true,

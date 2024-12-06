@@ -32,7 +32,7 @@ const findWeekRange=new FindWeekRange()
  *                 description: The end date for the summary.
  *               projectId:
  *                 type: string
- *                 example: "12345"
+ *                 example: "6746a63bf79ea71d30770de7"
  *                 description: The ID of the project to fetch the summary for.
  *     responses:
  *       200:
@@ -150,6 +150,9 @@ class TimeSheetSummaryController{
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - userId
+ *               - status
  *             properties:
  *               userId:
  *                 type: string
@@ -159,6 +162,10 @@ class TimeSheetSummaryController{
  *                 type:string
  *                 description:"Status of timesheet"
  *                 example:"accepted" 
+ *               passedUserid:
+ *                 type:string
+ *                 description:userid passed from body'
+ *                 example:"6746a63bf79ea71d30770de9"   
  *     responses:
  *       200:
  *         description: Successfully retrieved due time sheets
@@ -216,8 +223,9 @@ class TimeSheetSummaryController{
 
     async pastDueController(req,res)
     {
-        const userId="6746a63bf79ea71d30770de7"
-        const {status}=req.body
+        let userId="6746a63bf79ea71d30770de7"
+        const {status,passedUserid}=req.body
+        if(passedUserid) userId = passedUserid
         try
         {
             const {weekStartDate}=await findWeekRange.getWeekRange()
@@ -282,10 +290,6 @@ class TimeSheetSummaryController{
  *                 format: date
  *                 description: The end date of the range to search for time sheets (in YYYY-MM-DD format).
  *                 example: "2024-12-07"
- *               status:
- *                 type:string
- *                 description:"Status of timesheet"
- *                 example:"accepted" 
  *     responses:
  *       200:
  *         description: Successfully retrieved due time sheets for the user.
@@ -354,7 +358,9 @@ class TimeSheetSummaryController{
  */
 
  async getDueTimeSheetController(req,res) {
-        const {userId,startDate,endDate,status}=req.body
+    let userId="6746a63bf79ea71d30770de7"
+        const {passedUserid,startDate,endDate,status}=req.body
+        if(passedUserid) userId = passedUserid
     try
     {
         const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate,status)

@@ -68,9 +68,9 @@ export default class CategoryController {
                 throw new CustomValidationError(validationResult.message);
             }
             const newCategory = await categoryRepo.createCategory(category, timeentry);
-            if(newCategory)
+            if(newCategory.status)
             {
-                const  data=await categoryResponse.formattedResponse(newCategory)
+                const  data=await categoryResponse.formattedResponse(newCategory.data)
                 res.status(200).json(
                     {
                         status:true,
@@ -301,8 +301,8 @@ async updateCategories(req, res) {
         }
         const updatedData = await categoryRepo.updateCategory(updateFields, id);
 
-        if (updatedData) {
-            const data = await categoryResponse.formattedResponse(updatedData);
+        if (updatedData.status) {
+            const data = await categoryResponse.formattedResponse(updatedData.data);
             return res.status(200).json({
                 status: true,
                 message: "Category updated successfully",
