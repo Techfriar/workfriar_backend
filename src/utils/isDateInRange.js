@@ -4,8 +4,6 @@ export default class IsDateInRange{
         const parsedStartDate = new Date(startDate);
         const parsedEndDate = new Date(endDate);
 
-        console.log(parsedItemDate,parsedStartDate, parsedEndDate)
-
         // Check if the itemDate is within the range
         return parsedItemDate >= parsedStartDate && parsedItemDate <= parsedEndDate;
     }

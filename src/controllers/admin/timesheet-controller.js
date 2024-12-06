@@ -5,6 +5,7 @@ import FindWeekRange from '../../utils/findWeekRange.js';
 import TimesheetResponse from '../../responses/timesheet-response.js';
 import findTimezone from '../../utils/findTimeZone.js';
 import FindS from '../../utils/findSunday.js';
+import getLocalDateStringForTimezone from '../../utils/getLocalDateStringForTimezone.js';
 
 const TimesheetRepo = new TimesheetRepository()
 
@@ -156,7 +157,7 @@ export default class TimesheetController {
 		try {
 			// Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6746a474ed7e5979a3a1f898'; // Temporary user ID
+			const user_id = '6744a7c9707ecbeea1efd14c'; // Temporary user ID
 
 			const timezone = await findTimezone(req);
 
@@ -258,7 +259,7 @@ export default class TimesheetController {
 			]);
 
 			// Create a date object for today in the user's timezone, set to start of day
-			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+			const today = getLocalDateStringForTimezone(timezone, new Date());
 
 			// Determine week range
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);

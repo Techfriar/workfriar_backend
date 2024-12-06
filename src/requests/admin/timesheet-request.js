@@ -112,7 +112,6 @@ export default class CreateTimesheetRequest {
 		if (!Array.isArray(data_sheet)) throw new CustomValidationError('Data sheet should be an array')
 		
 		for (const item of data_sheet) {
-      console.log(item,'item')
 			if (!item.date || !item.hours) throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')
 
       if(item.hours < 0) throw new CustomValidationError('Hours cannot be negative')
