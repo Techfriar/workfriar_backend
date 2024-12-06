@@ -730,7 +730,126 @@ export default class TimesheetController {
 			});
 		}
 	}
-
+	/**
+ * @swagger
+ * /timesheet/get-weekly-timesheets:
+ *   post:
+ *     summary: Fetch weekly timesheets
+ *     description: Fetch weekly timesheets for a user, grouped by week and including daily details and total hours. Accepts either a specified date range or defaults to the current week.
+ *     tags:
+ *       - Timesheet
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-12-01"
+ *                 description: Start date of the week (optional).
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-12-07"
+ *                 description: End date of the week (optional).
+ *     responses:
+ *       200:
+ *         description: Weekly timesheets fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Weekly timesheets fetched successfully"
+ *                 length:
+ *                   type: integer
+ *                   example: 1
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       timesheet_id:
+ *                         type: string
+ *                         example: "67516e4828f913bae93b44d9"
+ *                       project_name:
+ *                         type: string
+ *                         example: "Danti Deals"
+ *                       category_name:
+ *                         type: string
+ *                         example: "UI/UX"
+ *                       task_detail:
+ *                         type: string
+ *                         example: "Worked on this"
+ *                       data_sheet:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             date:
+ *                               type: string
+ *                               format: date
+ *                               example: "2024-12-05T00:00:00.000Z"
+ *                             hours:
+ *                               type: string
+ *                               example: "4:00"
+ *                             normalizedDate:
+ *                               type: string
+ *                               example: "2024-12-05"
+ *                             dayOfWeek:
+ *                               type: string
+ *                               example: "Thu"
+ *                             isHoliday:
+ *                               type: boolean
+ *                               example: false
+ *                             isDisable:
+ *                               type: boolean
+ *                               example: false
+ *                       total_hours:
+ *                         type: integer
+ *                         example: 4
+ *                       status:
+ *                         type: string
+ *                         example: "saved"
+ *       422:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "An error occurred while fetching timesheets."
+ */
 	async getWeeklyTimesheets(req, res) {
 		try {
 			// const token = req.headers.authorization?.split(' ')[1];
