@@ -730,200 +730,228 @@ export default class TimesheetController {
 			});
 		}
 	}
-
-	//get timesheet details filtered by week 
 	/**
-	 * @swagger
-	 * /timesheet/filter-weekly-timesheets:
-	 *   post:
-	 *     summary: Filter weekly timesheets by date range
-	 *     description: Fetches weekly timesheets for a user based on the provided start and end dates.
-	 *     tags:
-	 *       - Timesheet
-	 *     requestBody:
-	 *       required: true
-	 *       content:
-	 *         application/json:
-	 *           schema:
-	 *             type: object
-	 *             properties:
-	 *               startDate:
-	 *                 type: string
-	 *                 format: date
-	 *                 description: The start date of the timesheet range (YYYY-MM-DD).
-	 *                 example: 2024-11-01
-	 *               endDate:
-	 *                 type: string
-	 *                 format: date
-	 *                 description: The end date of the timesheet range (YYYY-MM-DD).
-	 *                 example: 2024-11-07
-	 *     responses:
-	 *       200:
-	 *         description: Weekly timesheets fetched successfully.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: true
-	 *                 message:
-	 *                   type: string
-	 *                   example: Weekly timesheets fetched successfully
-	 *                 length:
-	 *                   type: integer
-	 *                   example: 2
-	 *                 data:
-	 *                   type: array
-	 *                   items:
-	 *                     type: object
-	 *                     properties:
-	 *                       id:
-	 *                         type: string
-	 *                         example: 64cfc73edfa4d2787b5ed3a7
-	 *                       date:
-	 *                         type: string
-	 *                         format: date
-	 *                         example: 2024-11-03
-	 *                       hours:
-	 *                         type: number
-	 *                         example: 8
-	 *                       status:
-	 *                         type: string
-	 *                         example: saved
-	 *       422:
-	 *         description: Validation error.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: Validation error
-	 *                 errors:
-	 *                   type: array
-	 *                   items:
-	 *                     type: string
-	 *                     example: "startDate is required and must be a valid date"
-	 *       500:
-	 *         description: Server error.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: Internal server error
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
-	 */
-	async filterWeeklyTimesheet(req, res) {
+ * @swagger
+ * /timesheet/get-weekly-timesheets:
+ *   post:
+ *     summary: Fetch weekly timesheets
+ *     description: Fetch weekly timesheets for a user, grouped by week and including daily details and total hours. Accepts either a specified date range or defaults to the current week.
+ *     tags:
+ *       - Timesheet
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-12-01"
+ *                 description: Start date of the week (optional).
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-12-07"
+ *                 description: End date of the week (optional).
+ *     responses:
+ *       200:
+ *         description: Weekly timesheets fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Weekly timesheets fetched successfully"
+ *                 length:
+ *                   type: integer
+ *                   example: 1
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       timesheet_id:
+ *                         type: string
+ *                         example: "67516e4828f913bae93b44d9"
+ *                       project_name:
+ *                         type: string
+ *                         example: "Danti Deals"
+ *                       category_name:
+ *                         type: string
+ *                         example: "UI/UX"
+ *                       task_detail:
+ *                         type: string
+ *                         example: "Worked on this"
+ *                       data_sheet:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             date:
+ *                               type: string
+ *                               format: date
+ *                               example: "2024-12-05T00:00:00.000Z"
+ *                             hours:
+ *                               type: string
+ *                               example: "4:00"
+ *                             normalizedDate:
+ *                               type: string
+ *                               example: "2024-12-05"
+ *                             dayOfWeek:
+ *                               type: string
+ *                               example: "Thu"
+ *                             isHoliday:
+ *                               type: boolean
+ *                               example: false
+ *                             isDisable:
+ *                               type: boolean
+ *                               example: false
+ *                       total_hours:
+ *                         type: integer
+ *                         example: 4
+ *                       status:
+ *                         type: string
+ *                         example: "saved"
+ *       422:
+ *         description: Validation error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "An error occurred while fetching timesheets."
+ */
+	async getWeeklyTimesheets(req, res) {
 		try {
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-
+			// const token = req.headers.authorization?.split(' ')[1];
 			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
+			//     return res.status(401).json({ 
+			//         status: false,
+			//         message: 'No token provided',
+			//         data: []
+			//     });
 			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
+			// const decoded = jwt.decode(token);
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
-			const { startDate, endDate } = req.body
-			const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
-			if (validatedDates.error) {
-				// If there are validation errors, return a error
-				throw new CustomValidationError(validationResult.error)
+	
+			let { startDate, endDate } = req.body;
+			let actualStartWeek, actualEndWeek;
+	
+			if (startDate && endDate) {
+				const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
+				if (validatedDates.error) {
+					throw new CustomValidationError(validatedDates.error);
+				}
+				startDate = new Date(startDate);
+				endDate = new Date(endDate);
+	
+				// Find actual start and end of the week
+				actualStartWeek = FindS.getPreviousSunday(startDate);
+				actualEndWeek = new Date(actualStartWeek);
+				actualEndWeek.setDate(actualStartWeek.getDate() + 6);
+			} else {
+				const timezone = await findTimezone(req);
+				const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+
+				actualStartWeek = FindS.getPreviousSunday(today);
+				actualEndWeek = new Date(actualStartWeek);
+				actualEndWeek.setDate(actualStartWeek.getDate() + 6);
+	
+				startDate = FindWeekRange_.getWeekStartDate(today);
+				startDate.setUTCHours(0, 0, 0, 0);
+				endDate = FindWeekRange_.getWeekEndDate(today);
 			}
-			const start = new Date(startDate)
-			const end = new Date(endDate);
-			start.setUTCHours(0, 0, 0, 0);
-			end.setUTCHours(0, 0, 0, 0)
-
-			const weekStartDate = FindS.getPreviousSunday(start)
-			const weekEndDate = new Date(weekStartDate);
-			weekEndDate.setDate(weekStartDate.getDate() + 6);
-
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
-
+	
+			startDate.setUTCHours(0, 0, 0, 0);
+			endDate.setUTCHours(0, 0, 0, 0);
+	
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
+	
 			if (timesheets.length > 0) {
 				const modifydata = timesheets.map((item) => {
-					// Get all dates for the week
-					const allDates = FindWeekRange_.getDatesBetween(new Date(weekStartDate), new Date(weekEndDate));
-
+					const allDates = FindWeekRange_.getDatesBetween(actualStartWeek, actualEndWeek);
 					let total_hours = 0;
-
-					// Process existing data_sheet entries
-					item.data_sheet.forEach((data) => {
-						total_hours += parseFloat(data.hours);
-						const normalizedDate = new Date(data.date).toISOString().split('T')[0];
-						data.normalizedDate = normalizedDate;
-						data.dayOfWeek = new Date(normalizedDate).toLocaleDateString('en-US', { weekday: 'short' });
-						data.isDisable = !(normalizedDate >= startDate.split('T')[0] && normalizedDate <= endDate.split('T')[0]);
-					});
-
-					// Add missing dates to data_sheet
-					allDates.forEach(date => {
+	
+					// Create a map of existing data_sheet entries
+					const existingDataMap = new Map(item.data_sheet.map(data => [
+						new Date(data.date).toISOString().split('T')[0],
+						data
+					]));
+	
+					// Process all dates for the week
+					item.data_sheet = allDates.map(date => {
 						const dateString = date.toISOString().split('T')[0];
-						const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
-						const existingData = item.data_sheet.find(data => data.normalizedDate === dateString);
-						if (!existingData) {
-							item.data_sheet.push({
+						const existingData = existingDataMap.get(dateString);
+	
+						if (existingData) {
+							total_hours += parseFloat(existingData.hours);
+							existingData.normalizedDate = dateString;
+							existingData.dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+							existingData.isDisable = !(dateString >= startDate.toISOString().split('T')[0] && dateString <= endDate.toISOString().split('T')[0]);
+							return existingData;
+						} else {
+							return {
 								date: date,
 								hours: '00:00',
 								normalizedDate: dateString,
-								dayOfWeek: dayOfWeek,
+								dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'short' }),
 								isHoliday: false,
-								isDisable: !(dateString >= startDate.split('T')[0] && dateString <= endDate.split('T')[0]),
-							});
+								isDisable: !(dateString >= startDate.toISOString().split('T')[0] && dateString <= endDate.toISOString().split('T')[0]),
+							};
 						}
 					});
-
-					// Sort data_sheet by normalizedDate to match the weekly order
-					item.data_sheet.sort((a, b) => new Date(a.normalizedDate) - new Date(b.normalizedDate));
 
 					item.totalHours = total_hours;
 					return item;
 				});
-
-
+	
 				const data = await Promise.all(
-					modifydata.map(async (item) =>
-						await timesheetResponse.weeklyTimesheetResponse(item)
-					)
-				)
+					modifydata.map(async (item) => await timesheetResponse.weeklyTimesheetResponse(item))
+				);
+	
 				res.status(200).json({
 					success: true,
 					message: 'Weekly timesheets fetched successfully',
 					length: timesheets.length,
-					data
+					data: data
 				});
-
-			}
-			else {
+			} else {
 				return res.status(200).json({
 					success: false,
 					message: 'No timesheets found for the provided date range',
 					data: []
 				});
 			}
-
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
@@ -931,187 +959,17 @@ export default class TimesheetController {
 					message: 'Validation error',
 					errors: err.errors,
 				});
-			}
-			else {
+			} else {
 				return res.status(500).json({
 					success: false,
 					message: err.message,
-					data: []
+					data: [],
 				});
 			}
 		}
 	}
-
-	//get timesheets of the current week
-	/**
-	 * @swagger
-	 * /timesheet/get-current-week-timesheets:
-	 *   post:
-	 *     summary: Get timesheets for the current week
-	 *     description: Fetches the timesheets for the current week for the logged-in user.
-	 *     tags:
-	 *       - Timesheet
-	 *     responses:
-	 *       200:
-	 *         description: Weekly timesheets fetched successfully.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: true
-	 *                 message:
-	 *                   type: string
-	 *                   example: Weekly timesheets fetched successfully
-	 *                 length:
-	 *                   type: integer
-	 *                   example: 5
-	 *                 data:
-	 *                   type: array
-	 *                   items:
-	 *                     type: object
-	 *                     properties:
-	 *                       id:
-	 *                         type: string
-	 *                         example: 64cfc73edfa4d2787b5ed3a7
-	 *                       date:
-	 *                         type: string
-	 *                         format: date
-	 *                         example: 2024-12-01
-	 *                       hours:
-	 *                         type: number
-	 *                         example: 8
-	 *                       status:
-	 *                         type: string
-	 *                         example: saved
-	 *       500:
-	 *         description: Server error.
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 success:
-	 *                   type: boolean
-	 *                   example: false
-	 *                 message:
-	 *                   type: string
-	 *                   example: Internal server error
-	 *                 data:
-	 *                   type: array
-	 *                   example: []
-	 */
-
-	async getCurrentWeekTimeheet(req, res) {
-		try {
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const user_id = decoded.UserId;
-			const user_id = '6746a474ed7e5979a3a1f898';
-			const timezone = await findTimezone(req);
-
-			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
-
-			const weekStartDate = FindS.getPreviousSunday(today)
-			const weekEndDate = new Date(weekStartDate);
-			weekEndDate.setDate(weekStartDate.getDate() + 6);
-
-			const startDate = new Date(weekStartDate)
-			startDate.setUTCHours(0, 0, 0, 0)
-			let start = startDate.toISOString()
-
-			const endDate = new Date(weekEndDate)
-			endDate.setUTCHours(0, 0, 0, 0)
-			endDate.setUTCDate(endDate.getUTCDate());
-			let end = endDate.toISOString()
-
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
-
-
-			if (timesheets.length > 0) {
-				const modifydata = timesheets.map((item) => {
-					// Get all dates for the week
-					const allDates = FindWeekRange_.getDatesBetween(new Date(weekStartDate), new Date(weekEndDate));
-					
-					let total_hours = 0;
-
-					// Process existing data_sheet entries
-					item.data_sheet.forEach((data) => {
-						total_hours += parseFloat(data.hours);
-						const normalizedDate = new Date(data.date).toISOString().split('T')[0];
-						data.normalizedDate = normalizedDate;
-						data.dayOfWeek = new Date(normalizedDate).toLocaleDateString('en-US', { weekday: 'short' });
-						data.isDisable = !(normalizedDate >= start.split('T')[0] && normalizedDate <= end.split('T')[0]);
-					});
-
-
-					// Add missing dates to data_sheet
-					allDates.forEach(date => {
-						const dateString = date.toISOString().split('T')[0];
-						const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
-						const existingData = item.data_sheet.find(data => data.normalizedDate === dateString);
-						if (!existingData) {
-							item.data_sheet.push({
-								date: date,
-								hours: '00:00',
-								normalizedDate: dateString,
-								dayOfWeek: dayOfWeek,
-								isHoliday: false,
-								isDisable: !(dateString >= start.split('T')[0] && dateString <= end.split('T')[0]),
-							});
-						}
-					});
-
-					// Sort data_sheet by normalizedDate to match the weekly order
-					item.data_sheet.sort((a, b) => new Date(a.normalizedDate) - new Date(b.normalizedDate));
-
-					item.totalHours = total_hours;
-					return item;
-				});
-
-				const data = await Promise.all(
-					modifydata.map(async (item) =>
-						await timesheetResponse.weeklyTimesheetResponse(item)
-					)
-				)
-				res.status(200).json({
-					success: true,
-					message: 'Weekly timesheets fetched successfully',
-					length: timesheets.length,
-					data: data
-				});
-
-			}
-			else {
-				return res.status(200).json({
-					success: false,
-					message: 'No timesheets found for the provided date range',
-					data: []
-				});
-			}
-
-		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: err.message,
-				data: [],
-			});
-		}
-	}
+	
+	
 
 	//get timesheet with are not submitted
 	/**
@@ -1166,7 +1024,6 @@ export default class TimesheetController {
 	 *                   type: array
 	 *                   example: []
 	 */
-
 	async getDueTimesheets(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -1218,7 +1075,6 @@ export default class TimesheetController {
 					hours: 0,
 					isDisable: !normalizedAllDates.includes(date),
 				}
-
 			});
 			let totalHours = 0;
 
@@ -1230,7 +1086,6 @@ export default class TimesheetController {
 						totalHoursPerDate[date].hours += hours;
 						totalHours += hours;
 					}
-
 				});
 			});
 			totalHoursPerDate.totalHours = totalHours;

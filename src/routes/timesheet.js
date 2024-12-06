@@ -17,13 +17,6 @@ timesheetRouter
     .route('/get-current-day-timesheets')
     .post(timesheet.getCurrentDayTimesheet)
 
-timesheetRouter
-    .route('/filter-weekly-timesheets')
-    .post(timesheet.filterWeeklyTimesheet)
-
-timesheetRouter
-    .route('/get-current-week-timesheets')
-    .post(timesheet.getCurrentWeekTimeheet)
 
 timesheetRouter
     .route('/get-due-timesheets')
@@ -56,5 +49,9 @@ timesheetRouter
 timesheetRouter
     .route('/get-timesheet-status')
     .post(timesheet.getStatusCount)
+
+timesheetRouter
+    .route('/get-weekly-timesheets')
+    .post(timesheet.getWeeklyTimesheets)
 
 export default timesheetRouter
