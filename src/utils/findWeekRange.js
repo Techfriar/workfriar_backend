@@ -66,5 +66,4 @@ export default class FindWeekRange {
         return dates;
     }
 
-
 }

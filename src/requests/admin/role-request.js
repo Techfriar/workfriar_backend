@@ -131,13 +131,13 @@ export default class RoleRequest {
     }
 
     /**
-     * Validate the request to delete a role
+     * Validate the Role Id
      * @param {Object} body - The request body
      * @param {string} body.roleId - The ID of the role to be deleted
      * @returns {Promise<string>} The validated role ID
      * @throws {CustomValidationError} If the role is not found or validation fails
      */
-    static async validateDeleteRole(body) {
+    static async validateRoleId(body) {
     
         const { roleId } = body;
         try {
@@ -179,7 +179,6 @@ export default class RoleRequest {
             if (!existingRole) {
                 throw new CustomValidationError('Role not found');
             }
-            console.log(existingRole, 'existing role')
             let updatedData = { roleId };
 
             // Validate and update role name if provided
@@ -251,6 +250,42 @@ export default class RoleRequest {
             }
 
             return updatedData;
+        } catch (error) {
+            throw new CustomValidationError(error.message);
+        }
+    }
+
+    /**
+     * Validate the request to remove a user from a role
+     * @param {Object} body - The request body
+     * @param {string} body.roleId - The ID of the role
+     * @param {string} body.userId - The ID of the user to be removed from the role
+     * @returns {Promise<{roleId: string, userId: string}>} The validated roleId and userId
+     * @throws {CustomValidationError} If the role or user is not found or validation fails
+     */
+    static async validateRemoveUserFromRole(body) {
+        try {
+            
+            const {roleId, userId} = body;
+
+            const role = await this.RoleRepo.getRoleById(roleId);
+            if(!role) {
+                throw new CustomValidationError('Role not found');
+            }
+
+            const user = await this.UserRepo.getUserById(userId);
+            if(!user) {
+                throw new CustomValidationError('User not found');
+            }
+
+            const isUserHasThisRole = role.users.some(user => user.toString() === userId);
+
+            if(!isUserHasThisRole) {
+                throw new CustomValidationError('User does not have this role');
+            }
+
+            return {roleId, userId};
+
         } catch (error) {
             throw new CustomValidationError(error.message);
         }

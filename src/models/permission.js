@@ -18,9 +18,12 @@ PermissionSchema.virtual('role', {
     ref: 'Role',
     localField: '_id',
     foreignField: 'permissions',
-    justOne: false,
+    justOne: true,
     options: { select: '_id' },
 });
+
+PermissionSchema.set('toObject', { virtuals: true });
+PermissionSchema.set('toJSON', { virtuals: true });
 
 const Permission = mongoose.model('Permission', PermissionSchema)
 

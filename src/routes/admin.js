@@ -87,11 +87,18 @@ adminRouter
 */
 
 adminRouter
-    .route('/employee-list')
+    .route('/employee-data')
     .post(
         // authenticateAdmin,
         checkPermissions('Users', 'view'),
-        admin.employeeList
+        admin.listAllEmployeesData
+    )
+adminRouter
+    .route('/list-all-employees')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('Users', 'view'),
+        admin.listAllEmployees
     )
 /* 
 * Client Routes
@@ -108,5 +115,7 @@ adminRouter.route('/map-role').post(role.mapRole)
 adminRouter.route('/all-roles').post(role.viewAllRoles)
 adminRouter.route('/delete-role').post(role.deleteRole)
 adminRouter.route('/update-role').post(role.updateRole)
+adminRouter.route('/all-roll-permissions').post(role.viewAllPermissionsByRole)
+adminRouter.route('/remove-user-role').post(role.removeUserFromRole)
 
 export default adminRouter;

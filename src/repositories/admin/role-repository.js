@@ -152,4 +152,22 @@ export default class RoleRepository{
         }
     }
 
+    /**
+     * Remove User from a role
+     * @param {String} roleId - The ID of the role to remove the user from
+     * @param {String} userId - The ID of the user to remove
+     * @returns {Promise<Role>} - The updated role
+     */
+    static async removeUserFromRole(roleId, userId) {
+        try {
+            return await Role.findByIdAndUpdate(
+                roleId,
+                { $pull: { users: userId } },
+                { new: true }
+            );
+        } catch (error) {
+            throw error;
+        }
+    }
+
 }

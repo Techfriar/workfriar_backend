@@ -418,7 +418,7 @@ export default class RoleController {
  */
     async deleteRole (req, res) {
         try {
-            const roleId  = await RoleRequest.validateDeleteRole(req.body);
+            const roleId  = await RoleRequest.validateRoleId(req.body);
 
             const ds = await RoleRepository.deleteRole(roleId);
             console.log(ds, "ds")
@@ -546,7 +546,8 @@ export default class RoleController {
                         const existingPermission = await PermissionRepository
                             .findOneAndUpdatePermission(
                                 permission.category,
-                                permission.actions
+                                permission.actions,
+                                roleId // Pass the roleId here
                             );
                         return existingPermission._id;
                     })
@@ -594,4 +595,212 @@ export default class RoleController {
             });
         }
     }
+
+ /**
+ * View All Permissions for a Role
+ *
+ * @swagger
+ * /admin/all-roll-permissions:
+ *   post:
+ *     tags:
+ *       - Role
+ *     summary: Retrieve all permissions for a specific role
+ *     description: Get a list of all permissions associated with a given role
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - roleId
+ *             properties:
+ *               roleId:
+ *                 type: string
+ *                 example: "60d5ecb54d6e3d1234567891"
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Permissions fetched successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "60d5ecb54d6e3d1234567890"
+ *                       category:
+ *                         type: string
+ *                         example: "projects"
+ *                       actions:
+ *                         type: object
+ *                         properties:
+ *                           view:
+ *                             type: boolean
+ *                             example: true
+ *                           edit:
+ *                             type: boolean
+ *                             example: false
+ *                           review:
+ *                             type: boolean
+ *                             example: true
+ *                           delete:
+ *                             type: boolean
+ *                             example: false
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
+    async viewAllPermissionsByRole(req, res) {
+        try {
+            const roleId  = await RoleRequest.validateRoleId(req.body);
+
+            const permissions = await PermissionRepository.findPermissionsByRoleId(roleId);
+            const formattedPermissions = await Promise.all(permissions.map(
+                async (permission) => await RoleResponse.formatPermission(permission)
+            ));
+
+            res.status(200).json({
+                status: true,
+                message: 'Permissions fetched successfully',
+                data: formattedPermissions
+            });
+        } catch (error) {
+            if (error instanceof CustomValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.message,
+                    data: []
+                });
+            }
+            res.status(500).json({
+                status: false,
+                message: 'Error fetching permissions',
+                data: []
+            });
+        }
+    }
+
+/**
+ * Remove User from Role
+ *
+ * @swagger
+ * /admin/remove-user-role:
+ *   post:
+ *     tags:
+ *       - Role
+ *     summary: Remove a user from a specific role
+ *     description: Removes the association between a user and a role
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - roleId
+ *               - userId
+ *             properties:
+ *               roleId:
+ *                 type: string
+ *                 example: "60d5ecb54d6e3d1234567890"
+ *               userId:
+ *                 type: string
+ *                 example: "60d5ecb54d6e3d1234567891"
+ *     responses:
+ *       200:
+ *         description: User successfully removed from role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User removed from role successfully"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ *       400:
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid roleId or userId"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Error removing user from role"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ */
+    async removeUserFromRole(req, res) {
+        try {
+            const { roleId, userId } = await RoleRequest.validateRemoveUserFromRole(req.body)
+            await RoleRepository.removeUserFromRole(roleId, userId)
+
+            res.status(200).json({
+                status: true,
+                message: 'User removed from role successfully',
+                data: []
+            });
+        } catch (error) {
+            if (error instanceof CustomValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.message,
+                    data: []
+                });
+            }
+            res.status(500).json({
+                status: false,
+                message: 'Error removing user from role',
+                data: []
+            });
+        }
+    }
+
 }
