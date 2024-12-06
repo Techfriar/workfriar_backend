@@ -74,7 +74,6 @@ class CreateCategoryRequest {
             }
             return { isValid: true, message: "Category is valid and unique" };
         } catch (err) {
-            console.log(err)
             return { isValid: false, message: "Error occurred while validating the category" };
         }
     }
