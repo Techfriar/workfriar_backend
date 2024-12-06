@@ -24,7 +24,7 @@ class ProjectTeamController{
  *             properties:
  *               project:
  *                 type: string
- *                 example: "Project Alpha"
+ *                 example: "647a9b6c1234567890abcdef"
  *               status:
  *                 type: string
  *                 example: "On hold"
