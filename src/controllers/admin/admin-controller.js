@@ -142,14 +142,14 @@ export default class AdminController {
     }
 
 /**
- * List Employees
+ * List All Employees Data
  *
  * @swagger
- * /admin/employee-list:
+ * /admin/employees-data:
  *   post:
  *     tags:
  *       - Admin
- *     summary: List all employees
+ *     summary: list All Employees Data
  *     security:
  *       - bearerAuth: []
  *     produces:
@@ -200,7 +200,7 @@ export default class AdminController {
  *         description: Unauthenticated
  */
 
-    async employeeList(req, res) {
+    async listAllEmployeesData(req, res) {
         try {
            
             // Fetch all employees from the database
@@ -208,7 +208,7 @@ export default class AdminController {
 
             if (employees && employees.length > 0) {
                 // Format employee data if required
-                const formattedEmployees = await Promise.all(employees.map(employee => UserResponse.format(employee)));
+                const formattedEmployees = await Promise.all(employees.map(employee => UserResponse.formatEmployee(employee)));
 
                 res.status(200).json({
                     status: true,
@@ -231,5 +231,70 @@ export default class AdminController {
                 errors: error,
             });
         }
-    }    
+    }   
+
+/**
+ * List All Employees
+ *
+ * @swagger
+ * /admin/list-all-employees:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: list All Employees
+ *     security:
+ *       - bearerAuth: []
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Employees fetched successfully."
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "64b7a1234cdef567890ab123"
+ *                       name:
+ *                         type: string
+ *                         example: "John Doe"
+ *       422:
+ *         description: Unprocessable Entity
+ *       401:
+ *         description: Unauthenticated
+ */
+    
+    async listAllEmployees(req, res) {
+        try {
+            // Fetch all employees from the database
+            const employees = await userRepo.getAllUsers(); // Replace with your repository function
+
+            const formattedEmployees = await Promise.all(employees.map(employee => UserResponse.formatEmployeeForListing(employee)));
+
+            res.status(200).json({
+                status: true,
+                message: "Employees fetched successfully.",
+                data: formattedEmployees,
+            });
+        } catch (error) {
+            res.status(422).json({
+                status: false,
+                message: "Failed to fetch employees.",
+                errors: error,
+            });
+        }
+    }
 }

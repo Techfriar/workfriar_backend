@@ -87,11 +87,18 @@ adminRouter
 */
 
 adminRouter
-    .route('/employee-list')
+    .route('/employee-data')
     .post(
         // authenticateAdmin,
         checkPermissions('Users', 'view'),
-        admin.employeeList
+        admin.listAllEmployeesData
+    )
+adminRouter
+    .route('/list-all-employees')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('Users', 'view'),
+        admin.listAllEmployees
     )
 /* 
 * Client Routes
