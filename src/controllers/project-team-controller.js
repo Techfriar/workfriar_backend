@@ -313,7 +313,7 @@ class ProjectTeamController{
 
     async getProjectTeambyidController(req,res)
     {
-        const id=req.body
+        const {id}=req.body
         try
         {
             const data = await projectTeamRepo. getProjectTeambyId(id)

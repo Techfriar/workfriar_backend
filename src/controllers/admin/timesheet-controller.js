@@ -156,7 +156,7 @@ export default class TimesheetController {
 		try {
 			// Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6746a474ed7e5979a3a1f898'; // Temporary user ID
+			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
 
 			const timezone = await findTimezone(req);
 
@@ -844,7 +844,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
+			const user_id = '6746a63bf79ea71d30770de7';
 			const { startDate, endDate } = req.body
 			const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
 			if (validatedDates.error) {
@@ -1021,7 +1021,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a474ed7e5979a3a1f898';
+			const user_id = '6746a63bf79ea71d30770de7';
 			const timezone = await findTimezone(req);
 
 			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));

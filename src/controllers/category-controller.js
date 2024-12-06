@@ -94,12 +94,14 @@ export default class CategoryController {
                     return res.status(422).json({
                         status: false,
                         message: "Validation Failed",
+                        data:[],
                         errors: error.errors, 
                     });
                 } else {
                     return res.status(500).json({
                         status: false,
                         message: "Internal Server Error",
+                        data:[],
                         errors: error.message || error,
                     });
                 
@@ -109,7 +111,6 @@ export default class CategoryController {
 
     /**
      * Get All Categories
-     * 
      * @swagger
      * /user/getcategories:
      *   post:
@@ -320,12 +321,14 @@ async updateCategories(req, res) {
                 return res.status(422).json({
                     status: false,
                     message: "Validation Failed",
+                    data:[],
                     errors: error.errors,
                 });
             } else {
                 return res.status(500).json({
                     status: false,
                     message: "Internal Server Error",
+                    data:[],
                     errors: error.message || error,
             });
         }
