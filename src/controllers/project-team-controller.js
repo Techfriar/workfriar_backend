@@ -24,7 +24,7 @@ class ProjectTeamController{
  *             properties:
  *               project:
  *                 type: string
- *                 example: "Project Alpha"
+ *                 example: "647a9b6c1234567890abcdef"
  *               status:
  *                 type: string
  *                 example: "On hold"
@@ -91,9 +91,9 @@ class ProjectTeamController{
                 throw new CustomValidationError(validationResult.message);
             } 
             const newTeam = await projectTeamRepo.createTeam(req.body);
-            if(newTeam)
+            if(newTeam.status)
             {
-                const  data=await projectTeamResponse.formattedResponse(newTeam)
+                const  data=await projectTeamResponse.formattedResponse(newTeam.data)
                 res.status(200).json(
                     {
                         status:true,
@@ -313,7 +313,7 @@ class ProjectTeamController{
 
     async getProjectTeambyidController(req,res)
     {
-        const id=req.body
+        const {id}=req.body
         try
         {
             const data = await projectTeamRepo. getProjectTeambyId(id)
@@ -431,9 +431,9 @@ class ProjectTeamController{
                 throw new CustomValidationError(validationResult.message);
             } 
             const newTeam = await projectTeamRepo.updateProjectTeam(id,req.body);
-            if(newTeam)
+            if(newTeam.status)
             {
-                const  data=await projectTeamResponse.formattedResponse(newTeam)
+                const  data=await projectTeamResponse.formattedResponse(newTeam.data)
                 res.status(200).json(
                     {
                         status:true,

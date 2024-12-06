@@ -105,7 +105,7 @@ export default class TimeSummaryResponse {
 
     
     //Function for formatting a past due
-    async formattedPastDue(data) {
+    async  (data) {
         try {
             let overallDailyHours = {};
     
@@ -119,12 +119,12 @@ export default class TimeSummaryResponse {
                     }
                     overallDailyHours[entryDate] += parseFloat(entry.hours);
                 });
-    
                 return {
                     id: item._id,
                     project_name: item.project_id.project_name,
                     category: item.task_category_id.category,
                     task_detail: item.task_detail,
+                    username: item.user_id.full_name,
                     startDate: item.startDate,
                     endDate: item.endDate,
                     date: `${start.format("D MMMM")} - ${end.format("D MMMM YYYY")}`,

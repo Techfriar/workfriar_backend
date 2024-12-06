@@ -67,8 +67,9 @@ class CreateCategoryRequest {
         }
         try {
             const existingCategories = await categoryRepo.getAllCategories();
+            
             const existingCategoryNames = existingCategories.map(cat => cat.category.toLowerCase());
-            if (existingCategoryNames.includes(updateData.category.toLowerCase())) {
+            if (existingCategoryNames.includes(updateData?.category?.toLowerCase())) {
                 return { isValid: false, message: "Category already exists" };
             }
             return { isValid: true, message: "Category is valid and unique" };

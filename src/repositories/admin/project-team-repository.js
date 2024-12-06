@@ -4,7 +4,7 @@ class ProjectTeamRepository
 {
     //Function for creating new project team
     async createTeam(teamData)
-    {
+    { 
         try
         {
         const{project,status,startDate,endDate,teamMembers}=teamData
@@ -15,7 +15,7 @@ class ProjectTeamRepository
           end_date:endDate,
           team_members:teamMembers
         })
-        return data
+        return ({status:true,data:data})
     }catch(error)
     {
         throw new Error(error)
@@ -94,7 +94,7 @@ class ProjectTeamRepository
                 throw new Error("Project team not found or could not be updated.");
             }
     
-            return updatedTeam;
+            return ({status:true,data:updatedTeam})
         } catch (error) {
             throw new Error(`Failed to update project team: ${error.message}`);
         }

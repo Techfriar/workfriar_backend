@@ -8,7 +8,7 @@ export default class ForecastRepository{
         {
             const forecast = new projectForecast(forecastdata);
             const savedForecast = await forecast.save();
-            return savedForecast
+            return ({status:true,data:savedForecast})
         }
         catch(error)
         {
@@ -70,7 +70,7 @@ export default class ForecastRepository{
             if (!updatedForecast) {
                 throw new Error("Forecast not found");
             }
-            return updatedForecast;
+            return ({status:true,data:updatedForecast})
         } catch (error) {
             throw new Error(error.message || "Failed to update forecast");
         }

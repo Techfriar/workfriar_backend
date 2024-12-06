@@ -11,7 +11,7 @@ export default class CategoryRepository{
             category,
             time_entry:timeentry
         })
-        return newCategory
+        return ({status:true,data:newCategory})
    }
    catch(error)
    {
@@ -41,12 +41,12 @@ export default class CategoryRepository{
             { new: true } // Return the updated document
         );
 
-        return updatedCategory;
+        return ({status:true,data:updatedCategory})
     } catch (error) {
         throw new Error(error);
     }
 }
-     /*get all Categories */
+     /*get category by id Categories */
     async  getCategoryById(categoryId)
     {
         try

@@ -157,7 +157,7 @@ export default class TimesheetController {
 		try {
 			// Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6744a7c9707ecbeea1efd14c'; // Temporary user ID
+			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
 
 			const timezone = await findTimezone(req);
 
@@ -863,41 +863,24 @@ export default class TimesheetController {
 			// }
 			// const decoded = jwt.decode(token);
 			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
-	
-			let { startDate, endDate } = req.body;
-			let actualStartWeek, actualEndWeek;
-	
-			if (startDate && endDate) {
-				const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
-				if (validatedDates.error) {
-					throw new CustomValidationError(validatedDates.error);
-				}
-				startDate = new Date(startDate);
-				endDate = new Date(endDate);
-	
-				// Find actual start and end of the week
-				actualStartWeek = FindS.getPreviousSunday(startDate);
-				actualEndWeek = new Date(actualStartWeek);
-				actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-			} else {
-				const timezone = await findTimezone(req);
-				const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
-
-				actualStartWeek = FindS.getPreviousSunday(today);
-				actualEndWeek = new Date(actualStartWeek);
-				actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-	
-				startDate = FindWeekRange_.getWeekStartDate(today);
-				startDate.setUTCHours(0, 0, 0, 0);
-				endDate = FindWeekRange_.getWeekEndDate(today);
+			const user_id = '6746a63bf79ea71d30770de7';
+			const { startDate, endDate } = req.body
+			const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
+			if (validatedDates.error) {
+				// If there are validation errors, return a error
+				throw new CustomValidationError(validationResult.error)
 			}
-	
-			startDate.setUTCHours(0, 0, 0, 0);
-			endDate.setUTCHours(0, 0, 0, 0);
-	
-			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
-	
+			const start = new Date(startDate)
+			const end = new Date(endDate);
+			start.setUTCHours(0, 0, 0, 0);
+			end.setUTCHours(0, 0, 0, 0)
+
+			const weekStartDate = FindS.getPreviousSunday(start)
+			const weekEndDate = new Date(weekStartDate);
+			weekEndDate.setDate(weekStartDate.getDate() + 6);
+
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+
 			if (timesheets.length > 0) {
 				const modifydata = timesheets.map((item) => {
 					const allDates = FindWeekRange_.getDatesBetween(actualStartWeek, actualEndWeek);
@@ -969,8 +952,177 @@ export default class TimesheetController {
 			}
 		}
 	}
-	
-	
+
+	//get timesheets of the current week
+	/**
+	 * @swagger
+	 * /timesheet/get-current-week-timesheets:
+	 *   post:
+	 *     summary: Get timesheets for the current week
+	 *     description: Fetches the timesheets for the current week for the logged-in user.
+	 *     tags:
+	 *       - Timesheet
+	 *     responses:
+	 *       200:
+	 *         description: Weekly timesheets fetched successfully.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: Weekly timesheets fetched successfully
+	 *                 length:
+	 *                   type: integer
+	 *                   example: 5
+	 *                 data:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       id:
+	 *                         type: string
+	 *                         example: 64cfc73edfa4d2787b5ed3a7
+	 *                       date:
+	 *                         type: string
+	 *                         format: date
+	 *                         example: 2024-12-01
+	 *                       hours:
+	 *                         type: number
+	 *                         example: 8
+	 *                       status:
+	 *                         type: string
+	 *                         example: saved
+	 *       500:
+	 *         description: Server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 success:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: Internal server error
+	 *                 data:
+	 *                   type: array
+	 *                   example: []
+	 */
+
+	async getCurrentWeekTimeheet(req, res) {
+		try {
+			// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const user_id = decoded.UserId;
+			const user_id = '6746a63bf79ea71d30770de7';
+			const timezone = await findTimezone(req);
+
+			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+
+			const weekStartDate = FindS.getPreviousSunday(today)
+			const weekEndDate = new Date(weekStartDate);
+			weekEndDate.setDate(weekStartDate.getDate() + 6);
+
+			const startDate = new Date(weekStartDate)
+			startDate.setUTCHours(0, 0, 0, 0)
+			let start = startDate.toISOString()
+
+			const endDate = new Date(weekEndDate)
+			endDate.setUTCHours(0, 0, 0, 0)
+			endDate.setUTCDate(endDate.getUTCDate());
+			let end = endDate.toISOString()
+
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, start, end)
+
+
+			if (timesheets.length > 0) {
+				const modifydata = timesheets.map((item) => {
+					// Get all dates for the week
+					const allDates = FindWeekRange_.getDatesBetween(new Date(weekStartDate), new Date(weekEndDate));
+					
+					let total_hours = 0;
+
+					// Process existing data_sheet entries
+					item.data_sheet.forEach((data) => {
+						total_hours += parseFloat(data.hours);
+						const normalizedDate = new Date(data.date).toISOString().split('T')[0];
+						data.normalizedDate = normalizedDate;
+						data.dayOfWeek = new Date(normalizedDate).toLocaleDateString('en-US', { weekday: 'short' });
+						data.isDisable = !(normalizedDate >= start.split('T')[0] && normalizedDate <= end.split('T')[0]);
+					});
+
+
+					// Add missing dates to data_sheet
+					allDates.forEach(date => {
+						const dateString = date.toISOString().split('T')[0];
+						const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+						const existingData = item.data_sheet.find(data => data.normalizedDate === dateString);
+						if (!existingData) {
+							item.data_sheet.push({
+								date: date,
+								hours: '00:00',
+								normalizedDate: dateString,
+								dayOfWeek: dayOfWeek,
+								isHoliday: false,
+								isDisable: !(dateString >= start.split('T')[0] && dateString <= end.split('T')[0]),
+							});
+						}
+					});
+
+					// Sort data_sheet by normalizedDate to match the weekly order
+					item.data_sheet.sort((a, b) => new Date(a.normalizedDate) - new Date(b.normalizedDate));
+
+					item.totalHours = total_hours;
+					return item;
+				});
+
+				const data = await Promise.all(
+					modifydata.map(async (item) =>
+						await timesheetResponse.weeklyTimesheetResponse(item)
+					)
+				)
+				res.status(200).json({
+					success: true,
+					message: 'Weekly timesheets fetched successfully',
+					length: timesheets.length,
+					data: data
+				});
+
+			}
+			else {
+				return res.status(200).json({
+					success: false,
+					message: 'No timesheets found for the provided date range',
+					data: []
+				});
+			}
+
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
+				message: err.message,
+				data: [],
+			});
+		}
+	}
 
 	//get timesheet with are not submitted
 	/**

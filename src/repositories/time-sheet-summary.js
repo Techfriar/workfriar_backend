@@ -69,6 +69,7 @@ class TimeSheetSummary{
                 endDate: { $lte: end }
             })
                 .populate({ path: "project_id", select: "project_name" })
+                .populate({ path: "user_id", select: "full_name"})
                 .populate({ path: "task_category_id", select: "category" }); 
     
             return dueTimeSheets;

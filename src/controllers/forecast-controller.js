@@ -218,9 +218,9 @@ export default class ForecastController{
         } 
         const forecastData=await ForecastController.formattedForecast(req.body)
             const newForecast=await forecastRepo.createForecast(forecastData)
-            if(newForecast)
+            if(newForecast.status)
             {
-                const  data=await forecastResponse.formattedResponse(newForecast)
+                const  data=await forecastResponse.formattedResponse(newForecast.data)
                 res.status(200).json(
                     {
                         status:true,
@@ -779,7 +779,7 @@ export default class ForecastController{
  *                 message:
  *                   type: string
  *                   example: "Internal Server Error"
- */
+ */  
     async updateForecast(req,res)
     {
         const {id}=req.body
@@ -793,9 +793,9 @@ export default class ForecastController{
            const forecastData=await ForecastController.formattedForecast(req.body)
 
             const newForecast=await forecastRepo.updateForecast(forecastData,id)
-            if(newForecast)
+            if(newForecast.status)
             {
-                const  data=await forecastResponse.formattedResponse(newForecast)
+                const  data=await forecastResponse.formattedResponse(newForecast.data)
                 res.status(200).json(
                     {
                         status:true,

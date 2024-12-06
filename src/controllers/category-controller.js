@@ -68,9 +68,9 @@ export default class CategoryController {
                 throw new CustomValidationError(validationResult.message);
             }
             const newCategory = await categoryRepo.createCategory(category, timeentry);
-            if(newCategory)
+            if(newCategory.status)
             {
-                const  data=await categoryResponse.formattedResponse(newCategory)
+                const  data=await categoryResponse.formattedResponse(newCategory.data)
                 res.status(200).json(
                     {
                         status:true,
@@ -94,12 +94,14 @@ export default class CategoryController {
                     return res.status(422).json({
                         status: false,
                         message: "Validation Failed",
+                        data:[],
                         errors: error.errors, 
                     });
                 } else {
                     return res.status(500).json({
                         status: false,
                         message: "Internal Server Error",
+                        data:[],
                         errors: error.message || error,
                     });
                 
@@ -109,7 +111,6 @@ export default class CategoryController {
 
     /**
      * Get All Categories
-     * 
      * @swagger
      * /user/getcategories:
      *   post:
@@ -301,8 +302,8 @@ async updateCategories(req, res) {
         }
         const updatedData = await categoryRepo.updateCategory(updateFields, id);
 
-        if (updatedData) {
-            const data = await categoryResponse.formattedResponse(updatedData);
+        if (updatedData.status) {
+            const data = await categoryResponse.formattedResponse(updatedData.data);
             return res.status(200).json({
                 status: true,
                 message: "Category updated successfully",
@@ -320,12 +321,14 @@ async updateCategories(req, res) {
                 return res.status(422).json({
                     status: false,
                     message: "Validation Failed",
+                    data:[],
                     errors: error.errors,
                 });
             } else {
                 return res.status(500).json({
                     status: false,
                     message: "Internal Server Error",
+                    data:[],
                     errors: error.message || error,
             });
         }
