@@ -141,7 +141,6 @@ export default class RoleRepository{
                 { $addToSet: { users: { $each: userIds } } },
                 { new: true, runValidators: true }
             );
-
             if (!updatedRole) {
                 throw new Error('Role not found');
             }
@@ -165,6 +164,23 @@ export default class RoleRepository{
                 { $pull: { users: userId } },
                 { new: true }
             );
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Remove User From all roles
+     * @param {String} userId - The ID of the user to remove from all roles
+     * @returns {Promise<Role>} - The updated roles
+     */
+    static async removeUserFromAllRoles(userId) {
+        try {
+            const updatedRoles = await Role.updateMany(
+                { users: userId },
+                { $pull: { users: userId } }
+            );
+            return updatedRoles;
         } catch (error) {
             throw error;
         }
