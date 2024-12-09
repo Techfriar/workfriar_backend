@@ -1,5 +1,11 @@
+import { CustomValidationError } from '../../exceptions/custom-validation-error.js'
+import RoleRepository from '../../repositories/admin/role-repository.js'
 import EmailRepository from '../../repositories/email-repository.js'
 import UserRepository from '../../repositories/user-repository.js'
+import AddUserRequest from '../../requests/admin/add-employee-request.js'
+import FetchEmployeeRequest from '../../requests/admin/fetch-employee-request.js'
+import GetUserRequest from '../../requests/admin/fetch-employee-request.js'
+import RoleRequest from '../../requests/admin/role-request.js'
 import UserResponse from '../../responses/user-response.js'
 import bcryptPassword from '../../utils/bcryptPassword.js'
 
@@ -114,8 +120,6 @@ export default class AdminController {
 
             const UserId = '6744a7c9707ecbeea1efd14c'
             const adminData = await userRepo.getUserExpanded( UserId )
-
-            console.log('here', adminData)
 
             if (adminData) {
                 const adminDetails = await UserResponse.format( adminData )
@@ -296,4 +300,300 @@ export default class AdminController {
             });
         }
     }
+
+/**
+ * Get Employee Details
+ *
+ * @swagger
+ * /admin/employee-details:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Get Employee Details
+ *     security:
+ *       - bearerAuth: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Employee ID
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Employee data fetched successfully."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "674d80901b1320de33e2467f"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       example: "john.doe@example.com"
+ *                     phone_number:
+ *                       type: string
+ *                       example: "7123431323"
+ *                     reporting_manager:
+ *                       type: string
+ *                       example: "Jane Smith"   
+ *                     role:
+ *                       type: string
+ *                       example: "Project Manager"
+ *                     department:
+ *                       type: string
+ *                       example: "Operations"
+ *                     status:
+ *                       type: boolean
+ *                       example: true
+ *                     profile_pic_path:
+ *                       type: string
+ *                       example: "https://example.com/images/john-doe.jpg"
+ *                     location:
+ *                       type: string
+ *                       example: "Dubai"
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
+ */
+
+    async getEmployeeDetails(req, res) {
+        const { id } = req.body
+        try {
+            const employeeData = await FetchEmployeeRequest.validateUserId( id )
+
+            if (employeeData) {
+                const employeeDetails = await UserResponse.formatEmployeeDetails(
+                    employeeData,
+                )
+                res.status(200).json({
+                    status: true,
+                    message: 'Employee data fetched successfully.',
+                    data: employeeDetails,
+                })
+            } else {
+                res.status(200).json({
+                    status: false,
+                    message: 'Failed to get employee.',
+                    data: [],
+                })
+            }
+        } catch (error) {
+            if(error instanceof CustomValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Failed to get employee.',
+                    errors: error.errors,
+                })
+            }
+            res.status(500).json({
+                status: false,
+                message: 'Failed to get employee.',
+                errors: error,
+            })
+        }
+    }
+
+/**
+ * Update Employee Role
+ *
+ * @swagger
+ * /admin/update-employee-role:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Update Employee Role
+ *     security:
+ *       - bearerAuth: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - employeeId
+ *               - newRole
+ *             properties:
+ *               employeeId:
+ *                 type: string
+ *                 description: ID of the employee to update
+ *               newRole:
+ *                 type: string
+ *                 description: New role for the employee
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Employee role updated successfully."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "674d80901b1320de33e2467f"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       example: "john.doe@example.com"
+ *                     role:
+ *                       type: string
+ *                       example: "Senior Manager"
+ *       400:
+ *         description: Bad Request
+ *       404:
+ *         description: Employee Not Found
+ *       500:
+ *         description: Internal Server Error
+ */
+    async updateEmployeeRole(req, res) {
+        const { newRole: roleId, employeeId: userId } = req.body
+        try {
+            const UserData = await FetchEmployeeRequest.validateUserId( userId )
+
+            if(UserData && UserData.roles) {
+                await RoleRepository.removeUserFromRole(UserData.roles[0]._id, userId)
+            }
+            const { roleId: validatedRoleId, userIds } = await RoleRequest.validateMapUsersToRole({ roleId, userIds: [userId] });
+
+            const updatedRole = await RoleRepository.addUsersToRole(validatedRoleId, userIds);
+
+            res.status(200).json({
+                status: true,
+                message: 'Employee role updated successfully.',
+                data: updatedRole,
+            });
+        } catch (error) { 
+            if(error instanceof CustomValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Failed to update employee role.',
+                    errors: error.errors,
+                })
+            }
+            console.log(error);
+            
+            res.status(500).json({
+                status: false,
+                message: 'Failed to update employee role.',
+                errors: error,
+            })
+        }
+
+    }
+ 
+/**
+ * Delete Employee
+ *
+ * @swagger
+ * /admin/delete-employee:
+ *   post:
+ *     tags:
+ *       - Admin
+ *     summary: Delete an employee
+ *     security:
+ *       - bearerAuth: []
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - employeeId
+ *             properties:
+ *               employeeId:
+ *                 type: string
+ *                 description: ID of the employee to delete
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Employee deleted successfully."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "674d80901b1320de33e2467f"
+ *       400:
+ *         description: Bad Request
+ *       404:
+ *         description: Employee Not Found
+ *       500:
+ *         description: Internal Server Error
+ */
+    async deleteEmployee(req, res) {
+        const { employeeId: id } = req.body
+        try {
+            await FetchEmployeeRequest.validateUserId( id )
+ 
+            await userRepo.deleteUser(id)
+            await RoleRepository.removeUserFromAllRoles(id)
+
+            res.status(200).json({
+                status: true,
+                message: 'Employee deleted successfully.',
+                data: [],
+            })
+
+        } catch (error) {
+            if(error instanceof CustomValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Failed to delete employee.',
+                    errors: error.errors,
+                })
+            }
+            res.status(500).json({
+                status: false,
+                message: 'Failed to delete employee.',
+                errors: error,
+            })
+        }
+    }
+
 }

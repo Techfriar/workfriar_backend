@@ -104,6 +104,27 @@ adminRouter
         // checkPermissions('Users', 'view'),
         admin.listAllEmployees
     )
+adminRouter
+    .route('/employee-details')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('Users', 'view'),
+        admin.getEmployeeDetails
+    )
+adminRouter
+    .route('/update-employee-role')
+    .post(
+        // authenticateAdmin,
+        // checkPermissions('Users', 'edit'),
+        admin.updateEmployeeRole
+    )
+adminRouter
+    .route('/delete-employee')
+    .post(
+        // authenticateAdmin,.
+        // checkPermissions('Users', 'delete'),
+        admin.deleteEmployee
+    )
 /* 
 * Client Routes
 */

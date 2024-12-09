@@ -13,7 +13,6 @@ export default class UserRepository {
             const users = await User.find().populate('roles'); // Populate roles if needed
             return users;
         } catch (error) {
-            console.error("Error fetching all users:", error);
             throw new Error("Failed to fetch users");
         }
     }
@@ -120,9 +119,24 @@ async  updateEmployee(id, updateData) {
                 .populate({
                     path: 'reporting_manager',
                     select: 'full_name', // Fetch only the manager's name
-                });
+                })
+                .lean();
         } catch (error) {
             throw new Error(`Unable to fetch user: ${error.message}`);
+        }
+    }
+
+    /**
+     * Delete user by id
+     * @param {String} userId - The ID of the user to delete
+     * @return {Promise<User>} - The deleted user object
+     */
+    async deleteUser(userId) {
+        try {
+            const deletedUser = await User.findByIdAndDelete(userId);
+            return deletedUser;
+        } catch (error) {
+            throw new Error(`Failed to delete user: ${error.message}`);
         }
     }
 
