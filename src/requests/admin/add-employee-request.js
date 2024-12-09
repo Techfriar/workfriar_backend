@@ -1,152 +1,124 @@
-import Joi from 'joi'
-import UserRepository from '../../repositories/user-repository.js'
-import RoleRepository from '../../repositories/admin/role-repository.js'
-// import cleanErrorMessage from '../../../utils/cleanErrorMessage.js'
+import Joi from "joi";
+import Role from "../../models/role.js"; 
+import User from "../../models/user.js";
 
-class AddUserRequest {
-    static userRepo = new UserRepository()
-    static roleRepo = new RoleRepository()
-
-    /**
-     * Add validation rules for the request
-     */
-    static schema = Joi.object({
+class EmployeeRequest {
+    static employeeSchema = Joi.object({
         name: Joi.string().required().messages({
-            'string.empty': 'Please enter the full name of the user.',
-            'any.required': 'Please enter the full name of the user.',
+            'string.base': `"Full name" should be a type of 'text'`,
+            'string.empty': `"Full name" cannot be an empty field`,
+            'any.required': `"Full name" is a required field`
         }),
         email: Joi.string().email().required().messages({
-            'string.empty': 'Please enter a valid email address.',
-            'any.required': 'Please enter a valid email address.',
-            'string.email': 'Please enter a valid email address.',
+            'string.base': `"Email" should be a type of 'text'`,
+            'string.empty': `"Email" cannot be an empty field`,
+            'string.email': `"Email" must be a valid email format`,
+            'any.required': `"Email" is a required field`
         }),
-        gender: Joi.string()
-            .valid('male', 'female', 'other')
-            .required()
-            .messages({
-                'string.empty':
-                    'Gender is a required field. Please choose the appropriate option.',
-                'any.required':
-                    'Gender is a required field. Please choose the appropriate option.',
-            }),
-        country_code: Joi.string()
-            .pattern(/^\+[0-9]+$/)
-            .required(),
-        country_unicode: Joi.string().required(),
-        phone: Joi.number().required().messages({
-            'number.empty': 'Please enter a valid phone number.',
-            'any.required': 'Please enter a valid phone number.',
-            'number.base': 'Please enter a valid phone number.',
+        role: Joi.string().required().messages({
+            'string.base': `"Role" should be a type of 'text'`,
+            'string.empty': `"Role" cannot be an empty field`,
+            'any.required': `"Role" is a required field`
         }),
-        address: Joi.string().allow(''),
-        postal_code: Joi.number().allow(''),
-        city: Joi.string().allow(''),
-        country: Joi.string().allow(''),
-        emirate: Joi.string().allow(''),
-        role_id: Joi.string()
-            .regex(/^[0-9a-fA-F]{24}$/)
-            .required()
-            .messages({
-                'string.empty': 'Please specify the role of the user.',
-                'any.required': 'Please specify the role of the user.',
-            }),
-        file: Joi.object().optional().optional().allow('').allow(null),
-        user_id: Joi.string().required().messages({
-            'string.empty': 'Please enter user id.',
-            'any.required': 'Please enter user id.',
+        reporting_manager: Joi.string().required().messages({
+            'string.base': `"Reporting Manager" should be a type of 'text'`,
+            'string.empty': `"Reporting Manager" cannot be an empty field`,
+            'any.required': `"Reporting Manager" is a required field`
         }),
-    })
+        location: Joi.string().required().messages({
+            'string.base': `"Location" should be a type of 'text'`,
+            'string.empty': `"Location" cannot be an empty field`,
+            'any.required': `"Location" is a required field`
+        }),
+        status: Joi.string().required().messages({
+            'string.base': `"Status" should be a type of 'text'`,
+            'string.empty': `"Status" cannot be an empty field`,
+            'any.required': `"Status" is a required field`,
+        }),
+    });
 
-    constructor(req) {
-        const file = req.files['file'] ? req.files['file'][0] : null
+    async validateEmployee(data) {
+        const { error } = EmployeeRequest.employeeSchema.validate(data);
+        if (error) {
+            return { isValid: false, message: error.details.map(err => err.message) };
+        }
+        try {
+            const role = await Role.findOne({ _id: data.role });
+            if (!role) {
+                return { isValid: false, message: `Role '${data.role}' does not exist` };
+            }
+             const reportingManager = await User.findById(data.reporting_manager);
+            if (!reportingManager) {
+                return { isValid: false, message: `User with ID '${data.reporting_manager}' does not exist as a Reporting Manager` };
+            } 
 
-        this.data = {
-            name: req.body.name,
-            email: req.body.email,
-            gender: req.body.gender,
-            country_code: req.body.country_code,
-            country_unicode: req.body.country_unicode,
-            phone: req.body.phone,
-            address: req.body.address,
-            postal_code: req.body.postal_code,
-            city: req.body.city,
-            country: req.body.country,
-            emirate: req.body.emirate,
-            role_id: req.body.role_id,
-            file: file,
-            user_id: req.body.user_id,
+            return { isValid: true, message: "Employee data is valid, role and reporting manager exist" };
+        } catch (err) {
+            return { isValid: false, message: "Error occurred while validating the role or reporting manager" };
         }
     }
-
-    async validate() {
-        const { error, value } = AddUserRequest.schema.validate(this.data, {
-            abortEarly: false,
-        })
-        /**
-         * Check email exist or not
-         */
-        const checkEmailExists =
-            await AddUserRequest.userRepo.getUserByEmail(
-                this.data.email,
-            )
-
-        /**
-         * check phone exist or not
-         */
-        const checkPhoneExists =
-            await AddUserRequest.userRepo.getUserByPhone(
-                this.data.phone,
-            )
-
-        /**
-         * check userId exist or not
-         */
-        const checkUserIdExists =
-            await AddUserRequest.userRepo.getUserByUserId(
-                this.data.user_id,
-            )
-
-        /**
-         * check role exist or not
-         */
-        const checkRoleExists =
-            this.data.role_id &&
-            this.data.role_id != 'undefined' &&
-            (await AddUserRequest.roleRepo.getRoleById(this.data.role_id))
-
-        if (
-            error ||
-            checkEmailExists ||
-            checkRoleExists == null ||
-            checkPhoneExists !== null ||
-            checkUserIdExists !== null
-        ) {
-            const validationErrors = {}
-            error
-                ? error.details.forEach((err) => {
-                      validationErrors[err.context.key] = err.message
-                  })
-                : []
-            if (checkRoleExists == null) {
-                validationErrors['role'] =
-                    'Please specify the role of the user.'
+    async validateEmployeeEdit(data) {
+        const { profile_pic, ...validationData } = data;
+    
+        const schema = Joi.object({
+            id: Joi.string().required().messages({
+                'string.empty': `"ID" cannot be an empty field`,
+                'any.required': `"ID" is a required field`
+            }),
+            name: Joi.string().min(2).max(100).messages({
+                'string.base': `"Name" should be a type of 'text'`,
+                'string.min': `"Name" should have a minimum length of {#limit}`,
+                'string.max': `"Name" should have a maximum length of {#limit}`
+            }),
+            email: Joi.string().email().messages({
+                'string.email': `"Email" must be a valid email`,
+                'string.empty': `"Email" cannot be an empty field`
+            }),
+            role: Joi.string().messages({
+                'string.base': `"Role" should be a type of 'text'`,
+                'string.empty': `"Role" cannot be an empty field`
+            }),
+            reporting_manager: Joi.string().messages({
+                'string.base': `"Reporting Manager" should be a type of 'text'`,
+                'string.empty': `"Reporting Manager" cannot be an empty field`
+            }),
+            location: Joi.string().messages({
+                'string.base': `"Location" should be a type of 'text'`,
+                'string.empty': `"Location" cannot be an empty field`
+            }),
+            status: Joi.string().valid('active', 'inactive').messages({
+                'string.base': `"Status" should be a type of 'text'`,
+                'any.only': `"Status" must be either 'active' or 'inactive'`
+            }),
+        }).min(2).messages({
+            'object.min': `At least one field besides "ID" must be provided for update`
+        });
+    
+        try {
+            await schema.validateAsync(validationData, { abortEarly: false });
+            
+            if (validationData.role) {
+                const role = await Role.findOne({ _id: validationData.role });
+                if (!role) {
+                    return { isValid: false, message: `Role '${validationData.role}' does not exist` };
+                }
             }
-            if (checkEmailExists !== null) {
-                validationErrors['email'] =
-                    'Email id is already taken. Try another one.'
+            
+            if (validationData.reporting_manager) {
+                const reportingManager = await User.findById(validationData.reporting_manager);
+                if (!reportingManager) {
+                    return { isValid: false, message: `User with ID '${validationData.reporting_manager}' does not exist as a Reporting Manager` };
+                }
             }
-            if (checkPhoneExists !== null) {
-                validationErrors['phone'] =
-                    'Phone number is already taken. Try another one.'
-            }
-            if (checkUserIdExists) {
-                validationErrors['user_id'] =
-                    'User with this id is exist. Try another one.'
-            }
-            throw validationErrors
+    
+            return { isValid: true, message: "Employee edit data is valid" };
+        } catch (error) {
+            return {
+                isValid: false,
+                message: "Validation failed",
+                errors: error.details.map(detail => detail.message)
+            };
         }
-        return value
-    }
+    }    
 }
-
-export default AddUserRequest
+export default EmployeeRequest;

@@ -16,7 +16,76 @@ export default class UserRepository {
             throw new Error("Failed to fetch users");
         }
     }
+//Getting roles for a user based on department
+    async getRoles(department) {
+        const dept = ['Management'];
+        dept.push(department);
+        if (department === 'Technical') {
+            dept.push('Operations');
+        }
+        try {
+            const roles = await Role.find({ department: { $in: dept } }).populate({path:'users',select:'full_name'});
+            return { status: true, data: roles };
+        } catch (error) {
+            throw new Error(error.message || 'Failed to fetch roles');
+        }
+    }
 
+    async  checkPermission(roleName) {
+        try {
+            const role = await Role.findOne({ _id: roleName }).populate('permissions');
+    
+            if (!role) {
+                return { status: false, message: 'Role not found' };
+            }
+    
+            const hasUserCategory = role.permissions.some(permission => permission.category === 'Users');
+    
+            const isAdmin = hasUserCategory;
+    
+            return { status: true, isAdmin };
+        } catch (error) {
+            throw new Error(error.message || 'Failed to check permissions');
+        }
+    }
+
+//adding an  employee to the database
+async addEmployees(name,email,reporting_manager,isAdmin,location,isactive,fileurl) {
+    console.log(isAdmin)
+    try {
+        const employee = new User({
+            full_name: name,
+            email,
+            reporting_manager,
+            location,
+            status:isactive,
+            profile_pic: fileurl,
+            isAdmin,
+        });
+        const savedEmployee = await employee.save();
+        return { status: true, data: savedEmployee };
+    } catch (error) {
+        return { status: false, error: error.message };
+    }
+}
+
+async  updateEmployee(id, updateData) {
+    try {
+     
+        const updatedEmployee = await User.findByIdAndUpdate(id, updateData, {
+            new: true, 
+            runValidators: true, 
+        });
+
+        if (!updatedEmployee) {
+            return null;
+        }
+        return {status:true,data:updatedEmployee};
+    } catch (error) {
+        throw new Error(`Error updating employee: ${error.message}`);
+    }
+}
+    
     /**
      * Get user by email
      * @param String email
