@@ -1078,7 +1078,7 @@ export default class TimesheetController {
 			actualWeekEnd.setDate(actualWeekStart.getDate() + 6);
 			actualWeekEnd.setUTCHours(23, 59, 59, 999);
 
-			const {timesheets} = await TimesheetRepo.getWeeklyTimesheets(user_id, actualWeekStart, actualWeekEnd)
+			const {timesheets} = await TimesheetRepo.getWeeklyTimesheets(user_id, fromDate, toDate)
 
 			if(timesheets.length > 0){
 				const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') || (timesheet.status != 'accepted')))
@@ -1252,7 +1252,6 @@ export default class TimesheetController {
 	 *                   type: array
 	 *                   example: []
 	 */
-
 	async getProjectSummaryReport(req, res) {
 		try {
 			const { projectIds, year, month } = req.body
@@ -1425,7 +1424,6 @@ export default class TimesheetController {
 	 *                   type: array
 	 *                   example: []
 	 */
-
 	async projectDetailReport(req, res) {
 		try {
 			const now = new Date();
@@ -1603,7 +1601,6 @@ export default class TimesheetController {
 	 *                   type: array
 	 *                   example: []
 	 */
-
 	async getEmployeeSummaryReport(req, res) {
 		try {
 			const now = new Date();
@@ -1984,8 +1981,6 @@ export default class TimesheetController {
 			const end = endDate.toISOString()
 
 			const timesheetData = await TimesheetRepo.getMonthlySnapshot(user_id, start, end)
-			console.log(timesheetData);
-			
 
 			const defaultStatuses = ['saved', 'accepted', 'rejected'];
 			const responseData = defaultStatuses.map(status => {
@@ -2131,8 +2126,6 @@ export default class TimesheetController {
 					data: []
 				})
 			}
-
-
 		}
 		catch (err) {
 			if (err instanceof CustomValidationError) {
