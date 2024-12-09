@@ -386,7 +386,7 @@ async editEmployee(req, res) {
             }
         }
         const updateData = {};
-        if (name) updateData.name = name;
+        if (name) updateData.full_name = name;
         if (email) updateData.email = email;
         if (reporting_manager) updateData.reporting_manager = reporting_manager;
         if (location) updateData.location = location;
