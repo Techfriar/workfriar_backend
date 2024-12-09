@@ -115,9 +115,17 @@ export default class TimesheetRepository {
 
 	  
 	//Get timesheet using userId
-	async getUserTimesheets(userId){
+	async getUserTimesheets(user_id, page, limit){
 		try {
-            return await Timesheet.find({user_id: userId})
+			const skip = (page - 1) * limit;
+
+			const timesheets = await Timesheet.find({ user_id })
+				.skip(skip)
+				.limit(limit);
+		
+			const totalCount = await Timesheet.countDocuments({ user_id });
+		
+			return { timesheets, totalCount };
         } catch (error) {
             throw new Error(error); 
         }
@@ -137,7 +145,7 @@ export default class TimesheetRepository {
 					},
 				},
 				{
-					$unwind: "$data_sheet", // Deconstruct data_sheet array
+					$unwind: "$data_sheet",
 				},
 				{
 					$match: {
@@ -196,30 +204,36 @@ export default class TimesheetRepository {
 		}
 	}
 	
-
-	async getWeeklyTimesheets(user_id, startDate, endDate) {
+	//get timesheets for a week
+	async getWeeklyTimesheets(user_id, startDate, endDate, page, limit) {
 		try {
-			const timesheets = await Timesheet.find({
+			const skip = (page - 1) * limit;
+			const query = {
 				user_id,
 				$or: [
 					{ startDate: { $gte: startDate, $lte: endDate } }, 
 					{ endDate: { $gte: startDate, $lte: endDate } }, 
 					{ startDate: { $lte: startDate }, endDate: { $gte: endDate } } 
 				]
-			})
+			};
+	
+			const timesheets = await Timesheet.find(query)
 				.populate('project_id', 'projectName') 
 				.populate('task_category_id', 'category') 
-				.lean();
+				.lean()
+				.skip(skip)
+				.limit(limit);
 	
-			return timesheets;
+			const totalCount = await Timesheet.countDocuments(query);
+	
+			return { timesheets, totalCount };
 		} catch (error) {
 			console.error('Error fetching timesheets:', error);
 			throw error;
 		}
 	}
 	
-	
-	async projectSummaryReport(start, end, projectIds) {
+		async projectSummaryReport(start, end, projectIds) {
 		try {
 		  const matchStage = {
 			$match: {
@@ -306,7 +320,6 @@ export default class TimesheetRepository {
 				},
 			};
 	
-			// If pId is provided, add an additional condition for matching project_id
 			if (projectIds && projectIds.length > 0) {
 				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
@@ -382,12 +395,10 @@ export default class TimesheetRepository {
 				},
 			};
 	
-			// If projectId is provided, add it to the match stage
 			if (projectIds && projectIds.length > 0) {
 				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
 	
-			// If userId is provided, add it to the match stage
 			if (userIds && userIds.length > 0) {
 				matchStage.$match.user_id = { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
@@ -442,10 +453,10 @@ export default class TimesheetRepository {
 				{
 					$addFields: {
 						projectName: {
-							$arrayElemAt: ["$projectDetails.projectName", 0], // Access the first item of the projectDetails array
+							$arrayElemAt: ["$projectDetails.projectName", 0],
 						},
-						projectId: "$_id.project_id", // Include the project_id in the output
-						userId: "$_id.user_id", // Include the user_id in the output
+						projectId: "$_id.project_id",
+						userId: "$_id.user_id",
 						categories: {
 							$map: {
 								input: "$taskCategories",
@@ -458,7 +469,7 @@ export default class TimesheetRepository {
 				},
 				{
 					$project: {
-						projectDetails: 0, // Remove projectDetails array
+						projectDetails: 0,
 						taskCategories: 0,
 						userDetails: 0,
 						timesheets: 0,
@@ -467,11 +478,11 @@ export default class TimesheetRepository {
 				{
 					$group: {
 						_id: "$userName",
-						userId: { $first: "$userId" }, // Include the userId from the grouped result
+						userId: { $first: "$userId" },
 						projects: {
 							$push: {
 								projectName: "$projectName",
-								project_id: "$projectId", // Include project_id
+								project_id: "$projectId",
 								loggedHours: "$loggedHours",
 								approvedHours: "$approvedHours",
 								categories: "$categories",
@@ -490,28 +501,28 @@ export default class TimesheetRepository {
 		}
 	}
 		
-	async employeeDetailReport(start,end,projectIds, userIds) {
+	//gettimesheet report
+	async employeeDetailReport(start, end, projectIds, userIds, page = 1, limit = 10) {
 		try {
 			const startDate = new Date(start);
 			const endDate = new Date(end);
-
+			const skip = (page - 1) * limit;
+	
 			const matchStage = {
 				$match: {
 					endDate: { $gte: startDate, $lte: endDate },
 				},
 			};
 	
-			// If projectId is provided, add it to the match stage
 			if (projectIds && projectIds.length > 0) {
 				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
 	
-			// If userId is provided, add it to the match stage
 			if (userIds && userIds.length > 0) {
 				matchStage.$match.user_id = { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
-
-			return await Timesheet.aggregate([
+	
+			const aggregationPipeline = [
 				matchStage,
 				{
 					$unwind: { path: "$data_sheet", preserveNullAndEmptyArrays: true },
@@ -524,11 +535,11 @@ export default class TimesheetRepository {
 						},
 						approvedHours: {
 							$sum: {
-							  $cond: [
-								{ $eq: ["$status", "accepted"] }, 
-								{ $toDouble: "$data_sheet.hours" }, 
-								0, 
-							  ],
+								$cond: [
+									{ $eq: ["$status", "accepted"] },
+									{ $toDouble: "$data_sheet.hours" },
+									0,
+								],
 							},
 						},
 						timesheets: { $push: "$$ROOT" },
@@ -561,7 +572,7 @@ export default class TimesheetRepository {
 				{
 					$addFields: {
 						projectName: { 
-							$arrayElemAt: ["$projectDetails.projectName", 0] // Access the first item of the projectDetails array
+							$arrayElemAt: ["$projectDetails.projectName", 0]
 						},
 						categories: {
 							$map: {
@@ -575,7 +586,7 @@ export default class TimesheetRepository {
 				},
 				{
 					$project: {
-						projectDetails: 0, // Remove projectDetails array
+						projectDetails: 0,
 						taskCategories: 0,
 						userDetails: 0,
 						timesheets: 0,
@@ -600,12 +611,40 @@ export default class TimesheetRepository {
 				{
 					$sort: { _id: 1 },
 				},
-			]).exec();
+			];
+	
+			const facetStage = {
+				$facet: {
+					paginatedResults: [
+						{ $skip: skip },
+						{ $limit: limit }
+					],
+					totalCount: [
+						{
+							$count: 'count'
+						}
+					]
+				}
+			};
+	
+			aggregationPipeline.push(facetStage);
+	
+			const result = await Timesheet.aggregate(aggregationPipeline).exec();
+	
+			const paginatedResults = result[0].paginatedResults;
+			const totalCount = result[0].totalCount[0] ? result[0].totalCount[0].count : 0;
+	
+			return {
+				report: paginatedResults,
+				totalCount: totalCount
+			};
+	
 		} catch (error) {
 			throw new Error(error);
 		}
 	}
 	
+	//get timesheet snapshot for a month
 	async getMonthlySnapshot(userId, start, endDate) {
 		try {
 		  const startDate = new Date(start);
@@ -641,7 +680,8 @@ export default class TimesheetRepository {
 		}
 	  }
 	  
-	async deleteTimesheet(timesheetId){
+	//delete timesheet by id
+	  async deleteTimesheet(timesheetId){
 		try{
 			const timesheet = await Timesheet.findByIdAndDelete(timesheetId)
 			return timesheet
@@ -650,6 +690,7 @@ export default class TimesheetRepository {
 		}
 	}
 
+	//get status of timesheet submitted by user
 	async timesheetCount(userId, start) {
 		try {
 			const startDate = new Date(start);
@@ -740,6 +781,5 @@ export default class TimesheetRepository {
 		}
 	}
 	
-
 }
 

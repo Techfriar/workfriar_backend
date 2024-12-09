@@ -327,7 +327,7 @@ export default class TimesheetController {
 	//get all timesheets of a user
 	/**
 	 * @swagger
-	 * /admin/get-user-timesheets:
+	 * /timesheet/get-user-timesheets:
 	 *   post:
 	 *     summary: Get user timesheets
 	 *     description: Fetches the timesheets for the user based on the provided JWT token.
@@ -410,7 +410,6 @@ export default class TimesheetController {
 	 *               type: array
 	 *               items: {}
 	 */
-
 	async getUserTimesheets(req, res) {
 		try {
 			// Extract token from Authorization header
@@ -429,13 +428,23 @@ export default class TimesheetController {
 
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
-			const timesheets = await TimesheetRepo.getUserTimesheets(user_id)
+			const { page = 1, limit = 10 } = req.body;
+			const pageNumber = parseInt(page);
+			const limitNumber = parseInt(limit);
+			const { timesheets, totalCount } = await TimesheetRepo.getUserTimesheets(user_id, pageNumber, limitNumber);
+			// const timesheets = await TimesheetRepo.getUserTimesheets(user_id)
 
 			if (timesheets.length > 0) {
 				res.status(200).json({
 					success: true,
 					message: 'User timesheets fetched successfully',
-					data: timesheets
+					data: timesheets,
+					pagination: {
+						currentPage: page,
+						itemsPerPage: limit,
+						totalItems: totalCount,
+						totalPages: Math.ceil(totalCount / limit)
+					}
 				})
 			}
 			else {
@@ -700,7 +709,6 @@ export default class TimesheetController {
 				totalHours += item.total_hours
 			})
 
-
 			if (timesheets.length > 0) {
 				const data = await Promise.all(
 					timesheets.map(async (item) =>
@@ -732,6 +740,7 @@ export default class TimesheetController {
 		}
 	}
 
+	//get users timesheet for a week
 	/**
 	 * @swagger
 	 * /timesheet/get-weekly-timesheets:
@@ -852,7 +861,7 @@ export default class TimesheetController {
 	 *                   type: string
 	 *                   example: "An error occurred while fetching timesheets."
 	 */
-		async getWeeklyTimesheets(req, res) {
+	async getWeeklyTimesheets(req, res) {
 			try {
 				// const token = req.headers.authorization?.split(' ')[1];
 				// if (!token) {
@@ -864,9 +873,12 @@ export default class TimesheetController {
 				// }
 				// const decoded = jwt.decode(token);
 				// const user_id = decoded.UserId;
-				const user_id = '6746a474ed7e5979a3a1f898';
+				const user_id = '6746a473ed7e5979a3a1f891';
 		
-				let { startDate, endDate } = req.body;
+				let { startDate, endDate, page = 1, limit = 10 } = req.body;
+				const pageNumber = parseInt(page);
+				const limitNumber = parseInt(limit);
+				
 				let actualStartWeek, actualEndWeek;
 		
 				if (startDate && endDate) {
@@ -883,7 +895,8 @@ export default class TimesheetController {
 					actualEndWeek.setDate(actualStartWeek.getDate() + 6);
 				} else {
 					const timezone = await findTimezone(req);
-					const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+					// const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+					const today = getLocalDateStringForTimezone(timezone, new Date());
 	
 					actualStartWeek = FindS.getPreviousSunday(today);
 					actualEndWeek = new Date(actualStartWeek);
@@ -896,8 +909,7 @@ export default class TimesheetController {
 		
 				startDate.setUTCHours(0, 0, 0, 0);
 				endDate.setUTCHours(0, 0, 0, 0);
-		
-				const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
+				const { timesheets, totalCount } = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate, pageNumber, limitNumber);
 		
 				if (timesheets.length > 0) {
 					const modifydata = timesheets.map((item) => {
@@ -945,13 +957,25 @@ export default class TimesheetController {
 						success: true,
 						message: 'Weekly timesheets fetched successfully',
 						length: timesheets.length,
-						data: data
+						data: data,
+						pagination: {
+							currentPage: pageNumber,
+							itemsPerPage: limitNumber,
+							totalItems: totalCount,
+							totalPages: Math.ceil(totalCount / limitNumber)
+						}
 					});
 				} else {
 					return res.status(200).json({
 						success: false,
 						message: 'No timesheets found for the provided date range',
-						data: []
+						data: [],
+						pagination: {
+							currentPage: pageNumber,
+							itemsPerPage: limitNumber,
+							totalItems: totalCount,
+							totalPages: Math.ceil(totalCount / limitNumber)
+						}
 					});
 				}
 			} catch (err) {
@@ -969,7 +993,7 @@ export default class TimesheetController {
 					});
 				}
 			}
-		}
+	}
 
 	//get timesheet with are not submitted
 	/**
@@ -1753,16 +1777,17 @@ export default class TimesheetController {
 	 *                   type: array
 	 *                   example: []
 	 */
-
 	async getEmployeeDetailReport(req, res) {
 		try {
 			const now = new Date();
-			let { year, month, projectIds, startDate, endDate, userIds } = req.body;
-
+			let { year, month, projectIds, startDate, endDate, userIds, page = 1, limit = 10 } = req.body;
 			const validatedValues = await TimesheetRequest.validateEmployeeDetailParams({ year, month, projectIds, startDate, endDate, userIds })
 			if (validatedValues.error) {
 				throw new CustomValidationError(validatedValues.error)
 			}
+
+			const pageNumber = parseInt(page);
+			const limitNumber = parseInt(limit);
 
 			if (!year) {
 				year = now.getFullYear();
@@ -1783,30 +1808,40 @@ export default class TimesheetController {
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
 
-			const report = await TimesheetRepo.employeeDetailReport(startDate, endDate, projectIds, userIds)
-
-			const range = `${startDate} - ${endDate}`
+			const { report, totalCount } = await TimesheetRepo.employeeDetailReport(startDate, endDate, projectIds, userIds, pageNumber, limitNumber);
+			const range = `${startDate.split('T')[0]} - ${endDate.split('T')[0]}`
 
 			if (report.length > 0) {
 				const data = await Promise.all(
 					report.map(async (item) => {
 						return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, year, range);
-					}
-					)
+					})
 				)
 
 				res.status(200).json({
 					success: true,
 					message: 'Project detail report fetched successfully',
 					length: report.length,
-					data
+					data,
+					pagination: {
+						currentPage: pageNumber,
+						itemsPerPage: limitNumber,
+						totalItems: totalCount,
+						totalPages: Math.ceil(totalCount / limitNumber)
+					}
 				})
 			}
 			else {
 				res.status(200).json({
 					success: false,
-					message: 'Failed to fetch details of given range',
-					data: []
+					message: 'Failed to fetch details for given range',
+					data: [],
+					pagination: {
+						currentPage: pageNumber,
+						itemsPerPage: limitNumber,
+						totalItems: totalCount,
+						totalPages: Math.ceil(totalCount / limitNumber)
+					}
 				})
 			}
 		} catch (err) {
@@ -2108,7 +2143,7 @@ export default class TimesheetController {
 		}
 	}
 
-//get the status of timesheets previously submitted or saved by user
+	//get the status of timesheets previously submitted or saved by user
 	/**
 	 * @swagger
 	 * /timesheet/get-timesheet-status:
@@ -2190,9 +2225,8 @@ export default class TimesheetController {
 	 *                 data:
 	 *                   type: array
 	 *                   items: {}
-	 */
-		
-async getStatusCount(req,res){
+	 */		
+	async getStatusCount(req,res){
 		try {
 			// Extract token from Authorization header
 			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
@@ -2212,15 +2246,15 @@ async getStatusCount(req,res){
 			const user_id = '6746a474ed7e5979a3a1f896';
 			const timezone = await findTimezone(req);
 
-			const today = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
-
+			const today = getLocalDateStringForTimezone(timezone, new Date());
+			
 			const weekStartDate = FindS.getPreviousSunday(today)
 			const weekEndDate = new Date(weekStartDate);
 			weekEndDate.setDate(weekStartDate.getDate() + 6);
 
 			const startDate = new Date(weekStartDate)
 			startDate.setUTCHours(0, 0, 0, 0)
-			let start = startDate.toISOString()	
+			let start = startDate.toISOString()
 
 			const timesheet = await TimesheetRepo.timesheetCount(user_id,start)
 			res.status(200).json({
@@ -2236,6 +2270,5 @@ async getStatusCount(req,res){
 			});
 		}
 	}
-
 
 }
