@@ -9,13 +9,17 @@ import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 import { checkPermissions } from '../middlewares/check-permission.js';
 import RoleController from "../controllers/admin/role-controller.js";
 import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js'
+import EmployeeController from "../controllers/admin/employee-controller.js";
+import multer from "multer";
 
 const adminRouter = express.Router();
+const upload=multer()
 
 const categoryController = new CategoryController();
 const forecastController=new ForecastController()
 const projectTeamController=new ProjectTeamController()
 const timeSheetSummary=new TimeSheetSummaryController()
+const employee = new EmployeeController();
 
 const admin = new AdminController();
 const client = new ClientController();
@@ -117,5 +121,16 @@ adminRouter.route('/delete-role').post(role.deleteRole)
 adminRouter.route('/update-role').post(role.updateRole)
 adminRouter.route('/all-roll-permissions').post(role.viewAllPermissionsByRole)
 adminRouter.route('/remove-user-role').post(role.removeUserFromRole)
+
+/*
+Employee Routes
+*/
+
+adminRouter.route('/addemployee').post(upload.fields([{ name: "profile_pic", maxCount: 1 }]),employee.addEmployees)
+
+
+adminRouter.route('/getroles').post(employee.getRoles)
+adminRouter.route('/editemployee').post(upload.fields([{ name: "profile_pic", maxCount: 1 }]),employee.editEmployee)
+
 
 export default adminRouter;

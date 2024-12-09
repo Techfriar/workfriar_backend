@@ -1,6 +1,5 @@
 import EmailRepository from '../../repositories/email-repository.js'
 import UserRepository from '../../repositories/user-repository.js'
-import AddUserRequest from '../../requests/admin/add-employee-request.js'
 import UserResponse from '../../responses/user-response.js'
 import bcryptPassword from '../../utils/bcryptPassword.js'
 

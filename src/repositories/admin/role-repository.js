@@ -170,4 +170,20 @@ export default class RoleRepository{
         }
     }
 
+
+
+
+
+    static async removeUserFromAllRoles(userId) {
+        try {
+            const updatedRoles = await Role.updateMany(
+                { users: userId },
+                { $pull: { users: userId } }
+            );
+            return updatedRoles;
+        } catch (error) {
+            throw error;
+        }
+    }
+
 }
