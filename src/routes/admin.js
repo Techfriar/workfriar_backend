@@ -87,7 +87,7 @@ adminRouter
 */
 
 adminRouter
-    .route('/employee-data')
+    .route('/employees-data')
     .post(
         // authenticateAdmin,
         checkPermissions('Users', 'view'),
