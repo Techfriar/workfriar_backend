@@ -128,28 +128,36 @@ export default class CreateTimesheetRequest {
 		return { error: false }; // If all validations pass
 	}
 	
-	static async validateDateRange(startDate, endDate) {
-        // Joi Validation for Date Format
-        const schema = Joi.object({
-            startDate: Joi.date().iso().required().messages({
-                'date.base': `"startDate" must be a valid ISO date`,
-            }),
-            endDate: Joi.date().iso().required().greater(Joi.ref('startDate')).messages({
-                'date.base': `"endDate" must be a valid ISO date`,
-                'date.greater': `"endDate" must be greater than "startDate"`,
-            })
-        });
+  static async validateDateRange(startDate, endDate) {
+    // Joi Validation for Date Format
+    const schema = Joi.object({
+        startDate: Joi.date().iso().required().messages({
+            'date.base': `"startDate" must be a valid ISO date`,
+        }),
+        endDate: Joi.date().iso().required().greater(Joi.ref('startDate')).messages({
+            'date.base': `"endDate" must be a valid ISO date`,
+            'date.greater': `"endDate" must be greater than "startDate"`,
+        })
+    });
 
-        // Perform Joi validation
-        const { error, value } = schema.validate({ startDate, endDate });
+    // Perform Joi validation
+    const { error, value } = schema.validate({ startDate, endDate });
 
-        if (error) {
-            throw new CustomValidationError(error.details[0].message); // Customize error message if validation fails
-        }
-
-        // Return validated values
-        return value;
+    if (error) {
+        throw new CustomValidationError(error.details[0].message);
     }
+
+    // Check if start date and end date are in the same month
+    const start = new Date(value.startDate);
+    const end = new Date(value.endDate);
+    if (start.getMonth() !== end.getMonth() || start.getFullYear() !== end.getFullYear()) {
+        throw new CustomValidationError("Start date and end date must be in the same month");
+    }
+
+    // Return validated values
+    return value;
+}
+
 
     static async validateProjectSummaryParams({ projectId, Year, Month }) {
         // Joi schema to validate the request body
