@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { isTokenBlacklisted } from '../services/blackListToken.js'
 import UserRepository from '../repositories/user-repository.js'
 
 const UserRepo = new UserRepository()
@@ -13,6 +14,10 @@ const authenticateAdmin = async (req, res, next) => {
     } else {
         const token = authHeader.split(' ')[1]
         if (token) {
+            if(isTokenBlacklisted(token)) {
+                res.status(401).json({ message: 'Unauthorized' })
+            }
+
             jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
                 if (decoded) {
                     const { userId } = decoded

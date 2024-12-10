@@ -109,4 +109,81 @@ export default class AuthController {
             return res.status(500).json({ message: 'Internal Server Error during fallback.' });
         }
     }
+    
+    /**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Logout user
+ *     description: Invalidates the user's token by adding it to a blacklist
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully logged out"
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No token provided or invalid token"
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "An error occurred during logout"
+ */
+    async logout(req, res) {
+        try {
+            req.session.destroy();
+            const authHeader = req.headers['authorization']
+            if (!authHeader) {
+                return res.status(401).json({ message: 'Unauthorized' })
+            } else {
+                const token = authHeader.split(' ')[1]
+                if (!token) {
+                    return res.status(401).json({ message: 'Unauthorized' })
+                }
+
+                blacklistToken(token, '1d')
+            }
+
+            const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+            const host = req.get('host');
+            const origin = `${protocol}://${host}`;
+
+            return res.redirect(`${origin}/Login`);
+        } catch (error) {
+            console.error('Error in logout:', error);
+            return res.status(500).json({ message: 'Internal Server Error during logout.' });
+        }
+    }
 }
