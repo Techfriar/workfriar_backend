@@ -261,7 +261,6 @@ class EmployeeController{
                     data:[]
                 })
             }
-
         }
         catch(error)
         {
