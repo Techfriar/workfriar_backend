@@ -121,19 +121,13 @@ export default class AuthController {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       200:
- *         description: Successfully logged out
- *         content:
- *           application/json:
+ *       302:
+ *         description: Successfully logged out and redirected to login page
+ *         headers:
+ *           Location:
  *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Successfully logged out"
+ *               type: string
+ *             description: URL of the login page
  *       401:
  *         description: Unauthorized
  *         content:
