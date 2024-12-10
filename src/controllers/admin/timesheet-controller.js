@@ -7,6 +7,7 @@ import findTimezone from '../../utils/findTimeZone.js';
 import FindS from '../../utils/findSunday.js';
 import getLocalDateStringForTimezone from '../../utils/getLocalDateStringForTimezone.js';
 
+
 const TimesheetRepo = new TimesheetRepository()
 
 const FindWeekRange_ = new FindWeekRange()
@@ -911,6 +912,7 @@ export default class TimesheetController {
 				endDate.setUTCHours(0, 0, 0, 0);
 				const { timesheets, totalCount } = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate, pageNumber, limitNumber);
 
+
 				if (timesheets.length > 0) {
 					const modifydata = timesheets.map((item) => {
 						const allDates = FindWeekRange_.getDatesBetween(actualStartWeek, actualEndWeek);
@@ -950,6 +952,8 @@ export default class TimesheetController {
 					const data = await Promise.all(
 						modifydata.map(async (item) => await timesheetResponse.weeklyTimesheetResponse(item))
 					);
+
+
 		
 					res.status(200).json({
 						success: true,
