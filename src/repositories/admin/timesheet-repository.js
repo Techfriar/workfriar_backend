@@ -740,6 +740,19 @@ export default class TimesheetRepository {
 		}
 	}
 	
-
+	/**
+	 * Update timesheet status
+	 * @param {string} getTimesheetById
+	 * @param {string} status
+	 * @returns {Promise<Timesheet>}
+	 */
+	async updateTimesheetStatus(timesheetId, status) {
+		try {
+			const timesheet = await Timesheet.findByIdAndUpdate(timesheetId, { status: status }, { new: true });
+			return {timesheet, status: true};
+		} catch (error) {
+			throw new Error(error);
+		}
+	}
 }
 
