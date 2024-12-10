@@ -141,6 +141,19 @@ export default class ProjectRepository {
             throw new Error(`Error updating project status: ${error.message}`);
         }
     }
-    
+
+    /**
+     * Get projects by project lead
+     * @param {String} projectLeadId - The project lead id
+     * @return {Promise<Project[]>} - The projects 
+     */    
+    async getProjectsByProjectLead(projectLeadId) {
+        try {
+            const projects = await Project.find({ project_lead: projectLeadId }).lean();
+            return projects;
+        } catch (error) {
+            throw new Error(`Failed to get projects: ${error.message}`);
+        }
+    }
   
 }
