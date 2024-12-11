@@ -17,7 +17,7 @@ export default class FindWeekRange {
         return previousSunday < firstDayOfMonth ? firstDayOfMonth : previousSunday;
     }
 
-    
+
 
     /**
      * Get the end date of the week.
@@ -59,11 +59,85 @@ export default class FindWeekRange {
         let end = this.normalizeToUTCDate(endDate)
 
         while (currentDate <= end) {
-            dates.push(new Date(currentDate)); 
-            currentDate = new Date(currentDate); 
+            dates.push(new Date(currentDate));
+            currentDate = new Date(currentDate);
             currentDate.setUTCDate(currentDate.getUTCDate() + 1);
         }
         return dates;
     }
+
+    adjustWeekRange(startDate, endDate, prev, next) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+    
+        if (prev && next || !prev && !next) {
+            // If prev and next are either both true or both false, return the original dates
+            return { startDate, endDate };
+        }   
+
+        if (prev) {
+            const prevEnd = new Date(start);
+            prevEnd.setDate(start.getDate() - 1);
+
+            const prevStart = new Date(prevEnd);
+
+            const lastDayOfMonth = new Date(
+                prevEnd.getFullYear(),
+                prevEnd.getMonth() + 1,
+                0
+            ).getDate();
+
+            if (prevEnd.getDate() === lastDayOfMonth) {
+                const dayOfWeek = prevEnd.getDay();
+                prevStart.setDate(prevEnd.getDate() - dayOfWeek);
+            } else { 
+                prevStart.setDate(prevEnd.getDate() - 6);
+            }
+            if (prevStart.getMonth() !== prevEnd.getMonth()) {
+
+                prevStart.setFullYear(prevEnd.getFullYear(), prevEnd.getMonth(), 1);
+            }
+
+            return {
+                startDate: prevStart.toISOString().split('T')[0],
+                endDate: prevEnd.toISOString().split('T')[0],
+            };
+        }
+
+        if (next) {
+            const nextStart = new Date(end);
+            nextStart.setDate(end.getDate() + 1);
+    
+            let nextEnd = new Date(nextStart);
+            nextEnd.setDate(nextStart.getDate() + 6);
+
+            if (nextStart.getMonth() !== nextEnd.getMonth()) {
+                const lastDayOfMonth = new Date(
+                    nextStart.getFullYear(),
+                    nextStart.getMonth() + 1, 
+                    0 
+                ).getDate();
+                nextEnd.setFullYear(nextStart.getFullYear(), nextStart.getMonth(), lastDayOfMonth);;
+            }
+
+            if (nextStart.getDate() === 1) {
+                
+                const dayOfWeek = nextStart.getDay(); 
+                const daysUntilSaturday = (6 - dayOfWeek) % 7;
+                nextEnd.setDate(nextStart.getDate() + daysUntilSaturday);
+            }
+   
+
+            return {
+                startDate: nextStart.toISOString().split('T')[0],
+                endDate: nextEnd.toISOString().split('T')[0],
+            };
+        }
+        
+        
+        return { startDate, endDate };
+    }
+    
+
 
 }
