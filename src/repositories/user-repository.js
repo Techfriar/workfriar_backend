@@ -7,10 +7,17 @@ export default class UserRepository {
      * Fetch all users
      * @return Array<User> users
      */
-    async getAllUsers() {
+    async getAllUsers(skip, limit) {
         try {
             // Fetch all users from the database
-            const users = await User.find().populate('roles'); // Populate roles if needed
+            const users = await User.find()
+                .populate('roles')
+                .populate({
+                    path: 'reporting_manager', // Populate reporting_manager
+                    select: 'full_name' // Select specific fields to include
+                })
+                .skip(skip)
+                .limit(limit); // Populate roles if needed
             return users;
         } catch (error) {
             throw new Error("Failed to fetch users");
@@ -86,6 +93,14 @@ async  updateEmployee(id, updateData) {
     }
 }
     
+    /**
+     * Get Count of all users
+     * @returns {Promise<number>}
+     */
+    async countAllUsers() {
+        return User.countDocuments();
+    }
+
     /**
      * Get user by email
      * @param String email

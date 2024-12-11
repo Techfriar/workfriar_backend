@@ -98,7 +98,34 @@ class ProjectTeamRepository
         } catch (error) {
             throw new Error(`Failed to update project team: ${error.message}`);
         }
-    }    
+    }
+    
+    /**
+     *  Get project team expanded by projectId
+     * @param {String} projectId - The ID of the project
+     *  @returns {Promise<ProjectTeam>} - The project team
+     */
+
+    async getProjectTeamExpandedByProjectId(projectId, skip, limit) {
+        try {
+            const projectTeam = await projectTeam.find({ project: projectId })
+            .populate({
+                path: 'team_members',
+                select: 'full_name _id'
+            })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+            if (!projectTeam) {
+                throw new Error(`Project team not found for project ID: ${projectId}`);
+            }
+
+            return projectTeam;
+        } catch (error) {
+            throw new Error(`Failed to get project team: ${error.message}`);
+        }
+    }
 }
 
 export default ProjectTeamRepository
