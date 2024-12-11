@@ -2,6 +2,20 @@ import Subscription from "../../models/admin/subscriptions.js";
 
 export default class SubscriptionRepository {
   /**
+   * get icon for corresponding subscription
+   */
+
+  async getSubscriptionIcon(subscriptionName) {
+    try {
+      const slug = SubscriptionIcon.normalizeSubscriptionName(subscriptionName);
+      return await SubscriptionIcon.findOne({ slug });
+    } catch (error) {
+      console.error("Error fetching subscription icon:", error);
+      return null;
+    }
+  }
+
+  /**
    * add a new subscription
    * @param {Object} subscriptionData - The subscription data
    * @return {Promise<Subscription>} - The created subscription
@@ -34,29 +48,54 @@ export default class SubscriptionRepository {
         Subscription.countDocuments(),
       ]);
 
-      return { subscriptions, total };
+      const subscriptionsWithIcons = await Promise.all(
+        subscriptions.map(async (subscription) => {
+          const iconDoc = await this.getSubscriptionIcon(subscription.subscription_name);
+          const icon = iconDoc?{
+            data: iconDoc.icon.toString('base64'),
+            contentType: iconDoc.contentType
+          }:null;
+          return {
+            ...subscription.toObject(),
+            icon
+          };
+        })
+      );
+
+      return { subscriptions, subscriptionsWithIcons, total };
     } catch (error) {
       throw new Error(`Error fetching subscriptions: ${error.message}`);
     }
   }
 
   /**
-   * Get subscription by id
-   * @param {String} subscriptionId - The subscription id
-   * @return {Promise<Subscription>} - The subscription
-   */
-  async getSubscriptionById(subscriptionId) {
-    try {
-      const subscription = await Subscription.findById(subscriptionId)
-        .populate('project_name', 'project_name');
-      if (!subscription) {
-        throw new Error(`Subscription with ID ${subscriptionId} not found`);
-      }
-      return subscription;
-    } catch (error) {
-      throw new Error(`Error fetching subscription by ID:${error.message}`);
+ * Get subscription by id
+ * @param {String} subscriptionId - The subscription id
+ * @return {Promise<Subscription>} - The subscription
+ */
+async getSubscriptionById(subscriptionId) {
+  try {
+    const subscription = await Subscription.findById(subscriptionId)
+      .populate('project_name', 'project_name');
+    if (!subscription) {
+      throw new Error(`Subscription with ID ${subscriptionId} not found`);
     }
+
+    const iconDoc = await this.getSubscriptionIcon(subscription.subscription_name);
+    const icon = iconDoc ? {
+      data: iconDoc.icon.toString('base64'),
+      contentType: iconDoc.contentType
+    } : null;
+
+    return {
+      ...subscription.toObject(),
+      icon
+    };
+    
+  } catch (error) {
+    throw new Error(`Error fetching subscription by ID:${error.message}`);
   }
+}
 
   /**
    * Update subscription

@@ -1,53 +1,96 @@
-export default class SubscriptionResponse {
-  /**
-   *
-   * @param {Object} subscription
-   * @param {Object}
-   */
+import SubscriptionRepository from "../repositories/admin/subscription-repository.js";
 
-  static async formatGetByIdSubscriptionResponse(subscription) {
-    return {
-      id: subscription._id,
-      subscription_name: subscription.subscription_name,
-      provider: subscription.provider,
-      description: subscription.description,
-      license_count: subscription.license_count,
-      cost: subscription.cost,
-      billing_cycle: subscription.billing_cycle,
-      currency: subscription.currency,
-      payment_method: subscription.payment_method,
-      next_due_date: subscription.next_due_date,
-      status: subscription.status,
-      type: subscription.type,
-      project_name: subscription.project_name
-        ? {
-            id: subscription.project_name._id,
-            name: subscription.project_name.project_name,
-          }
-        : null,
-      createdAt: subscription.createdAt,
-      updatedAt: subscription.updatedAt,
-    };
+export default class SubscriptionResponse {
+  static formatDate(date) {
+    if (!date) return null;
+    return moment(date).format("DD/MM/YYYY");
   }
+  
+  static subscriptionRepo = new SubscriptionRepository();
+
+  /**
+   * Format response for getting subscription by ID
+   * @param {Object} subscription - Subscription document
+   * @returns {Promise<Object>} Formatted subscription response
+   */
+  static async formatGetByIdSubscriptionResponse(subscription) {
+    try {
+      if (!subscription) {
+        throw new Error("Subscription not found");
+      }
+
+      const formattedResponse = {
+        id: subscription._id,
+        subscription_name: subscription.subscription_name,
+        provider: subscription.provider,
+        description: subscription.description || null,
+        license_count: subscription.license_count,
+        cost: subscription.cost,
+        billing_cycle: subscription.billing_cycle,
+        currency: subscription.currency,
+        payment_method: subscription.payment_method,
+        next_due_date: this.formatDate(subscription.next_due_date || null),
+        status: subscription.status,
+        type: subscription.type,
+        project_name: subscription.project_name
+          ? {
+              id: subscription.project_name._id,
+              name: subscription.project_name.project_name,
+            }
+          : null,
+        icon: subscription.icon || null,
+        createdAt: subscription.createdAt,
+        updatedAt: subscription.updatedAt,
+      };
+
+      return formattedResponse;
+    } catch (error) {
+      throw new Error(
+        `Error formatting subscription response: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Format response for getting all subscriptions
+   * @param {Object} subscription - Subscription document
+   * @returns {Promise<Object>} Formatted subscription response
+   */
   static async formatGetAllSubscriptionResponse(subscription) {
-    return {
-      id: subscription._id,
-      subscription_name: subscription.subscription_name,
-      provider: subscription.provider,
-      license_count: subscription.license_count,
-      cost: subscription.cost,
-      billing_cycle: subscription.billing_cycle,
-      next_due_date: subscription.next_due_date,
-      status: subscription.status,
-      type: subscription.type,
-      project_name: subscription.project_name
-        ? {
-            id: subscription.project_name._id,
-            name: subscription.project_name.project_name,
-          }
-        : null,
-      createdAt: subscription.createdAt,
-      updatedAt: subscription.updatedAt,
-    };
+    try {
+      if (!subscription) {
+        throw new Error("Subscription not found");
+      }
+
+      const formattedResponse = {
+        id: subscription._id,
+        subscription_name: subscription.subscription_name,
+        provider: subscription.provider,
+        description: subscription.description || null,
+        license_count: subscription.license_count,
+        cost: subscription.cost,
+        billing_cycle: subscription.billing_cycle,
+        currency: subscription.currency,
+        payment_method: subscription.payment_method,
+        next_due_date: this.formatChange(subscription.next_due_date || null),
+        status: subscription.status,
+        type: subscription.type,
+        project_name: subscription.project_name
+          ? {
+              id: subscription.project_name._id,
+              name: subscription.project_name.project_name,
+            }
+          : null,
+        icon: subscription.icon || null,
+        createdAt: subscription.createdAt,
+        updatedAt: subscription.updatedAt,
+      };
+
+      return formattedResponse;
+    } catch (error) {
+      throw new Error(
+        `Error formatting subscription response: ${error.message}`
+      );
+    }
   }
 }
