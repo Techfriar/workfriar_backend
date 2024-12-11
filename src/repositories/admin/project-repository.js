@@ -177,47 +177,7 @@ export default class ProjectRepository {
      * 
      */
     async getAllOpenProjectsByUser(userId) {
-        try{
-            const projects = await Project.aggregate([
-                {
-                    $lookup: {
-                        from: 'project teams', // Assuming the collection name is 'projectteams'
-                        localField: '_id',
-                        foreignField: 'project',
-                        as: 'team'
-                    }
-                },
-                {
-                    $match: {
-                        $and: [
-                           { 
-                                $or: [
-                                    { 'team.team_members': userId },
-                                    { project_lead: new mongoose.Types.ObjectId(userId) }
-                                ]
-                            },
-                            {
-                                $or: [
-                                    { open_for_time_entry: {ne: "closed"} },
-                                    {
-                                        $and: [
-                                            { effective_close_date: { $ne: null } },
-                                            { effective_close_date: { $gt: new Date() } }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                        
-                    }
-                }
-            ]);
-            
-            return projects;
-        }
-        catch(error) {
-            throw new Error(`Failed to get projects: ${error.message}`);
-        }
+        
     }
 
     /**
@@ -226,33 +186,7 @@ export default class ProjectRepository {
      */
     async getAllProjectsByUser(userId, skip, limit) {
         try{
-            const projects = await Project.aggregate([
-                {
-                    $lookup: {
-                        from: 'project teams', // Assuming the collection name is 'projectteams'
-                        localField: '_id',
-                        foreignField: 'project',
-                        as: 'team'
-                    }
-                },
-                {
-                    $match: {
-                        $and: [
-                           {
-                                $or: [
-                                    { 'team.team_members': userId },
-                                    { project_lead: new mongoose.Types.ObjectId(userId) }
-                                ]
-                            }
-                        ]
-
-                    }
-                }
-            ])
-            .skip(skip)
-            .limit(limit);
-
-            return projects;
+            
         }
         catch(error) {
             throw new Error(`Failed to get projects: ${error.message}`);
