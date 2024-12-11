@@ -26,38 +26,52 @@ class TimesheetResponse{
     }
 
     async projectSummaryTimesheetResponse(report,month,year){
-        return{
+        return{    
             project_name: report.projectName,
-            year,
-            month,
             logged_hours: report.loggedHours,
-            approved_hours: report.approvedHours
+            approved_hours: report.approvedHours,
+            year,
+            month
+
         }
     }
 
-    async projectDetailTimesheetResponse(report,month,year,startDate,endDate){
+    async projectDetailTimesheetResponse(report,month,year,range){
         return{
-            date_range:`${startDate}-${endDate}`,
-            project_name: report.projectName,
+            date_range:range,
             year,
             month,
+            project_name: report.projectName,
             logged_hours: report.loggedHours,
-            approved_hours: report.approvedHours
+            approved_hours: report.approvedHours,
         }
     }
 
-    async employeeSummaryTimesheetResponse(report,month,year,range){
-        return{
-            date_range: range,
+    async employeeSummaryTimesheetResponse(report,month,year){
+        const data = report.projects.map(project => ({
+            year,
+            month,
             employee: report._id,
+            project_name: project.projectName,
+            logged_hours: project.loggedHours,
+            approved_hours: project.approvedHours,
+        }));
+        
+        return data;
+    }
+
+    async employeeDetailTimesheetResponse(report,month,year,range){
+        const data = report.projects.map(project => ({
+            date_range: range,
             year,
             month,
-            projects: report.projects.map(item => ({
-                project_name:item.projectName,
-                logged_hours: item.loggedHours,
-                approved_hours: item.approvedHours,
-            }))
-        }
+            employee: report._id,
+            project_name: project.projectName,
+            logged_hours: project.loggedHours,
+            approved_hours: project.approvedHours,
+        }));
+        
+        return data;
     }
 
     
