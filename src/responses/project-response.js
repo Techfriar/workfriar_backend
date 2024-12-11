@@ -43,4 +43,22 @@ export default class ProjectResponse {
       status: project.status,
     };
   }
+  static async formatGetAllOpenProjectsByUserResponse(project) {
+    return {
+      id: project._id,
+      project_name: project.project_name,
+    };
+  }
+
+  static async formatGetAllProjectsByUserResponse(project) {
+    return {
+      id: project._id,
+      project_name: project.project_name,
+      client: project.client_name,
+      startDate: project.actual_start_date,
+      endDate: project.actual_end_date,
+      status: project.status,
+      project_lead: project.project_lead,
+    };
+  }
 }
