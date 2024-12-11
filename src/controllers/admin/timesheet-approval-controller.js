@@ -168,10 +168,10 @@ class TimesheetApprovalController
 
     async manageTimeSheet(req,res)
     {
-        const {timesheetid,status}=req.body
+        const {timesheetid,state}=req.body
         try
         {
-            const {timesheet,status}=await timesheet.updateTimesheetStatus(timesheetid,status)
+            const {timesheet,status}=await timesheet.updateTimesheetStatus(timesheetid,state)
             if(status)
             {
                 return res.status(200).json({
