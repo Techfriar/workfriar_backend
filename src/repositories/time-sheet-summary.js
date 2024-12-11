@@ -2,18 +2,22 @@ import mongoose from "mongoose";
 import Timesheet from "../models/timesheet.js";
 class TimeSheetSummary{
     //function for retrieveing time logged and appoved time for every members in the project
-    async getTimeSummary(startDate, endDate, projectId) {
+    async getTimeSummary(startDate, endDate, projectId,skip,limit) {
         try {
-            console.log(startDate, endDate, projectId);
+            const total=await Timesheet.countDocuments({
+                project_id: projectId,
+                startDate: { $gte: startDate },
+                endDate: { $lte: endDate },
+            });
+
             const start = new Date(startDate);
             const end = new Date(endDate);
             const timeSummary = await Timesheet.find({
                 project_id: projectId,
                 startDate: { $eq: start },  
                 endDate: { $eq: end },     
-            }).populate('user_id', 'full_name'); 
-
-            return timeSummary;
+            }).populate('user_id', 'full_name').skip(skip).limit(limit).sort({createdAt:-1}); 
+            return {total,timeSummary};
         } catch (error) {
             throw new Error(error.message);
         }
@@ -21,8 +25,15 @@ class TimeSheetSummary{
     
 
     //Function for retrieveing past due timesheets
-    async getTimeSheet(userId, weekStartDate) {
+    async getTimeSheet(userId, weekStartDate,status,skip,limitNumber) {
         try {
+            const record=await Timesheet.find({
+                user_id: userId,
+                status:status,
+                endDate: { $lt: new Date(weekStartDate) }})
+
+                const dataCount=record.length
+
             const data = await Timesheet.aggregate([
                 {
                     $match: {
@@ -47,8 +58,8 @@ class TimeSheetSummary{
                         timesheets: 1               
                     }
                 }
-            ]);
-            return data;
+            ])
+            return {data,dataCount}
         } catch (error) {
 
             throw new Error(error);
@@ -59,7 +70,6 @@ class TimeSheetSummary{
     //function for retrieveing timesheets in a period of time
     async getDueTimeSheet(userId, startDate, endDate) {
         try {
-            console.log(userId,startDate,endDate)
             const userObjectId =new mongoose.Types.ObjectId(userId); 
             const start = new Date(startDate); 
             const end = new Date(endDate);

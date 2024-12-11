@@ -17,15 +17,17 @@ export default class ForecastRepository{
     }
 
     //getting forecasts list
-    async getForecast()
+    async getForecast(skip,limitNumber)
     {
         try
         {
             const forecastData=await projectForecast.find().populate({
                 path:'opportunity_manager',
                 select:'full_name'
-            })
-            return forecastData
+            }).skip(skip).limit(limitNumber)
+
+            const total=forecastData.length
+            return {forecastData,total}
         }catch(error)
         {
             throw new Error(error)

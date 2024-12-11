@@ -34,6 +34,12 @@ const findWeekRange=new FindWeekRange()
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de7"
  *                 description: The ID of the project to fetch the summary for.
+ *               page:
+ *                 type: integer
+ *                 example: 3
+ *               limit:
+ *                 type: integer
+ *                 example: 10
  *     responses:
  *       200:
  *         description: Successfully fetched and formatted the time sheet summary.
@@ -64,6 +70,10 @@ const findWeekRange=new FindWeekRange()
  *                         type: number
  *                         format: float
  *                         example: 30.5
+ *                       totalPages:
+ *                         type:number
+ *                         format:int
+ *                         example:7
  *       400:
  *         description: No data available for the given parameters.
  *         content:
@@ -100,19 +110,23 @@ const findWeekRange=new FindWeekRange()
 class TimeSheetSummaryController{
     async TimeSummaryController(req,res)
     {
-        const{startDate,endDate,projectId}=req.body
+        const{startDate,endDate,projectId,page=1,limit=10}=req.body
+        const pageNumber = parseInt(page,10);
+        const limitNumber = parseInt(limit, 10);
+        const skip=(pageNumber-1)*limitNumber
         try
         {
-            const data=await timeSheetSummary.getTimeSummary(startDate,endDate,projectId)
-            if(data.length>0)
+            const data=await timeSheetSummary.getTimeSummary(startDate,endDate,projectId,skip,limitNumber)
+            if(data.timeSummary.length>0)
             {
                
-            const formattedData= await timesummaryResponse.formattedSummary(data)
+            const formattedData= await timesummaryResponse.formattedSummary(data.timeSummary)
                 res.status(200).json(
                     {
                     status:true,
                     message:"Time Summmary",
-                    data:formattedData
+                    data:formattedData,
+                    totalPages: Math.ceil(data.total/limitNumber)
                     })
             }
             else
@@ -127,6 +141,7 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
+            console.log(error)
             res.status(500).json(
                 {
                     status:false,
@@ -180,6 +195,10 @@ class TimeSheetSummaryController{
  *                 message:
  *                   type: string
  *                   example: "Due Time Sheet"
+ *                 totalPages: 
+ *                   type:number
+ *                   example:2
+ *                   
  *                 data:
  *                   type: array
  *                   items:
@@ -220,24 +239,27 @@ class TimeSheetSummaryController{
  *                   items: {}
  */
 
-
     async pastDueController(req,res)
     {
         let userId="6746a63bf79ea71d30770de7"
-        const {status,passedUserid}=req.body
+        const {status,passedUserid,page=1,limit=10}=req.body
+        const pageNumber = parseInt(page,10);
+        const limitNumber = parseInt(limit, 10);
+        const skip=(pageNumber-1)*limitNumber
         if(passedUserid) userId = passedUserid
         try
         {
             const {weekStartDate}=await findWeekRange.getWeekRange()
-            const data=await timeSheetSummary.getTimeSheet(userId,weekStartDate,status)
+            const {data,dataCount}=await timeSheetSummary.getTimeSheet(userId,weekStartDate,status,skip,limitNumber)
             const formattedData= await timesummaryResponse.formattedPastDueList(data,status)
             if(data.length>0)
             {
                 res.status(200).json(
                     {
                     status:true,
-                    message:"Past Due",
-                    data:formattedData
+                    message:"Data Fetched",
+                    data:formattedData,
+                    totalPages: Math.ceil(dataCount/limitNumber)
                     })
             }
             else
@@ -252,6 +274,7 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
+            console.log(error)
             res.status(500).json(
                 {
                     status:false,

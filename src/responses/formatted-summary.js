@@ -105,10 +105,9 @@ export default class TimeSummaryResponse {
 
     
     //Function for formatting a past due
-    async  (data) {
+    async formattedPastDue(data) {
         try {
             let overallDailyHours = {};
-    
             const result = data.map((item) => {
                 const start = moment(item.startDate);
                 const end = moment(item.endDate);
