@@ -109,56 +109,75 @@ export default class ProjectRepository {
         query._id = { $ne: excludeProjectId };
       }
 
-      return await Project.findOne(query);
-    } catch (error) {
-      throw new Error(`Failed to check project existence: ${error.message}`);
-    }
-  }
-  async updateProjectTimeEntry(id, timeEntry, closeDate) {
-    try {
-      const record = await Project.findOne({ _id: id });
-      if (!record) {
-        throw new Error(`Project with ID ${id} not found`);
-      }
-      if (timeEntry === "closed") {
-        if (["Cancelled", "Completed", "On hold"].includes(record.status)) {
-          const data = await Project.updateOne(
-            { _id: id },
-            {
-              $set: {
-                open_for_time_entry: "closed",
-                effective_close_date: closeDate,
-              },
-            }
-          );
-          return data;
+            return await Project.findOne(query);
+        } catch (error) {
+            throw new Error(`Failed to check project existence: ${error.message}`);
         }
-      } else {
-        const data = await Project.updateOne(
-          { _id: id },
-          {
-            $set: {
-              open_for_time_entry: "opened",
-              effective_close_date: closeDate,
-            },
-          }
-        );
-        return data;
-      }
-    } catch (error) {
-      throw new Error("Error updating project time entry");
     }
-  }
+    async updateProjectTimeEntry(id, timeEntry, closeDate) {
+        try {
+            const record = await Project.findOne({ _id: id });
+            if (!record) {
+                throw new Error(`Project with ID ${id} not found`);
+            }
+            if (timeEntry === "closed") {
+                if (["Cancelled", "Completed", "On hold"].includes(record.status)) {
+                    const data = await Project.updateOne({ _id: id }, { 
+                        $set: { 
+                            open_for_time_entry: "closed", 
+                            effective_close_date: closeDate 
+                        } 
+                    });
+                    return data;
+                } 
+            } else {
+                const data = await Project.updateOne({ _id: id }, { 
+                    $set: { open_for_time_entry: "opened",
+                        effective_close_date: closeDate 
+                     } 
+                });
+                return data;
+            }
+        } catch (error) {
+            throw new Error("Error updating project time entry");
+        }
+    }
+    
+    async updateProjectStatus(projectId, status) {
+        try {
+            const result = await Project.updateOne({ _id: projectId }, { status: status });
+            return result
+        } catch (error) {
+            throw new Error(`Error updating project status: ${error.message}`);
+        }
+    }
 
-  async updateProjectStatus(projectId, status) {
-    try {
-      const result = await Project.updateOne(
-        { _id: projectId },
-        { status: status }
-      );
-      return result;
-    } catch (error) {
-      throw new Error(`Error updating project status: ${error.message}`);
+    /**
+     * Get projects by project lead
+     * @param {String} projectLeadId - The project lead id
+     * @return {Promise<Project[]>} - The projects 
+     */    
+    async getProjectsByProjectLead(projectLeadId) {
+        try {
+            const projects = await Project.find({ project_lead: projectLeadId }).lean();
+            return projects;
+        } catch (error) {
+            throw new Error(`Failed to get projects: ${error.message}`);
+        }
     }
-  }
+
+    /**
+     * Get project by userId where user is included in this project
+     * 
+     */
+    async getAllProjectsByUser(userId) {
+        try{
+            
+        }
+        catch(error) {
+
+        }
+    }
+
+  
 }
