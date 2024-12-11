@@ -5,7 +5,7 @@ import TimesheetRepository from "../../repositories/admin/timesheet-repository.j
 
 const projectTeam=new ProjectTeamRepository()
 const project=new ProjectRepository()
-const timesheet=new TimesheetRepository()
+const timesheetrepo=new TimesheetRepository()
 
 class TimesheetApprovalController 
 {
@@ -165,13 +165,85 @@ class TimesheetApprovalController
             })
         }
     }
-
+/**
+ * @swagger
+ * /timesheet/managetimesheet:
+ *   post:
+ *     summary: Updates the status of a timesheet.
+ *     tags:
+ *       - TimeSheet
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               timesheetid:
+ *                 type: string
+ *                 description: The ID of the timesheet to be updated.
+ *                 example: "12345"
+ *               state:
+ *                 type: string
+ *                 description: The new state of the timesheet.
+ *                 example: "approved"
+ *     responses:
+ *       200:
+ *         description: Timesheet status updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Timesheet Status updated successfully"
+ *                 data:
+ *                   type: object
+ *                   description: The updated timesheet details.
+ *       400:
+ *         description: Timesheet status not updated due to a bad request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Timesheet Status not updated"
+ *                 data:
+ *                   type: object
+ *                   description: Additional error information.
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ */
     async manageTimeSheet(req,res)
     {
         const {timesheetid,state}=req.body
         try
         {
-            const {timesheet,status}=await timesheet.updateTimesheetStatus(timesheetid,state)
+            const {timesheet,status}=await timesheetrepo.updateTimesheetStatus(timesheetid,state)
             if(status)
             {
                 return res.status(200).json({
