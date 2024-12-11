@@ -766,6 +766,14 @@ export default class TimesheetController {
 	 *                 format: date
 	 *                 example: "2024-12-07"
 	 *                 description: End date of the week (optional).
+	 *               prev:
+	 *                 type: boolean
+	 *                 description: Whether to fetch previous week's timesheets.
+	 *                 example: false
+	 *               next:
+	 *                 type: boolean
+	 *                 description: Whether to fetch next week's timesheets.
+	 *                 example: true
 	 *     responses:
 	 *       200:
 	 *         description: Weekly timesheets fetched successfully.
@@ -861,6 +869,7 @@ export default class TimesheetController {
 	 *                   type: string
 	 *                   example: "An error occurred while fetching timesheets."
 	 */
+
 	async getWeeklyTimesheets(req, res) {
 		try {
 			// const token = req.headers.authorization?.split(' ')[1];
@@ -997,6 +1006,30 @@ export default class TimesheetController {
 	 *     description: Fetches the timesheets that are not submitted or approved for the current week for the logged-in user.
 	 *     tags:
 	 *       - Timesheet
+	 *     requestBody:
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               startDate:
+	 *                 type: string
+	 *                 format: date
+	 *                 example: "2024-12-01"
+	 *                 description: Start date of the week (optional).
+	 *               endDate:
+	 *                 type: string
+	 *                 format: date
+	 *                 example: "2024-12-07"
+	 *                 description: End date of the week (optional).
+	 *               prev:
+	 *                 type: boolean
+	 *                 description: Whether to fetch previous week due timesheets.
+	 *                 example: false
+	 *               next:
+	 *                 type: boolean
+	 *                 description: Whether to fetch next week due timesheets.
+	 *                 example: true
 	 *     responses:
 	 *       200:
 	 *         description: Due timesheets fetched successfully.
@@ -1167,7 +1200,7 @@ export default class TimesheetController {
 
 
 
-	//get detailed timesheet re
+	//get detailed timesheet report
 	/**
 	 * @swagger
 	 * /timesheet/get-timesheet-report:
@@ -1212,6 +1245,10 @@ export default class TimesheetController {
 	 *                   type: string
 	 *                 description: Array of employee IDs whose detailed report is to be fetched.
 	 *                 example: ["1a2b3c4d5e6f7g8h9i0j", "5a7b9c2d3e4f5g6h7i8j"]
+	 *               tabKey:
+	 *                 type: string
+	 *                 description: The tab key for the report.
+	 *                 example: "project_summary"
 	 *     responses:
 	 *       200:
 	 *         description: Successfully fetched the employee detail report.
