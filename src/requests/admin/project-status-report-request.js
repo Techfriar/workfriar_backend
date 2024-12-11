@@ -8,47 +8,38 @@ export class AddProjectStatusReportRequest {
     static schema = Joi.object({
         project_name: Joi.string()
             .regex(/^[0-9a-fA-F]{24}$/)
-            .required()
+            .optional()
             .messages({
                 "string.empty": "Please select the project.",
-                "any.required": "Please select the project.",
             }),
         project_lead: Joi.string()
             .regex(/^[0-9a-fA-F]{24}$/)
-            .required()
+            .optional()
             .messages({
                 "string.empty": "Please specify the project lead.",
-                "any.required": "Please specify the project lead.",
             }),
-        planned_start_date: Joi.date().required().messages({
+        planned_start_date: Joi.date().optional().messages({
             "date.base": "Please enter a valid planned start date.",
-            "any.required": "Please enter the planned start date.",
         }),
-        planned_end_date: Joi.date().required().messages({
+        planned_end_date: Joi.date().optional().messages({
             "date.base": "Please enter a valid planned end date.",
-            "any.required": "Please enter the planned end date.",
         }),
-        actual_start_date: Joi.date().required().messages({
+        actual_start_date: Joi.date().optional().messages({
             "date.base": "Please enter a valid actual start date.",
-            "any.required": "Please enter the actual start date.",
         }),
         actual_end_date: Joi.date().optional().allow("").allow(null),
-        reporting_period: Joi.date().required().messages({
+        reporting_period: Joi.date().optional().messages({
             "date.base": "Please enter a valid reporting period.",
-            "any.required": "Please enter the reporting period.",
         }),
-        progress: Joi.string().required().messages({
+        progress: Joi.string().optional().messages({
             "string.empty": "Please enter the progress.",
-            "any.required": "Please enter the progress.",
         }),
         comments: Joi.string().optional().allow("").allow(null),
-        accomplishments: Joi.string().required().messages({
+        accomplishments: Joi.string().optional().messages({
             "string.empty": "Please enter the accomplishments.",
-            "any.required": "Please enter the accomplishments.",
         }),
-        goals: Joi.string().required().messages({
+        goals: Joi.string().optional().messages({
             "string.empty": "Please enter the goals.",
-            "any.required": "Please enter the goals.",
         }),
         blockers: Joi.string().optional().allow("").allow(null),
     });
@@ -58,10 +49,19 @@ export class AddProjectStatusReportRequest {
     }
 
     async validate() {
-        const { error, value } = AddProjectStatusReportRequest.schema.validate(
-            this.data,
-            { abortEarly: false }
+        // Remove undefined values from the data
+        const filteredData = Object.fromEntries(
+            Object.entries(this.data).filter(([_, v]) => v !== undefined)
         );
+
+        // Validate only the fields that are present
+        const { error, value } = AddProjectStatusReportRequest.schema.fork(
+            Object.keys(filteredData), 
+            (schema) => schema.required()
+        ).validate(filteredData, {
+            abortEarly: false,
+            allowUnknown: true
+        });
 
         if (error) {
             const validationErrors = {};
@@ -71,7 +71,7 @@ export class AddProjectStatusReportRequest {
             throw new CustomValidationError(validationErrors);
         }
 
-        return value;
+        return filteredData;
     }
 }
 
@@ -83,34 +83,30 @@ export class UpdateProjectStatusReportRequest extends AddProjectStatusReportRequ
     }
 
     async validate() {
-        const schema = AddProjectStatusReportRequest.schema.keys({
-            reportId: Joi.string()
-                .regex(/^[0-9a-fA-F]{24}$/)
-                .required()
-                .messages({
-                    "string.empty": "Report ID is required.",
-                    "any.required": "Report ID is required.",
-                    "string.pattern.base": "Invalid Report ID format.",
-                }),
-        });
+        // First, validate the fields using the parent method
+        const validatedData = await super.validate();
 
-        const validationData = {
-            ...this.data,
-            reportId: this.reportId,
-        };
-
-        const { error, value } = schema.validate(validationData, {
-            abortEarly: false,
-        });
-
-        if (error) {
-            const validationErrors = {};
-            error.details.forEach((err) => {
-                validationErrors[err.context.key] = err.message;
+        // Validate the report ID format
+        const reportIdSchema = Joi.string()
+            .regex(/^[0-9a-fA-F]{24}$/)
+            .required()
+            .messages({
+                "string.empty": "Report ID is required.",
+                "any.required": "Report ID is required.",
+                "string.pattern.base": "Invalid Report ID format.",
             });
-            throw new CustomValidationError(validationErrors);
+
+        const { error: reportIdError } = reportIdSchema.validate(this.reportId);
+
+        if (reportIdError) {
+            throw new CustomValidationError({
+                reportId: "Invalid Report ID format."
+            });
         }
 
-        return value;
+        // Add the reportId to the validated data
+        validatedData.reportId = this.reportId;
+
+        return validatedData;
     }
 }

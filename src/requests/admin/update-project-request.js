@@ -2,7 +2,6 @@ import Joi from 'joi'
 import ProjectRepository from '../../repositories/admin/project-repository.js'
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js'
 
-
 class UpdateProjectRequest {
     static projectRepo = new ProjectRepository()
 
@@ -42,7 +41,7 @@ class UpdateProjectRequest {
     })
 
     constructor(req) {
-        const file = req.files['project_logo'] ? req.files['project_logo'][0] : null
+        const file = req.files && req.files['project_logo'] ? req.files['project_logo'][0] : null
 
         this.data = {
             client_name: req.body.client_name,
@@ -62,46 +61,67 @@ class UpdateProjectRequest {
     }
 
     async validate() {
-        const { error, value } = UpdateProjectRequest.schema.validate(this.data, {
-            abortEarly: false
-        })
+        // Remove undefined values from the data
+        const filteredData = Object.fromEntries(
+            Object.entries(this.data).filter(([_, v]) => v !== undefined)
+        );
 
-        // Check if project exists with same name (excluding current project)
-        const checkProjectExists = await UpdateProjectRequest.projectRepo.checkProjectExists(
-            this.data.project_name,
-            this.data.client_name,
-            this.data.projectId
-        )
+        // Validate only the fields that are present
+        const fieldsToValidate = {};
+        Object.keys(filteredData).forEach(key => {
+            if (filteredData[key] !== undefined) {
+                fieldsToValidate[key] = filteredData[key];
+            }
+        });
 
         // Check if project exists
         const projectExists = await UpdateProjectRequest.projectRepo.getProjectById(
             this.data.projectId
-        )
+        );
 
-        if (error || checkProjectExists || !projectExists) {
-            const validationErrors = {}
-            error? error.details.forEach((err) => {
-                    validationErrors[err.context.key] = err.message
-                })
-                : []
+        if (!projectExists) {
+            throw new CustomValidationError({ project: 'Project not found.' });
+        }
+
+        // Check if project name already exists (if project_name is being updated)
+        let checkProjectExists = null;
+        if (filteredData.project_name || filteredData.client_name) {
+            checkProjectExists = await UpdateProjectRequest.projectRepo.checkProjectExists(
+                filteredData.project_name || this.data.project_name,
+                filteredData.client_name || this.data.client_name,
+                this.data.projectId
+            );
+        }
+
+        // Perform validation
+        const { error, value } = UpdateProjectRequest.schema.fork(
+            Object.keys(fieldsToValidate), 
+            (schema) => schema.required()
+        ).validate(fieldsToValidate, {
+            abortEarly: false,
+            allowUnknown: true
+        });
+
+        // Handle validation errors
+        if (error || checkProjectExists) {
+            const validationErrors = {};
+            
+            if (error) {
+                error.details.forEach((err) => {
+                    validationErrors[err.context.key] = err.message;
+                });
+            }
 
             if (checkProjectExists) {
                 validationErrors['project_name'] = 
-                    'Project with this name already exists for the client.'
-            }
-
-
-            if (!projectExists) {
-                validationErrors['project'] = 'Project not found.'
+                    'Project with this name already exists for the client.';
             }
 
             throw new CustomValidationError(validationErrors);
         }
 
-        return value
+        return filteredData;
     }
-
 }
 
-
-export default UpdateProjectRequest
+export default UpdateProjectRequest;
