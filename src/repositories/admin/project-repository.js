@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Project from "../../models/projects.js";
 
 export default class ProjectRepository {
@@ -167,17 +168,39 @@ export default class ProjectRepository {
     }
 
     /**
+     * Get the count of the projects where the user is included in the project team
+     * @param {string} userId - The ID of the user to get the project count for 
+     * @returns {Promise<number>} - The count of the projects where the user is included in the project team
+        */  
+    async getProjectCountByUser(userId) {
+        const count = await Project.countDocuments({
+            $or: [
+                { 'team.team_members': userId },
+                { project_lead: userId }
+            ]
+        });
+        return count;
+    }
+
+    /**
      * Get project by userId where user is included in this project
      * 
      */
-    async getAllProjectsByUser(userId) {
+    async getAllOpenProjectsByUser(userId) {
+        
+    }
+
+    /**
+     * Get project by userId where user is included in this project
+     *
+     */
+    async getAllProjectsByUser(userId, skip, limit) {
         try{
             
         }
         catch(error) {
-
+            throw new Error(`Failed to get projects: ${error.message}`);
         }
     }
-
   
 }
