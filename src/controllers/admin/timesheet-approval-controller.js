@@ -3,15 +3,15 @@ import ProjectTeamRepository from "../../repositories/admin/project-team-reposit
 import ProjectRepository from "../../repositories/admin/project-repository.js"
 import TimesheetRepository from "../../repositories/admin/timesheet-repository.js"
 
-const projectTeam=new ProjectTeamRepository()
-const project=new ProjectRepository()
+const projectTeamrepo=new ProjectTeamRepository()
+const projectRepo=new ProjectRepository()
 const timesheetrepo=new TimesheetRepository()
 
 class TimesheetApprovalController 
 {
     /**
  * @swagger
- * /admin/getmembers:
+ * /admin/approvalcenter:
  *   post:
  *     summary: Get members based on user role
  *     description: Retrieves a list of members based on the user's role. Different roles have access to different sets of members.
@@ -118,16 +118,17 @@ class TimesheetApprovalController
             const pageNumber = parseInt(page,10);
             const limitNumber = parseInt(limit, 10);
             const skip=(pageNumber-1)*limitNumber
-            const userId=""//get from Token
+            const userId="6746a63bf79ea71d30770de7" //get from Token
             const userRole=await RoleRepository.getRoleByUserId(userId)
             if(userRole.role==="Team Lead")
             {
-                const projects=await  project.getProjectsByProjectLead(userId)
+                const projects=await  projectRepo.getProjectsByProjectLead(userId)
+
                 const data = await Promise.all(
                     projects.map(async (item) => {
                         return {
-                            projectTeam: await projectTeam.getAllProjectTeamExpandedByProjectId(item._id, skip, limitNumber),
-                            project: await project.getProjectById(item._id),
+                            projectTeam: await projectTeamrepo.getProjectTeamExpandedByProjectId(item._id, skip, limitNumber),
+                            project: await projectRepo.getProjectById(item._id),
                         };
                     })
                 ); 
@@ -167,7 +168,7 @@ class TimesheetApprovalController
     }
 /**
  * @swagger
- * /timesheet/managetimesheet:
+ * /admin/managetimesheet:
  *   post:
  *     summary: Updates the status of a timesheet.
  *     tags:
