@@ -54,4 +54,8 @@ timesheetRouter
     .route('/get-weekly-timesheets')
     .post(timesheet.getWeeklyTimesheets)
 
+timesheetRouter
+    .route('/get-user-timesheets')
+    .post(timesheet.getUserTimesheets)
+
 export default timesheetRouter

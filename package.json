@@ -23,6 +23,7 @@
     "jsonwebtoken": "9.0.2",
     "jwt-token": "1.0.9",
     "minio": "8.0.2",
+    "moment": "^2.30.1",
     "moment-timezone": "^0.5.46",
     "mongodb": "6.11.0",
     "mongoose": "8.8.2",

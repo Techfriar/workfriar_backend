@@ -128,31 +128,35 @@ export default class CreateTimesheetRequest {
 		return { error: false }; // If all validations pass
 	}
 	
-	static async validateDateRange(startDate, endDate) {
-        // Joi Validation for Date Format
-        const schema = Joi.object({
-            startDate: Joi.date().iso().required().messages({
-                'date.base': `"startDate" must be a valid ISO date`,
-            }),
-            endDate: Joi.date().iso().required().greater(Joi.ref('startDate')).messages({
-                'date.base': `"endDate" must be a valid ISO date`,
-                'date.greater': `"endDate" must be greater than "startDate"`,
-            })
-        });
+  static async validateDateRange(startDate, endDate) {
+    const schema = Joi.object({
+        startDate: Joi.date().iso().required().messages({
+            'date.base': `"startDate" must be a valid ISO date`,
+        }),
+        endDate: Joi.date().iso().required().greater(Joi.ref('startDate')).messages({
+            'date.base': `"endDate" must be a valid ISO date`,
+            'date.greater': `"endDate" must be greater than "startDate"`,
+        })
+    });
 
-        // Perform Joi validation
-        const { error, value } = schema.validate({ startDate, endDate });
+    const { error, value } = schema.validate({ startDate, endDate });
 
-        if (error) {
-            throw new CustomValidationError(error.details[0].message); // Customize error message if validation fails
-        }
-
-        // Return validated values
-        return value;
+    if (error) {
+        throw new CustomValidationError(error.details[0].message);
     }
 
+    // Check if start date and end date are in the same month
+    const start = new Date(value.startDate);
+    const end = new Date(value.endDate);
+    if (start.getMonth() !== end.getMonth() || start.getFullYear() !== end.getFullYear()) {
+        throw new CustomValidationError("Start date and end date must be in the same month");
+    }
+
+    return value;
+}
+
+
     static async validateProjectSummaryParams({ projectId, Year, Month }) {
-        // Joi schema to validate the request body
         const schema = Joi.object({
           projectId: Joi.string().custom((value, helpers) => {
             if (value && !mongoose.Types.ObjectId.isValid(value)) {
@@ -180,7 +184,7 @@ export default class CreateTimesheetRequest {
           throw new CustomValidationError(error.details[0].message);
         }
     
-        // Check if projectId exists in the database only if it's provided
+        // Check if projectId exists in the database
         if (value.projectId) {
           const project = await CreateTimesheetRequest.ProjectRepo.getProjectById(value.projectId);
           if (!project) {
@@ -236,7 +240,7 @@ export default class CreateTimesheetRequest {
           }
         }
     
-        return value; // Return the validated values
+        return value;
       }
         
       static async validateEmployeeSummaryParams({ projectId, Year, Month, userId }) {
@@ -276,7 +280,7 @@ export default class CreateTimesheetRequest {
         }
     
         if (value.projectId) {
-          const projectExists = await  this.ProjectRepo.getProjectById(value.projectId); // Database call
+          const projectExists = await  this.ProjectRepo.getProjectById(value.projectId);
           if (!projectExists) {
             throw new CustomValidationError('Project not found.');
           }
@@ -366,14 +370,13 @@ export default class CreateTimesheetRequest {
         const { error, value } = schema.validate({ year, month });
     
         if (error) {
-            throw new CustomValidationError(error.details[0].message); // Handle validation error
+            throw new CustomValidationError(error.details[0].message);
         }
     
-        return value; // Return validated and sanitized values
+        return value;
     }
     
     static async validateDateRangeForDue({fromDate, toDate}) {
-      // Joi Validation for Date Format with optional dates
       const schema = Joi.object({
           fromDate: Joi.date().iso().optional().messages({
               'date.base': `"fromDate" must be a valid ISO date if provided`,
@@ -384,14 +387,12 @@ export default class CreateTimesheetRequest {
           })
       });
   
-      // Perform Joi validation
       const { error, value } = schema.validate({ fromDate, toDate });
   
       if (error) {
-          throw new CustomValidationError(error.details[0].message); // Customize error message if validation fails
+          throw new CustomValidationError(error.details[0].message);
       }
-  
-      // Return validated values
+
       return value;
   }
   
@@ -407,7 +408,7 @@ export default class CreateTimesheetRequest {
 				throw new CustomValidationError('Unauthorized to delete this timesheet')
 			}
 	
-			// Check if the timesheet is already submitted or accepted
+			// Check if the timesheet is already submitted
 			if (['submitted', 'accepted','rejected'].includes(timesheet.status)) {
 				throw new Error('Timesheet cannot be deleted as it is already submitted');
 			}
