@@ -2,9 +2,11 @@ import TimeSheetSummary from "../repositories/time-sheet-summary.js";
 import TimeSummaryResponse from "../responses/formatted-summary.js";
 import findTimezone from "../utils/findTimeZone.js";
 import FindWeekRange from "../utils/findWeekRange.js";
+import RejectionNotesRepository from "../repositories/admin/rejection-notes-repository.js";
 
 const timeSheetSummary=new TimeSheetSummary()
 const timesummaryResponse=new TimeSummaryResponse()
+const rejectRepo=new RejectionNotesRepository()
 const findWeekRange=new FindWeekRange()
 /**
  * @swagger
@@ -431,16 +433,23 @@ class TimeSheetSummaryController{
         if(passedUserid) userId = passedUserid
     try
     {
+        let notes
         const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate,status)
+        if(status==="rejected")
+        {
+             notes=await rejectRepo.getByWeek(startDate,endDate,userId)
+        }
         const formattedData= await timesummaryResponse.formattedPastDue(data)
+
             if(data)
             {
                 res.status(200).json(
                     {
                     status:true,
-                    message:"Due Time Sheet",
+                    message:"Time Sheet Data",
                     data:formattedData,
-                    range:range
+                    range:range,
+                    notes:notes?notes:""
                     })
             }
             else

@@ -282,6 +282,95 @@ class TimesheetApprovalController
         }
     }
 
+    /**
+ * @swagger
+ * /admin/manage-all-timesheet:
+ *   post:
+ *     summary: Manage timesheet statuses (approve or reject).
+ *     description: Updates the status of timesheets for a user within a specific week. Handles approval or rejection and manages any related rejection records.
+ *     tags:
+ *       - Timesheets
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               timesheetd:
+ *                 type: string
+ *                 description: The ID of the timesheet to manage.
+ *                 example: "63f1e9f9a6a3bca97e8b4567"
+ *               status:
+ *                 type: string
+ *                 enum: [approved, rejected]
+ *                 description: The new status for the timesheet.
+ *                 example: "approved"
+ *               userid:
+ *                 type: string
+ *                 description: The user ID associated with the timesheet.
+ *                 example: "63f1e9f9a6a3bca97e8b1234"
+ *               notes:
+ *                 type: string
+ *                 description: Notes explaining the rejection (required if status is "rejected").
+ *                 example: "Timesheet contains incomplete data."
+ *     responses:
+ *       200:
+ *         description: Timesheet status updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Whether the request was successful.
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   description: Success message.
+ *                   example: "Timesheet Status updated successfully"
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       422:
+ *         description: Validation error occurred.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Whether the request was successful.
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   description: Validation error message.
+ *                   example: "Invalid input: timesheetd is required."
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Whether the request was successful.
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   description: Error message.
+ *                   example: "Internal server error"
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ */
+
     async manageAllTimesheet(req,res)
     {
         const{timesheetd,status,userid,notes}=req.body
@@ -292,7 +381,7 @@ class TimesheetApprovalController
             {
                 throw new CustomValidationError(validatedData.message)
             }
-            const dates=await timesheetrepo.getWeekDatesByTimesheetId(timesheetd)
+            const dates=await timesheetrepo.getWeekStartAndEndDateByTimesheetId(timesheetd)
 
             const {startDate,endDate}=await timesheetrepo.getWeekStartAndEndDateByTimesheetId(timesheetd)
 
