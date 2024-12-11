@@ -23,20 +23,8 @@ timesheetRouter
     .post(timesheet.getDueTimesheets)
 
 timesheetRouter
-    .route('/get-project-summary-report')
-    .post(timesheet.getProjectSummaryReport)
-
-timesheetRouter
-    .route('/get-project-detail-report')
-    .post(timesheet.projectDetailReport)
-
-timesheetRouter
-    .route('/get-employee-summary-report')
-    .post(timesheet.getEmployeeSummaryReport)
-
-timesheetRouter
-    .route('/get-employee-detail-report')
-    .post(timesheet.getEmployeeDetailReport)
+    .route('/get-timesheet-report')
+    .post(timesheet.getTimesheetReport)
 
 timesheetRouter
     .route('/get-timesheet-snapshot')

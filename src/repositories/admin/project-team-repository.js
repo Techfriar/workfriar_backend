@@ -108,7 +108,7 @@ class ProjectTeamRepository
 
     async getProjectTeamExpandedByProjectId(projectId, skip, limit) {
         try {
-            const projectTeam = await projectTeam.find({ project: projectId })
+            const projectTeamMembers = await projectTeam.find({ project: projectId })
             .populate({
                 path: 'team_members',
                 select: 'full_name _id'
@@ -117,11 +117,11 @@ class ProjectTeamRepository
             .limit(limit)
             .lean();
 
-            if (!projectTeam) {
+            if (!projectTeamMembers) {
                 throw new Error(`Project team not found for project ID: ${projectId}`);
             }
 
-            return projectTeam;
+            return projectTeamMembers;
         } catch (error) {
             throw new Error(`Failed to get project team: ${error.message}`);
         }

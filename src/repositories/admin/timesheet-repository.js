@@ -205,9 +205,9 @@ export default class TimesheetRepository {
 	}
 	
 	//get timesheets for a week
-	async getWeeklyTimesheets(user_id, startDate, endDate, page, limit) {
+	async getWeeklyTimesheets(user_id, startDate, endDate) {
 		try {
-			const skip = (page - 1) * limit;
+
 			const query = {
 				user_id,
 				$or: [
@@ -221,12 +221,8 @@ export default class TimesheetRepository {
 				.populate('project_id', 'projectName') 
 				.populate('task_category_id', 'category') 
 				.lean()
-				.skip(skip)
-				.limit(limit);
-	
-			const totalCount = await Timesheet.countDocuments(query);
-	
-			return { timesheets, totalCount };
+
+			return timesheets;
 		} catch (error) {
 			console.error('Error fetching timesheets:', error);
 			throw error;
@@ -791,6 +787,41 @@ export default class TimesheetRepository {
 		try {
 			const timesheet = await Timesheet.findByIdAndUpdate(timesheetId, { status: status }, { new: true });
 			return {timesheet, status: true};
+		} catch (error) {
+			throw new Error(error);
+		}
+	}
+
+	/**
+	 * Get week Start and End date from the timesheetId
+	 * @param {string} timesheetId
+	 * @returns {Promise<Timesheet>}
+	 */
+	async getWeekStartAndEndDateByTimesheetId(timesheetId) {
+		try {
+			const timesheet = await Timesheet.findById(timesheetId);
+			if (!timesheet) {
+				throw new Error('Timesheet not found');
+			}
+			const startDate = timesheet.startDate;
+			const endDate = timesheet.endDate;
+			return { startDate, endDate };
+		} catch (error) {
+			throw new Error(error);
+		}
+	}
+
+	/**
+	 * Update All Timesheet Status By Week Start And End Date
+	 * @param {string} startDate
+	 * @param {string} endDate
+	 * @param {string} status
+	 * @returns {Promise<Timesheet>} 
+	 */
+	async updateAllTimesheetStatus(startDate, endDate, status) {
+		try {
+			const timesheets = await Timesheet.updateMany({ startDate: { $gte: startDate, $lte: endDate }, status: { $ne: status } }, { status: status });
+			return timesheets;
 		} catch (error) {
 			throw new Error(error);
 		}

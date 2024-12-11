@@ -256,13 +256,27 @@ export default class ForecastController{
         
     }   
  /**
- * Get all Project Forecasts
- * 
  * @swagger
  * /admin/getallforecast:
  *   post:
  *     summary: Retrieve a list of all project forecasts
- *     tags: [Forecast]
+ *     tags: 
+ *       - Forecast
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               page:
+ *                 type: number
+ *                 description: The page number to fetch (default is 1)
+ *                 example: 1
+ *               limit:
+ *                 type: number
+ *                 description: The number of records per page (default is 10)
+ *                 example: 10
  *     responses:
  *       200:
  *         description: A list of all project forecasts
@@ -303,6 +317,10 @@ export default class ForecastController{
  *                       status:
  *                         type: string
  *                         example: "Not Started"
+ *                 totalLength:
+ *                   type: number
+ *                   description: Total number of pages available
+ *                   example: 3
  *       422:
  *         description: No project forecasts found
  *         content:
@@ -318,7 +336,7 @@ export default class ForecastController{
  *                   example: "No Project forecasts Found"
  *                 data:
  *                   type: array
- *                   items: []
+ *                   items: {}
  *       500:
  *         description: Internal server error
  *         content:
@@ -334,14 +352,18 @@ export default class ForecastController{
  *                   example: "Internal Server Error"
  *                 data:
  *                   type: array
- *                   items: []
+ *                   items: {}
  */
-
      async getForecastController(req,res)
     {
+        
             try {
-                const data = await forecastRepo.getForecast()
-                if (data.length === 0) {
+                const {page=1,limit=10}=req.body
+                const pageNumber = parseInt(page,10);
+                const limitNumber = parseInt(limit, 10);
+                const skip=(pageNumber-1)*limitNumber
+                const{forecastData,total} = await forecastRepo.getForecast(skip,limitNumber)
+                if (forecastData.length === 0) {
                     res.status(422).json({
                         status:false,
                         message:"No Project forecasts Found",
@@ -351,12 +373,13 @@ export default class ForecastController{
                 }
                 else
                 {  
-                    const forecastData=await forecastResponse.formatForecastSet(data) 
+                    const foremattedData=await forecastResponse.formatForecastSet(forecastData) 
                   
                     res.status(200).json({
                         status:true,
                         message:"Forecasts",
-                        data:forecastData,
+                        data:foremattedData,
+                        totalLength:Math.ceil(total/limitNumber),
                     })
                 }
             } catch (error) {
