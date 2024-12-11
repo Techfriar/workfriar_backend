@@ -152,11 +152,26 @@ export default class AdminController {
  *   post:
  *     tags:
  *       - Admin
- *     summary: list All Employees Data
+ *     summary: List All Employees Data with pagination
  *     security:
  *       - bearerAuth: []
  *     produces:
  *       - application/json
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               page:
+ *                 type: integer
+ *                 description: Page number (default 1)
+ *                 example: 1
+ *               limit:
+ *                 type: integer
+ *                 description: Number of items per page (default 10)
+ *                 example: 10
  *     responses:
  *       200:
  *         description: Success
@@ -197,40 +212,80 @@ export default class AdminController {
  *                       status:
  *                         type: string
  *                         example: "Active"
+ *                       profile_pic: 
+ *                         type: string
+ *                         example: "http://example-imgsc.URL_ADDRESS" 
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                       example: 100
+ *                     currentPage:
+ *                       type: integer
+ *                       example: 1
+ *                     pageSize:
+ *                       type: integer
+ *                       example: 10
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 10
  *       422:
  *         description: Unprocessable Entity
  *       401:
  *         description: Unauthenticated
  */
 
+
     async listAllEmployeesData(req, res) {
         try {
+            const page = parseInt(req.body.page) || 1;
+            const limit = parseInt(req.body.limit) || 10;
+            const skip = (page - 1) * limit;
+
+            // Fetch total count of employees
+            const totalItems = await userRepo.countAllUsers();
            
             // Fetch all employees from the database
-            const employees = await userRepo.getAllUsers(); // Replace with your repository function
+            const employees = await userRepo.getAllUsers(skip, limit); // Replace with your repository function
 
             if (employees && employees.length > 0) {
                 // Format employee data if required
                 const formattedEmployees = await Promise.all(employees.map(employee => UserResponse.formatEmployee(employee)));
 
+                // Calculate total pages
+                const totalPages = Math.ceil(totalItems / limit);
+
                 res.status(200).json({
                     status: true,
                     message: "Employees fetched successfully.",
                     data: formattedEmployees,
+                    pagination: {
+                        totalItems,
+                        currentPage: page,
+                        pageSize: limit,
+                        totalPages
+                    }
                 });
             } else {
                 res.status(200).json({
                     status: false,
                     message: "No employees found.",
                     data: [],
+                    pagination: {
+                        totalItems: 0,
+                        currentPage: page,
+                        pageSize: limit,
+                        totalPages: 0
+                    }
                 });
             }
         } catch (error) {
-            console.error("Error fetching employees:", error);
-
+                        
             res.status(422).json({
                 status: false,
                 message: "Failed to fetch employees.",
+                date: [],
                 errors: error,
             });
         }

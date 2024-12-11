@@ -23,4 +23,11 @@ authRouter
     .route('/google-fallback')
     .get(auth.googleFallback)
 
+/**
+ * logout route
+  */
+authRouter
+    .route('/logout')
+    .post(auth.logout)
+
 export default authRouter
