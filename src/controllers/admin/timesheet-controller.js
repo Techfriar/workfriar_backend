@@ -911,7 +911,8 @@ export default class TimesheetController {
 
 				startDate.setUTCHours(0, 0, 0, 0);
 				endDate.setUTCHours(0, 0, 0, 0);
-				const { timesheets, totalCount } = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate, pageNumber, limitNumber);
+				let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
+				const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
 
 
 			if (timesheets.length > 0) {
@@ -966,6 +967,7 @@ export default class TimesheetController {
 				return res.status(200).json({
 					success: false,
 					message: 'No timesheets found for the provided date range',
+					date_range: range,
 					data: [],
 				});
 			}
