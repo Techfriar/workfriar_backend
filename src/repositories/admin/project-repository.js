@@ -19,13 +19,20 @@ export default class ProjectRepository {
      * Get all projects
      * @return {Promise<Project[]>} - All projects
      */
-    async getAllProjects() {
+    async getAllProjects({ page = 1, limit = 10 } = {}) {
         try {
-            return await Project.find().populate("project_lead").populate("categories").sort({ createdAt: -1 });
+          const skip = (page - 1) * limit;
+          const projects = await Project.find()
+            .populate("project_lead").populate("categories")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+          const totalCount = await Project.countDocuments();
+          return { projects, totalCount };
         } catch (error) {
-            throw new Error(`Failed to get projects: ${error.message}`);
+          throw new Error(`Failed to get projects: ${error.message}`);
         }
-    }
+      }
 
   /**
    * Get project by id
