@@ -54,6 +54,17 @@ const subscriptionSchema = mongoose.Schema(
       enum: ["Active", "Pending", "Expired"],
       default: "Active",
     },
+    type: {
+      type: String,
+      required: true,
+      enum: ["Common", "Project Specific"],
+      default: "Common"
+    },
+    project_name: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      default: null
+    },
   },
   {
     timestamps: true,

@@ -1,4 +1,9 @@
 export default class TransactionResponse{
+
+    static formatDate(date) {
+        if (!date) return null;
+        return moment(date).format("DD/MM/YYYY");
+    }
     /**
      * 
      * @param {Object} transaction
@@ -18,7 +23,7 @@ export default class TransactionResponse{
             last_four_digits: transaction.last_four_digits,
             card_expiry: transaction.card_expiry,
             license_count: transaction.license_count,
-            next_due_date: transaction.next_due_date,
+            next_due_date: this.formatDate(transaction.next_due_date),
             is_deleted: transaction.is_deleted,
             deleted_at: transaction.deleted_at,
             createdAt: transaction.createdAt,
