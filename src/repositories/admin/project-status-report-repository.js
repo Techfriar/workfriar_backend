@@ -12,6 +12,8 @@ export default class ProjectStatusReportRepository {
 
     async getAllReports({ page = 1, limit = 10 } = {}) {
         try {
+            
+            const skip = (page - 1) * limit;
             const reports = await ProjectStatusReport.find()
             .populate({
                 path: "project_name",
