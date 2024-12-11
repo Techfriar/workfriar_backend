@@ -717,28 +717,87 @@ export default class ProjectController {
     }
   }
   }
+/**
+ * @swagger
+ * /project/list-projects-by-user:
+ *   post:
+ *     tags:
+ *     - Project
+ *     summary: Get projects for the authenticated user  where user is a team member or project lead
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieves all projects where the authenticated user is a team member or project lead
+ *     responses:
+ *       200:
+ *         description: Projects retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Projects retrieved successfully.
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       project_name:
+ *                         type: string
+ *                     
+ *       400:
+ *         description: Bad request (validation error)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Failed to retrieve projects.
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ */
 
   /**
    * List all projects where the user is included in the project team
    * 
    */
-  async getProjectsByUser(req, res) {
+  async listProjectsByUser(req, res) {
     try {
       // Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
 			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
 
-      const projects = await projectRepo.getAllProjectsByUser(user_id);
-
-      if (!projects) {
-        return res.status(404).json({
-          status: false,
-          message: "Projects not found.",
-          data: [],
-        });
-      }
-
-      const projectData = await ProjectResponse.format(projects);
+      const projects = await projectRepo.getAllOpenProjectsByUser(user_id);
+      const projectData = projects.map(async (project) => {
+        return await ProjectResponse.formatGetAllOpenProjectsByUserResponse(project);
+      });
 
       return res.status(200).json({
         status: true,
@@ -755,9 +814,174 @@ export default class ProjectController {
       }
       return res.status(500).json({
         status: false,
-        message: "Failed to retrieve projects.",
+        message: error.message,
         data: []
       });
     }
   }
+
+/**
+ * @swagger
+ * /project/get-projects-by-user:
+ *   post:
+ *     tags:
+ *       - Project
+ *     summary: Get projects for the given userId where user is a team member or project lead
+ *     security:
+ *       - bearerAuth: []
+ *     description: Retrieves all projects where the authenticated user is a team member or project lead
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: UserId for the user whose projects are needed
+ *               page:
+ *                 type: integer
+ *                 description: Page number (default 1)
+ *                 example: 1
+ *               limit:
+ *                 type: integer
+ *                 description: Number of items per page (default 10)
+ *                 example: 10 
+ *     responses:
+ *       200:
+ *         description: Projects retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Projects retrieved successfully.
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       project_name:
+ *                         type: string
+ *                       client: 
+ *                         type: string
+ *                       startDate:
+ *                         type: string
+ *                       endDate:
+ *                         type: string
+ *                       project_lead:
+ *                         type: string
+ *                       status:
+ *                         type: string           
+ *       400:
+ *         description: Bad request (validation error)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Failed to retrieve projects.
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ */
+
+  
+
+  /**
+   * Get all projects where the user is included in the project team
+   *
+   */
+  async getAllProjectsByUser(req, res) {
+    try {
+      // Authentication (uncomment and implement proper token verification in production)
+			// const user_id = await authenticateAndGetUserId(req);
+			
+      const user_id = req.body.userId;
+
+      const page = parseInt(req.body.page) || 1;
+      const limit = parseInt(req.body.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      // Fetch total count of Projects by user
+      const totalItems = await projectRepo.getProjectCountByUser(user_id);
+
+      const projects = await projectRepo.getAllProjectsByUser(user_id, skip, limit);
+      if(projects && projects.length > 0) {
+        const projectData = projects.map(async (project) => {
+          return await ProjectResponse.formatGetAllProjectsByUserResponse(project);
+        });
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return res.status(200).json({
+          status: true,
+          message: "Projects retrieved successfully.",
+          data: projectData,
+          pagination: {
+            totalItems,
+            currentPage: page,
+            pageSize: limit,
+            totalPages
+          }
+        });
+      }
+      else {
+        return res.status(200).json({
+          status: true,
+          message: "No projects found.",
+          data: [],
+          pagination: {
+            totalItems,
+            currentPage: page,
+            pageSize: limit,
+            totalPages: 0
+          }
+        });
+      } 
+    } catch (error) {
+      if(error instanceof CustomValidationError){
+        return res.status(400).json({
+          status: false,
+          message: error.message,
+          data: []
+        })
+      }
+      return res.status(500).json({
+        status: false,
+        message: error.message,
+        data: []
+      });
+    }
+  }
+  
 }

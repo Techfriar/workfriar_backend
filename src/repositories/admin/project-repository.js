@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Project from "../../models/projects.js";
 
 export default class ProjectRepository {
@@ -157,17 +158,105 @@ export default class ProjectRepository {
     }
 
     /**
+     * Get the count of the projects where the user is included in the project team
+     * @param {string} userId - The ID of the user to get the project count for 
+     * @returns {Promise<number>} - The count of the projects where the user is included in the project team
+        */  
+    async getProjectCountByUser(userId) {
+        const count = await Project.countDocuments({
+            $or: [
+                { 'team.team_members': userId },
+                { project_lead: userId }
+            ]
+        });
+        return count;
+    }
+
+    /**
      * Get project by userId where user is included in this project
      * 
      */
-    async getAllProjectsByUser(userId) {
+    async getAllOpenProjectsByUser(userId) {
         try{
+            const projects = await Project.aggregate([
+                {
+                    $lookup: {
+                        from: 'project teams', // Assuming the collection name is 'projectteams'
+                        localField: '_id',
+                        foreignField: 'project',
+                        as: 'team'
+                    }
+                },
+                {
+                    $match: {
+                        $and: [
+                           { 
+                                $or: [
+                                    { 'team.team_members': userId },
+                                    { project_lead: new mongoose.Types.ObjectId(userId) }
+                                ]
+                            },
+                            {
+                                $or: [
+                                    { open_for_time_entry: {ne: "closed"} },
+                                    {
+                                        $and: [
+                                            { effective_close_date: { $ne: null } },
+                                            { effective_close_date: { $gt: new Date() } }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                        
+                    }
+                }
+            ]);
             
+            return projects;
         }
         catch(error) {
-
+            throw new Error(`Failed to get projects: ${error.message}`);
         }
     }
 
+    /**
+     * Get project by userId where user is included in this project
+     *
+     */
+    async getAllProjectsByUser(userId, skip, limit) {
+        try{
+            const projects = await Project.aggregate([
+                {
+                    $lookup: {
+                        from: 'project teams', // Assuming the collection name is 'projectteams'
+                        localField: '_id',
+                        foreignField: 'project',
+                        as: 'team'
+                    }
+                },
+                {
+                    $match: {
+                        $and: [
+                           {
+                                $or: [
+                                    { 'team.team_members': userId },
+                                    { project_lead: new mongoose.Types.ObjectId(userId) }
+                                ]
+                            }
+                        ]
+
+                    }
+                }
+            ])
+            .skip(skip)
+            .limit(limit);
+
+            return projects;
+        }
+        catch(error) {
+            throw new Error(`Failed to get projects: ${error.message}`);
+        }
+    }
   
 }

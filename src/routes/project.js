@@ -44,11 +44,15 @@ projectRouter
   projectRouter.route("/updatestatus").post(project.upddatestatus)
 
   /**
-   * List all projects where the user is included in the project team
+   * List all open projects where the user is included in the project team
+   * For to select the project in the timesheet creation
    */
   projectRouter
+    .route('/list-projects-by-user')
+    .post(project.listProjectsByUser)
+  projectRouter
     .route('/get-projects-by-user')
-    .post(project.getProjectsByUser)
+    .post(project.listProjectsByUser)
 
 
 export default projectRouter;
