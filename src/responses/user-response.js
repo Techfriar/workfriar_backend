@@ -33,9 +33,9 @@ export default class UserResponse {
             id: user._id,
             name: capitalizeWords(user.full_name),
             email: user.email,
-            role: user?.roles?.role,
-            department: user?.roles?.department,
-            reporting_manager: user?.reporting_manager,
+            role: user?.roles[0]?.role,
+            department: user?.roles[0]?.department,
+            reporting_manager: user?.reporting_manager?.full_name,
             status: user.status
         }
     }
@@ -49,6 +49,21 @@ export default class UserResponse {
         return {
             id: user._id,
             name: capitalizeWords(user.full_name),
+        }
+    }
+
+    static async formatEmployeeDetails(user) {
+        return {
+            id: user._id,
+            name: capitalizeWords(user.full_name),
+            email: user.email,
+            role: user?.roles[0]?.role,
+            department: user?.roles[0]?.department,
+            reporting_manager: user?.reporting_manager?.full_name,
+            status: user.status,
+            phone_number: user?.phone_number,
+            profile_pic_path: user.profile_pic,
+            location: user.location
         }
     }
 }

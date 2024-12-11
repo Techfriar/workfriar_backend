@@ -7,15 +7,98 @@ export default class UserRepository {
      * Fetch all users
      * @return Array<User> users
      */
-    async getAllUsers() {
+    async getAllUsers(skip, limit) {
         try {
             // Fetch all users from the database
-            const users = await User.find().populate('roles'); // Populate roles if needed
+            const users = await User.find()
+                .populate('roles')
+                .populate({
+                    path: 'reporting_manager', // Populate reporting_manager
+                    select: 'full_name' // Select specific fields to include
+                })
+                .skip(skip)
+                .limit(limit); // Populate roles if needed
             return users;
         } catch (error) {
-            console.error("Error fetching all users:", error);
             throw new Error("Failed to fetch users");
         }
+    }
+//Getting roles for a user based on department
+    async getRoles(department) {
+        const dept = ['Management'];
+        dept.push(department);
+        if (department === 'Technical') {
+            dept.push('Operations');
+        }
+        try {
+            const roles = await Role.find({ department: { $in: dept } }).populate({path:'users',select:'full_name'});
+            return { status: true, data: roles };
+        } catch (error) {
+            throw new Error(error.message || 'Failed to fetch roles');
+        }
+    }
+
+    async  checkPermission(roleName) {
+        try {
+            const role = await Role.findOne({ _id: roleName }).populate('permissions');
+    
+            if (!role) {
+                return { status: false, message: 'Role not found' };
+            }
+    
+            const hasUserCategory = role.permissions.some(permission => permission.category === 'Users');
+    
+            const isAdmin = hasUserCategory;
+    
+            return { status: true, isAdmin };
+        } catch (error) {
+            throw new Error(error.message || 'Failed to check permissions');
+        }
+    }
+
+//adding an  employee to the database
+async addEmployees(name,email,reporting_manager,isAdmin,location,isactive,fileurl) {
+    console.log(isAdmin)
+    try {
+        const employee = new User({
+            full_name: name,
+            email,
+            reporting_manager,
+            location,
+            status:isactive,
+            profile_pic: fileurl,
+            isAdmin,
+        });
+        const savedEmployee = await employee.save();
+        return { status: true, data: savedEmployee };
+    } catch (error) {
+        return { status: false, error: error.message };
+    }
+}
+
+async  updateEmployee(id, updateData) {
+    try {
+     
+        const updatedEmployee = await User.findByIdAndUpdate(id, updateData, {
+            new: true, 
+            runValidators: true, 
+        });
+
+        if (!updatedEmployee) {
+            return null;
+        }
+        return {status:true,data:updatedEmployee};
+    } catch (error) {
+        throw new Error(`Error updating employee: ${error.message}`);
+    }
+}
+    
+    /**
+     * Get Count of all users
+     * @returns {Promise<number>}
+     */
+    async countAllUsers() {
+        return User.countDocuments();
     }
 
     /**
@@ -51,9 +134,24 @@ export default class UserRepository {
                 .populate({
                     path: 'reporting_manager',
                     select: 'full_name', // Fetch only the manager's name
-                });
+                })
+                .lean();
         } catch (error) {
             throw new Error(`Unable to fetch user: ${error.message}`);
+        }
+    }
+
+    /**
+     * Delete user by id
+     * @param {String} userId - The ID of the user to delete
+     * @return {Promise<User>} - The deleted user object
+     */
+    async deleteUser(userId) {
+        try {
+            const deletedUser = await User.findByIdAndDelete(userId);
+            return deletedUser;
+        } catch (error) {
+            throw new Error(`Failed to delete user: ${error.message}`);
         }
     }
 

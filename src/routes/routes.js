@@ -7,6 +7,8 @@ import timesheetRouter from './timesheet.js'
 import {authenticateEmployee} from '../middlewares/authenticate-employee.js'
 import { authenticateAdmin } from '../middlewares/authenticate-admin.js'
 import holidayRouter from './holiday.js'
+import subscriptionRouter from './subscription.js'
+import transactionRouter from './transaction.js'
 
 //  import employeeRouter from './employee.js'
 
@@ -22,6 +24,8 @@ const configureRoutes = (app) => {
     app.use('/api/timesheet', 
         timesheetRouter
     )
+    app.use('/api/subscription', subscriptionRouter)
+    app.use('/api/transaction', transactionRouter)
 }
 
 export default configureRoutes

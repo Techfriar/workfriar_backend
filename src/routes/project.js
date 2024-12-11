@@ -43,5 +43,12 @@ projectRouter
   projectRouter.route("/changetimeentry").post(project.updateTimeEntry)
   projectRouter.route("/updatestatus").post(project.upddatestatus)
 
+  /**
+   * List all projects where the user is included in the project team
+   */
+  projectRouter
+    .route('/get-projects-by-user')
+    .post(project.getProjectsByUser)
+
 
 export default projectRouter;

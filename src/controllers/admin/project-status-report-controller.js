@@ -78,7 +78,7 @@ export default class ProjectStatusReportController {
             const reportDetails = await reportRepo.addReport(validatedData);
 
             if (reportDetails) {
-                const reportData = await ProjectStatusReportResponse.format(reportDetails);
+                const reportData = await ProjectStatusReportResponse.formatGetAllReportResponse(reportDetails);
                 return res.status(200).json({
                     status: true,
                     message: "Status report added successfully.",
@@ -142,15 +142,29 @@ export default class ProjectStatusReportController {
      */
     async getAllReports(req, res) {
         try {
-            const reports = await reportRepo.getAllReports();
+            const { page = 1, limit = 10 } = req.body;
+    
+            const { reports, totalCount } = await reportRepo.getAllReports({
+                page: parseInt(page, 10),
+                limit: parseInt(limit, 10),
+            });
+    
             const formattedReports = await Promise.all(
-                reports.map(async (report) => await ProjectStatusReportResponse.format(report))
+                reports.map(async (report) => await ProjectStatusReportResponse.formatGetAllReportResponse(report))
             );
-
+    
             return res.status(200).json({
                 status: true,
                 message: "Status reports retrieved successfully.",
-                data: { reports: formattedReports },
+                data: {
+                    reports: formattedReports,
+                    pagination: {
+                        page: parseInt(page, 10),
+                        limit: parseInt(limit, 10),
+                        totalCount,
+                        totalPages: Math.ceil(totalCount / limit),
+                    },
+                },
             });
         } catch (error) {
             return res.status(500).json({
@@ -160,6 +174,7 @@ export default class ProjectStatusReportController {
             });
         }
     }
+    
 
     /**
      * Get Status Report By Id
@@ -198,7 +213,7 @@ export default class ProjectStatusReportController {
                 });
             }
 
-            const reportData = await ProjectStatusReportResponse.format(report);
+            const reportData = await ProjectStatusReportResponse.formatGetByIdReportResponse(report);
             return res.status(200).json({
                 status: true,
                 message: "Status report retrieved successfully.",
@@ -327,7 +342,7 @@ export default class ProjectStatusReportController {
             );
 
             if (reportDetails) {
-                const reportData = await ProjectStatusReportResponse.format(reportDetails);
+                const reportData = await ProjectStatusReportResponse.formatGetByIdReportResponse(reportDetails);
                 return res.status(200).json({
                     status: true,
                     message: "Status report updated successfully.",

@@ -10,16 +10,24 @@ export default class ProjectStatusReportRepository {
         }
     }
 
-    async getAllReports() {
+    async getAllReports({ page = 1, limit = 10 } = {}) {
         try {
-            return await ProjectStatusReport.find()
+            const skip = (page - 1) * limit;
+            const reports = await ProjectStatusReport.find()
                 .populate("project_name")
                 .populate("project_lead")
-                .sort({ createdAt: -1 });
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+    
+            const totalCount = await ProjectStatusReport.countDocuments();
+    
+            return { reports, totalCount };
         } catch (error) {
             throw new Error(`Failed to get reports: ${error.message}`);
         }
     }
+    
 
     async getReportById(reportId) {
         try {

@@ -6,9 +6,10 @@ import uploadFile from "../../utils/uploadFile.js";
 import deleteFile from "../../utils/deleteFile.js";
 import UpdateStatusRequest from "../../requests/admin/update-project-status-request.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
+import CreateTimesheetRequest from "../../requests/admin/timesheet-request.js";
 
 const projectRepo = new ProjectRepository();
-const updateStatus=new UpdateStatusRequest();
+const updateStatus = new UpdateStatusRequest();
 
 export default class ProjectController {
   /**
@@ -102,7 +103,9 @@ export default class ProjectController {
       const projectDetails = await projectRepo.addProject(validatedData);
 
       if (projectDetails) {
-        const projectData = await ProjectResponse.format(projectDetails);
+        const projectData = await ProjectResponse.formatGetAllProjectResponse(
+          projectDetails
+        );
 
         return res.status(200).json({
           status: true,
@@ -174,10 +177,18 @@ export default class ProjectController {
    */
   async getAllProjects(req, res) {
     try {
-      const projects = await projectRepo.getAllProjects();
+      const { page = 1, limit = 10 } = req.body;
+
+      const { projects, totalCount } = await projectRepo.getAllProjects({
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+      });
 
       const formattedProjects = await Promise.all(
-        projects.map(async (project) => await ProjectResponse.format(project))
+        projects.map(
+          async (project) =>
+            await ProjectResponse.formatGetAllProjectResponse(project)
+        )
       );
 
       return res.status(200).json({
@@ -185,6 +196,12 @@ export default class ProjectController {
         message: "Projects retrieved successfully.",
         data: {
           projects: formattedProjects,
+          pagination: {
+            page: parseInt(page, 10),
+            limit: parseInt(limit, 10),
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+          },
         },
       });
     } catch (error) {
@@ -243,7 +260,9 @@ export default class ProjectController {
         });
       }
 
-      const projectData = await ProjectResponse.format(project);
+      const projectData = await ProjectResponse.formatGetByIdProjectResponse(
+        project
+      );
 
       return res.status(200).json({
         status: true,
@@ -255,9 +274,9 @@ export default class ProjectController {
         status: false,
         message: "Failed to retrieve project.",
         errors: {
-          details: error.message || 'Unknown error occurred',
-          code: error.code || 'UNKNOWN_ERROR'
-        }
+          details: error.message || "Unknown error occurred",
+          code: error.code || "UNKNOWN_ERROR",
+        },
       });
     }
   }
@@ -363,7 +382,9 @@ export default class ProjectController {
       );
 
       if (projectDetails) {
-        const projectData = await ProjectResponse.format(projectDetails);
+        const projectData = await ProjectResponse.formatGetByIdProjectResponse(
+          projectDetails
+        );
 
         return res.status(200).json({
           status: true,
@@ -452,260 +473,251 @@ export default class ProjectController {
   }
 
   /**
- * @swagger
- * /project/changetimeentry:
- *   post:
- *     tags:
- *       - Project
- *     summary: Update time entry for a project
- *     description: Update a time entry and optionally provide a close date for the project.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - id
- *               - timeEntry
- *             properties:
- *               id:
- *                 type: string
- *                 description: The ID of the project to update the time entry for.
- *                 example: "6489a9d1287e5a7d2f894ba7"
- *               timeEntry:
- *                 type: string
- *                 description: The time entry data to update.
- *                 example: "opened"
- *               closeDate:
- *                 type: string
- *                 format: date-time
- *                 description: The optional close date for the project.
- *                 example: "2024-11-28T12:39:23.000Z"
- *     responses:
- *       200:
- *         description: Time entry successfully updated.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Entry Updated"
- *                 data:
- *                   type: array
- *                   example: []
- *       400:
- *         description: Time entry update failed.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Entry Updation Failed"
- *                 data:
- *                   type: null
- *                   example: null
- *       500:
- *         description: Internal server error.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Internal Server Error"
- *                 data:
- *                   type: null
- *                   example: null
- */
+   * @swagger
+   * /project/changetimeentry:
+   *   post:
+   *     tags:
+   *       - Project
+   *     summary: Update time entry for a project
+   *     description: Update a time entry and optionally provide a close date for the project.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - id
+   *               - timeEntry
+   *             properties:
+   *               id:
+   *                 type: string
+   *                 description: The ID of the project to update the time entry for.
+   *                 example: "6489a9d1287e5a7d2f894ba7"
+   *               timeEntry:
+   *                 type: string
+   *                 description: The time entry data to update.
+   *                 example: "opened"
+   *               closeDate:
+   *                 type: string
+   *                 format: date-time
+   *                 description: The optional close date for the project.
+   *                 example: "2024-11-28T12:39:23.000Z"
+   *     responses:
+   *       200:
+   *         description: Time entry successfully updated.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Entry Updated"
+   *                 data:
+   *                   type: array
+   *                   example: []
+   *       400:
+   *         description: Time entry update failed.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: "Entry Updation Failed"
+   *                 data:
+   *                   type: null
+   *                   example: null
+   *       500:
+   *         description: Internal server error.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: "Internal Server Error"
+   *                 data:
+   *                   type: null
+   *                   example: null
+   */
 
-  async updateTimeEntry(req,res)
-  {
-    const {id,timeEntry,closeDate} =req.body
-    try
-    {
-      const validatedData =await updateStatus.validateTimeEntry(id,timeEntry)
-      if(!validatedData.status)
-        {
-              throw new CustomValidationError(validatedData.message)
-        }
-      const data = await projectRepo.updateProjectTimeEntry(id,timeEntry,closeDate);
-      if(data)
-      {
+  async updateTimeEntry(req, res) {
+    const { id, timeEntry, closeDate } = req.body;
+    try {
+      const validatedData = await updateStatus.validateTimeEntry(id, timeEntry);
+      if (!validatedData.status) {
+        throw new CustomValidationError(validatedData.message);
+      }
+      const data = await projectRepo.updateProjectTimeEntry(
+        id,
+        timeEntry,
+        closeDate
+      );
+      if (data) {
         return res.status(200).json({
-          status:true,
-          message:"Entry Updated",
-          data:[]
-        })
-      }
-      else
-      {
+          status: true,
+          message: "Entry Updated",
+          data: [],
+        });
+      } else {
         return res.status(400).json({
-          status:false,
-          message:"Entry Updation Failed",
-          data:null
-        })
+          status: false,
+          message: "Entry Updation Failed",
+          data: null,
+        });
       }
-    }catch(error)
-    {
-    return res.status(500).json({
-      status:false,
-      message:"Internal Server Error",
-      data:null
-    })
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: "Internal Server Error",
+        data: null,
+      });
     }
   }
   /**
- * @swagger
- * /project/updatestatus:
- *   post:
- *     tags:
- *       - Project
- *     summary: Update project status
- *     description: Change the status of a project by providing the project ID and the new status.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - projectId
- *               - status
- *             properties:
- *               projectId:
- *                 type: string
- *                 description: The ID of the project to update the status for.
- *                 example: "6489a9d1287e5a7d2f894ba7"
- *               status:
- *                 type: string
- *                 description: The new status for the project.
- *                 enum:
- *                   - Not Started
- *                   - On hold
- *                   - Cancelled
- *                   - Completed
- *                 example: "Completed"
- *     responses:
- *       200:
- *         description: Project status successfully updated.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: number
- *                   example: 200
- *                 message:
- *                   type: string
- *                   example: "Project Status Updated"
- *                 data:
- *                   type: array
- *                   example: []
- *       400:
- *         description: Project status update failed.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: number
- *                   example: 400
- *                 message:
- *                   type: string
- *                   example: "Project Status Updation Failed"
- *                 data:
- *                   type: array
- *                   example: []
- *       422:
- *         description: Validation failed for the request data.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Validation Failed"
- *                 errors:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example:
- *                     - "Project ID is invalid"
- *       500:
- *         description: Internal server error.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: "Internal Server Error"
- *                 data:
- *                   type: null
- *                   example: null
- */
+   * @swagger
+   * /project/updatestatus:
+   *   post:
+   *     tags:
+   *       - Project
+   *     summary: Update project status
+   *     description: Change the status of a project by providing the project ID and the new status.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - projectId
+   *               - status
+   *             properties:
+   *               projectId:
+   *                 type: string
+   *                 description: The ID of the project to update the status for.
+   *                 example: "6489a9d1287e5a7d2f894ba7"
+   *               status:
+   *                 type: string
+   *                 description: The new status for the project.
+   *                 enum:
+   *                   - Not Started
+   *                   - On hold
+   *                   - Cancelled
+   *                   - Completed
+   *                 example: "Completed"
+   *     responses:
+   *       200:
+   *         description: Project status successfully updated.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: number
+   *                   example: 200
+   *                 message:
+   *                   type: string
+   *                   example: "Project Status Updated"
+   *                 data:
+   *                   type: array
+   *                   example: []
+   *       400:
+   *         description: Project status update failed.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: number
+   *                   example: 400
+   *                 message:
+   *                   type: string
+   *                   example: "Project Status Updation Failed"
+   *                 data:
+   *                   type: array
+   *                   example: []
+   *       422:
+   *         description: Validation failed for the request data.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: "Validation Failed"
+   *                 errors:
+   *                   type: array
+   *                   items:
+   *                     type: string
+   *                   example:
+   *                     - "Project ID is invalid"
+   *       500:
+   *         description: Internal server error.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: "Internal Server Error"
+   *                 data:
+   *                   type: null
+   *                   example: null
+   */
 
-  async upddatestatus(req,res)
-  {
-    const{projectId,status}=req.body
-    try
-    {
-      const validatedData =await updateStatus.timeSheetValidation(projectId)
-      if(!validatedData.success)
-      {
-            throw new CustomValidationError(validatedData.message)
+  async upddatestatus(req, res) {
+    const { projectId, status } = req.body;
+    try {
+      const validatedData = await updateStatus.timeSheetValidation(projectId);
+      if (!validatedData.success) {
+        throw new CustomValidationError(validatedData.message);
       }
-    const changeStatus=await projectRepo.updateProjectStatus(projectId,status)
-     if(changeStatus)
-     {
-      return res.status(200).json({
-        status:200,
-        message:"Project Status Updated",
-        date:[]
-      })
-     }
-     else
-     {
-      return res.status(200).json({
-        status:400,
-        message:"Project Status Updation Failed",
-        date:[]
-      })
-     }
-    }
-    catch(error)
-    {
-      
+      const changeStatus = await projectRepo.updateProjectStatus(
+        projectId,
+        status
+      );
+      if (changeStatus) {
+        return res.status(200).json({
+          status: 200,
+          message: "Project Status Updated",
+          date: [],
+        });
+      } else {
+        return res.status(200).json({
+          status: 400,
+          message: "Project Status Updation Failed",
+          date: [],
+        });
+      }
+    } catch (error) {
       if (error instanceof CustomValidationError) {
         return res.status(422).json({
-            status: false,
-            message: "Validation Failed",
-            errors: error.errors, 
+          status: false,
+          message: "Validation Failed",
+          errors: error.errors,
         });
     } else {
       return res.status(500).json({
@@ -715,5 +727,48 @@ export default class ProjectController {
       })
     }
   }
+  }
+
+  /**
+   * List all projects where the user is included in the project team
+   * 
+   */
+  async getProjectsByUser(req, res) {
+    try {
+      // Authentication (uncomment and implement proper token verification in production)
+			// const user_id = await authenticateAndGetUserId(req);
+			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
+
+      const projects = await projectRepo.getAllProjectsByUser(user_id);
+
+      if (!projects) {
+        return res.status(404).json({
+          status: false,
+          message: "Projects not found.",
+          data: [],
+        });
+      }
+
+      const projectData = await ProjectResponse.format(projects);
+
+      return res.status(200).json({
+        status: true,
+        message: "Projects retrieved successfully.",
+        data: projectData,
+      });
+    } catch (error) {
+      if(error instanceof CustomValidationError){
+        return res.status(400).json({
+          status: false,
+          message: error.message,
+          data: []
+        })
+      }
+      return res.status(500).json({
+        status: false,
+        message: "Failed to retrieve projects.",
+        data: []
+      });
+    }
   }
 }
