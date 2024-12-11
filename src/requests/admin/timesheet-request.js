@@ -133,10 +133,10 @@ export default class CreateTimesheetRequest {
         startDate: Joi.date().iso().required().messages({
             'date.base': `"startDate" must be a valid ISO date`,
         }),
-        endDate: Joi.date().iso().required().greater(Joi.ref('startDate')).messages({
-            'date.base': `"endDate" must be a valid ISO date`,
-            'date.greater': `"endDate" must be greater than "startDate"`,
-        })
+        endDate: Joi.date().iso().required().min(Joi.ref('startDate')).messages({
+          'date.base': `"endDate" must be a valid ISO date`,
+          'date.min': `"endDate" must be greater than or equal to "startDate"`,
+      }),
     });
 
     const { error, value } = schema.validate({ startDate, endDate });
