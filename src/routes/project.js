@@ -52,7 +52,7 @@ projectRouter
     .post(project.listProjectsByUser)
   projectRouter
     .route('/get-projects-by-user')
-    .post(project.listProjectsByUser)
+    .post(project.getAllProjectsByUser)
 
 
 export default projectRouter;

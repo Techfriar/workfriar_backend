@@ -795,5 +795,40 @@ export default class TimesheetRepository {
 			throw new Error(error);
 		}
 	}
+
+	/**
+	 * Get week Start and End date from the timesheetId
+	 * @param {string} timesheetId
+	 * @returns {Promise<Timesheet>}
+	 */
+	async getWeekStartAndEndDateByTimesheetId(timesheetId) {
+		try {
+			const timesheet = await Timesheet.findById(timesheetId);
+			if (!timesheet) {
+				throw new Error('Timesheet not found');
+			}
+			const startDate = timesheet.startDate;
+			const endDate = timesheet.endDate;
+			return { startDate, endDate };
+		} catch (error) {
+			throw new Error(error);
+		}
+	}
+
+	/**
+	 * Update All Timesheet Status By Week Start And End Date
+	 * @param {string} startDate
+	 * @param {string} endDate
+	 * @param {string} status
+	 * @returns {Promise<Timesheet>} 
+	 */
+	async updateAllTimesheetStatus(startDate, endDate, status) {
+		try {
+			const timesheets = await Timesheet.updateMany({ startDate: { $gte: startDate, $lte: endDate }, status: { $ne: status } }, { status: status });
+			return timesheets;
+		} catch (error) {
+			throw new Error(error);
+		}
+	}
 }
 

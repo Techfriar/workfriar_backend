@@ -935,6 +935,7 @@ export default class ProjectController {
       const totalItems = await projectRepo.getProjectCountByUser(user_id);
 
       const projects = await projectRepo.getAllProjectsByUser(user_id, skip, limit);
+      console.log(projects, "projects")
       if(projects && projects.length > 0) {
         const projectData = projects.map(async (project) => {
           return await ProjectResponse.formatGetAllProjectsByUserResponse(project);
