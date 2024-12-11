@@ -155,5 +155,19 @@ export default class ProjectRepository {
             throw new Error(`Failed to get projects: ${error.message}`);
         }
     }
+
+    /**
+     * Get project by userId where user is included in this project
+     * 
+     */
+    async getAllProjectsByUser(userId) {
+        try{
+            
+        }
+        catch(error) {
+
+        }
+    }
+
   
 }

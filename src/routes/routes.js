@@ -19,9 +19,7 @@ const configureRoutes = (app) => {
     app.use('/api/project', projectRouter)
     app.use('/api/project-status-report', projectStatusRouter)
     app.use('/api/holiday', holidayRouter)
-    app.use('/api/timesheet', 
-        timesheetRouter
-    )
+    app.use('/api/timesheet', timesheetRouter)
 }
 
 export default configureRoutes
