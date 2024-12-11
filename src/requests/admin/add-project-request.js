@@ -25,7 +25,7 @@ class AddProjectRequest {
       "string.empty": "Please enter the project lead.",
       "any.required": "Please enter the project lead.",
     }),
-    planned_end_date: Joi.optional().allow("").allow(null),
+    planned_end_date: Joi.date().optional().allow("").allow(null),
     actual_start_date: Joi.date().optional().allow("").allow(null),
     actual_end_date: Joi.date().optional().allow("").allow(null),
     billing_model: Joi.string().optional().allow("").allow(null),
