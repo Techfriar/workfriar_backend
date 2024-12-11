@@ -1,13 +1,18 @@
 import RoleRepository from "../../repositories/admin/role-repository.js"
 import ProjectTeamRepository from "../../repositories/admin/project-team-repository.js"
 import ProjectRepository from "../../repositories/admin/project-repository.js"
+import RejectionNotesRepository from "../../repositories/admin/rejection-notes-repository.js"
 import TimesheetRepository from "../../repositories/admin/timesheet-repository.js"
 import TeamMembersResponse from "../../responses/team-members-reponse.js"
+import ManageTimesheetRequest from "../../requests/admin/manage-timesheet-request.js"
+import { CustomValidationError } from "../../exceptions/custom-validation-error.js"
 
 const projectTeamrepo=new ProjectTeamRepository()
 const projectRepo=new ProjectRepository()
 const timesheetrepo=new TimesheetRepository()
 const teammemberResponse=new TeamMembersResponse()
+const rejectRepo=new RejectionNotesRepository()
+const managetimesheetRequest=new ManageTimesheetRequest()
 
 class TimesheetApprovalController 
 {
@@ -246,6 +251,7 @@ class TimesheetApprovalController
     async manageTimeSheet(req,res)
     {
         const {timesheetid,state}=req.body
+
         try
         {
             const {timesheet,status}=await timesheetrepo.updateTimesheetStatus(timesheetid,state)
@@ -273,6 +279,71 @@ class TimesheetApprovalController
                 message:error.message,
                 data:[]
             })
+        }
+    }
+
+    async manageAllTimesheet(req,res)
+    {
+        const{timesheetd,status,userid,notes}=req.body
+        try
+        {
+            const validatedData=await managetimesheetRequest.validateData(req.body)
+            if(!validatedData.isValid)
+            {
+                throw new CustomValidationError(validatedData.message)
+            }
+            const dates=await timesheetrepo.getWeekDatesByTimesheetId(timesheetd)
+
+            const {startDate,endDate}=await timesheetrepo.getWeekStartAndEndDateByTimesheetId(timesheetd)
+
+            const alreadyRejected=await rejectRepo.getByWeek(startDate,endDate,userid)
+            if(alreadyRejected && status==="approved")
+            {
+                await rejectRepo.delete(alreadyRejected._id)
+            }
+
+            await timesheetrepo.updateAllTimesheetStatus(startDate,endDate,status,userid)
+            if(status==="rejected")
+            {
+                if(alreadyRejected)
+                {
+                    await rejectRepo.update(alreadyRejected._id)
+                    return res.status(200).json({
+                        status:true,
+                        message:"Timesheet Status updated successfully",
+                        data:[]
+                    })
+                    
+                }
+                else
+                {
+                  await rejectRepo.create(userid,notes,dates)
+                  return res.status(200).json({
+                    status:true,
+                    message:"Timesheet Status updated successfully",
+                    data:[]
+                })
+                }
+            } 
+        }
+        catch(error)
+        {
+            if(error instanceof CustomValidationError)
+            {
+                return res.status(422).json(
+                    {status:false,
+                    message:error.message,
+                    data:[]
+                })
+            }
+            else
+            {
+            return res.status(500).json(
+                {status:false,
+                message:"Internal server error",
+                data:[]
+            })
+        }
         }
     }
 }
