@@ -56,6 +56,13 @@ export default class SubscriptionController {
    *               status:
    *                 type: string
    *                 description: Enter status
+   *               type:
+   *                 type: string
+   *                 enum: ["Common", "Project Specific"]
+   *                 description: Select subscription type
+   *               project_name:
+   *                 type: string
+   *                 description: Project ID (required if type is Project Specific)
    *     responses:
    *       200:
    *         description: Success
@@ -71,9 +78,10 @@ export default class SubscriptionController {
         validatedData
       );
       if (subscriptionDetails) {
-        const subscriptionData = await SubscriptionResponse.formatGetAllSubscriptionResponse(
-          subscriptionDetails
-        );
+        const subscriptionData =
+          await SubscriptionResponse.formatGetAllSubscriptionResponse(
+            subscriptionDetails
+          );
 
         return res.status(200).json({
           status: true,
@@ -104,72 +112,75 @@ export default class SubscriptionController {
   }
 
   /**
- * Get all subscriptions
- *
- * @swagger
- * /subscription/list:
- *   post:
- *     tags:
- *       - Subscription
- *     summary: Get all subscriptions
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Page number for pagination
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Number of items per page
- *     responses:
- *       200:
- *         description: Success
- *       400:
- *         description: Bad Request
- *       500:
- *         description: Internal Server Error
- */
-async getAllSubscriptions(req, res) {
-  try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+   * Get all subscriptions
+   *
+   * @swagger
+   * /subscription/list:
+   *   post:
+   *     tags:
+   *       - Subscription
+   *     summary: Get all subscriptions
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *         description: Page number for pagination
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 10
+   *         description: Number of items per page
+   *     responses:
+   *       200:
+   *         description: Success
+   *       400:
+   *         description: Bad Request
+   *       500:
+   *         description: Internal Server Error
+   */
+  async getAllSubscriptions(req, res) {
+    try {
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
 
-    const { subscriptions, total } = await subscriptionRepo.getAllSubscriptions(page, limit);
+      const { subscriptions, total } =
+        await subscriptionRepo.getAllSubscriptions(page, limit);
 
-    const formattedSubscriptions = await Promise.all(
-      subscriptions.map(async (subscription) => 
-        await SubscriptionResponse.formatGetAllSubscriptionResponse(subscription)
-      )
-    );
+      const formattedSubscriptions = await Promise.all(
+        subscriptions.map(
+          async (subscription) =>
+            await SubscriptionResponse.formatGetAllSubscriptionResponse(
+              subscription
+            )
+        )
+      );
 
-    return res.status(200).json({
-      status: true,
-      message: "Subscriptions retrieved successfully.",
-      data: {
-        subscriptions: formattedSubscriptions,
-        pagination: {
-          total,
-          currentPage: page,
-          totalPages: Math.ceil(total / limit),
-          perPage: limit,
+      return res.status(200).json({
+        status: true,
+        message: "Subscriptions retrieved successfully.",
+        data: {
+          subscriptions: formattedSubscriptions,
+          pagination: {
+            total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            perPage: limit,
+          },
         },
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: false,
-      message: "Failed to retrieve subscriptions.",
-      errors: error.message || error,
-    });
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: "Failed to retrieve subscriptions.",
+        errors: error.message || error,
+      });
+    }
   }
-}
-
 
   /**
    * Get Subscription By Id
@@ -211,7 +222,10 @@ async getAllSubscriptions(req, res) {
         });
       }
 
-      const subscriptionData = await SubscriptionResponse.formatGetByIdSubscriptionResponse(subscription);
+      const subscriptionData =
+        await SubscriptionResponse.formatGetByIdSubscriptionResponse(
+          subscription
+        );
 
       return res.status(200).json({
         status: true,
@@ -293,9 +307,10 @@ async getAllSubscriptions(req, res) {
       );
 
       if (subscriptionDetails) {
-        const subscriptionData = await SubscriptionResponse.formatGetByIdSubscriptionResponse(
-          subscriptionDetails
-        );
+        const subscriptionData =
+          await SubscriptionResponse.formatGetByIdSubscriptionResponse(
+            subscriptionDetails
+          );
 
         return res.status(200).json({
           status: true,

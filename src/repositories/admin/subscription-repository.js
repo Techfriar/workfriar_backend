@@ -25,10 +25,10 @@ export default class SubscriptionRepository {
     try {
       const skip = (page - 1) * limit;
 
-      // Fetch paginated subscriptions and total count
       const [subscriptions, total] = await Promise.all([
         Subscription.find()
-          .sort({ createdAt: -1 }) // Optional: Sort by creation date (desc)
+          .populate('project_name', 'project_name')
+          .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit),
         Subscription.countDocuments(),
@@ -47,7 +47,8 @@ export default class SubscriptionRepository {
    */
   async getSubscriptionById(subscriptionId) {
     try {
-      const subscription = await Subscription.findById(subscriptionId);
+      const subscription = await Subscription.findById(subscriptionId)
+        .populate('project_name', 'project_name');
       if (!subscription) {
         throw new Error(`Subscription with ID ${subscriptionId} not found`);
       }
