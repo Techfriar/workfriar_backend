@@ -3,10 +3,10 @@ import Joi from 'joi';
 class ManageTimesheetRequest {
 
     static manageTimesheetSchema = Joi.object({
-        timesheetd: Joi.string().required(), 
+        timesheetid: Joi.string().required(), 
         status: Joi.string().valid( 'approved', 'rejected').required(), 
         userid: Joi.string().alphanum().required(),
-        note: Joi.string()
+        notes: Joi.string()
             .min(10)
             .max(100)
             .required()

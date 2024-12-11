@@ -295,7 +295,7 @@ class TimesheetApprovalController
  *           schema:
  *             type: object
  *             properties:
- *               timesheetd:
+ *               timesheetid:
  *                 type: string
  *                 description: The ID of the timesheet to manage.
  *                 example: "63f1e9f9a6a3bca97e8b4567"
@@ -371,7 +371,7 @@ class TimesheetApprovalController
 
     async manageAllTimesheet(req,res)
     {
-        const{timesheetd,status,userid,notes}=req.body
+        const{timesheetid,status,userid,notes}=req.body
         try
         {
             const validatedData=await managetimesheetRequest.validateData(req.body)
@@ -379,32 +379,35 @@ class TimesheetApprovalController
             {
                 throw new CustomValidationError(validatedData.message)
             }
-            const dates=await timesheetrepo.getWeekStartAndEndDateByTimesheetId(timesheetd)
+          
 
-            const {startDate,endDate}=await timesheetrepo.getWeekStartAndEndDateByTimesheetId(timesheetd)
+            const {startDate,endDate}=await timesheetrepo.getWeekStartAndEndDateByTimesheetId(timesheetid)
 
             const alreadyRejected=await rejectRepo.getByWeek(startDate,endDate,userid)
+
             if(alreadyRejected && status==="approved")
             {
                 await rejectRepo.delete(alreadyRejected._id)
+
             }
 
             await timesheetrepo.updateAllTimesheetStatus(startDate,endDate,status,userid)
+
             if(status==="rejected")
             {
                 if(alreadyRejected)
                 {
-                    await rejectRepo.update(alreadyRejected._id)
+                    await rejectRepo.update(alreadyRejected._id,notes)
                     return res.status(200).json({
                         status:true,
-                        message:"Timesheet Status updated successfully",
+                        message:"Timesheet Notes updated successfully",
                         data:[]
                     })
                     
                 }
                 else
                 {
-                  await rejectRepo.create(userid,notes,dates)
+                  await rejectRepo.create(userid,notes,startDate,endDate)
                   return res.status(200).json({
                     status:true,
                     message:"Timesheet Status updated successfully",
@@ -415,6 +418,7 @@ class TimesheetApprovalController
         }
         catch(error)
         {
+            console.log(error)
             if(error instanceof CustomValidationError)
             {
                 return res.status(422).json(
