@@ -180,8 +180,7 @@ class TimesheetApprovalController
  * /admin/managetimesheet:
  *   post:
  *     summary: Updates the status of a timesheet.
- *     tags:
- *       - TimeSheet
+ *     tags: [TimeSheet]
  *     requestBody:
  *       required: true
  *       content:
@@ -288,8 +287,7 @@ class TimesheetApprovalController
  *   post:
  *     summary: Manage timesheet statuses (approve or reject).
  *     description: Updates the status of timesheets for a user within a specific week. Handles approval or rejection and manages any related rejection records.
- *     tags:
- *       - Timesheets
+ *     tags: [TimeSheet]
  *     requestBody:
  *       required: true
  *       content:
