@@ -21,7 +21,7 @@ export default class ProjectRepository {
      */
     async getAllProjects() {
         try {
-            return await Project.find().populate("project_lead").sort({ createdAt: -1 });
+            return await Project.find().populate("project_lead").populate("categories").sort({ createdAt: -1 });
         } catch (error) {
             throw new Error(`Failed to get projects: ${error.message}`);
         }

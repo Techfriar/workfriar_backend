@@ -16,6 +16,11 @@ export default class ProjectResponse {
       planned_start_date: project.planned_start_date,
       planned_end_date: project.planned_end_date,
       actual_start_date: project.actual_start_date,
+      categories:project.categories.map((category)=>{
+        return {
+          id: category._id,
+          name: category.category,
+        }}),
       actual_end_date: project.actual_end_date,
       project_lead: project.project_lead,
       billing_model: project.billing_model,
