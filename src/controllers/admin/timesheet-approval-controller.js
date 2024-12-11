@@ -2,10 +2,12 @@ import RoleRepository from "../../repositories/admin/role-repository.js"
 import ProjectTeamRepository from "../../repositories/admin/project-team-repository.js"
 import ProjectRepository from "../../repositories/admin/project-repository.js"
 import TimesheetRepository from "../../repositories/admin/timesheet-repository.js"
+import TeamMembersResponse from "../../responses/team-members-reponse.js"
 
 const projectTeamrepo=new ProjectTeamRepository()
 const projectRepo=new ProjectRepository()
 const timesheetrepo=new TimesheetRepository()
+const teammemberResponse=new TeamMembersResponse()
 
 class TimesheetApprovalController 
 {
@@ -118,7 +120,7 @@ class TimesheetApprovalController
             const pageNumber = parseInt(page,10);
             const limitNumber = parseInt(limit, 10);
             const skip=(pageNumber-1)*limitNumber
-            const userId="6746a63bf79ea71d30770de7" //get from Token
+            const userId="6756bf8c7edc09dc1d2d39e4" //get from Token
             const userRole=await RoleRepository.getRoleByUserId(userId)
             if(userRole.role==="Team Lead")
             {
@@ -132,19 +134,21 @@ class TimesheetApprovalController
                         };
                     })
                 ); 
+                const formattedData=await teammemberResponse.formatTeammembers(data)
                 return res.status(200).json({
                     status:true,
                     message:"Project Team fetched successfully",
-                    data:data
+                    data:formattedData
                 })
             }
             else if(userRole.role==="Project Manager" || userRole.role==="Technichal Lead")
             {
                 const teamLeads=await RoleRepository.getTeamLeads(skip,limitNumber)
+                const formattedData=await teammemberResponse.formatTeamLeads(teamLeads)
                 return res.status(200).json({
                     status:true,
                     message:"Team Leads fetched successfully",
-                    data:teamLeads
+                    data:formattedData
                 })
             }
             else
