@@ -6,6 +6,7 @@ import uploadFile from "../../utils/uploadFile.js";
 import deleteFile from "../../utils/deleteFile.js";
 import UpdateStatusRequest from "../../requests/admin/update-project-status-request.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
+import CreateTimesheetRequest from "../../requests/admin/timesheet-request.js";
 
 const projectRepo = new ProjectRepository();
 const updateStatus=new UpdateStatusRequest();
@@ -715,5 +716,48 @@ export default class ProjectController {
       })
     }
   }
+  }
+
+  /**
+   * List all projects where the user is included in the project team
+   * 
+   */
+  async getProjectsByUser(req, res) {
+    try {
+      // Authentication (uncomment and implement proper token verification in production)
+			// const user_id = await authenticateAndGetUserId(req);
+			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
+
+      const projects = await projectRepo.getAllProjectsByUser(user_id);
+
+      if (!projects) {
+        return res.status(404).json({
+          status: false,
+          message: "Projects not found.",
+          data: [],
+        });
+      }
+
+      const projectData = await ProjectResponse.format(projects);
+
+      return res.status(200).json({
+        status: true,
+        message: "Projects retrieved successfully.",
+        data: projectData,
+      });
+    } catch (error) {
+      if(error instanceof CustomValidationError){
+        return res.status(400).json({
+          status: false,
+          message: error.message,
+          data: []
+        })
+      }
+      return res.status(500).json({
+        status: false,
+        message: "Failed to retrieve projects.",
+        data: []
+      });
+    }
   }
 }
