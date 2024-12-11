@@ -9,6 +9,7 @@ import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 import { checkPermissions } from '../middlewares/check-permission.js';
 import RoleController from "../controllers/admin/role-controller.js";
 import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js'
+import TimesheetApprovalController from "../controllers/admin/timesheet-approval-controller.js";
 import EmployeeController from "../controllers/admin/employee-controller.js";
 import multer from "multer";
 
@@ -24,6 +25,7 @@ const employee = new EmployeeController();
 const admin = new AdminController();
 const client = new ClientController();
 const role = new RoleController();
+const timesheetapproval=new TimesheetApprovalController()
 
 // import multer from 'multer'
 // // import {
@@ -152,6 +154,12 @@ adminRouter.route('/addemployee').post(upload.fields([{ name: "profile_pic", max
 
 adminRouter.route('/getroles').post(employee.getRoles)
 adminRouter.route('/editemployee').post(upload.fields([{ name: "profile_pic", maxCount: 1 }]),employee.editEmployee)
+
+//Approval center Routes
+
+adminRouter.route('/approvalcenter').post(timesheetapproval.getMembers)
+
+adminRouter.route('/managetimesheet').post(timesheetapproval.manageTimeSheet)
 
 
 export default adminRouter;
