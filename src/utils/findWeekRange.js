@@ -66,81 +66,6 @@ export default class FindWeekRange {
         return dates;
     }
 
-    // adjustWeekRange(startDate, endDate, prev, next) {
-
-    //     const start = new Date(startDate);
-    //     const end = new Date(endDate);
-
-    //     if (prev && next) {
-    //         return { startDate, endDate };
-    //     }
-
-    //     if (prev) {
-    //         const prevEnd = new Date(start);
-    //         prevEnd.setDate(start.getDate() - 1);
-
-    //         const prevStart = new Date(prevEnd);
-
-    //         const lastDayOfMonth = new Date(
-    //             prevEnd.getFullYear(),
-    //             prevEnd.getMonth() + 1,
-    //             0
-    //         ).getDate();
-
-    //         if (prevEnd.getDate() === lastDayOfMonth) {
-    //             console.log('1');
-
-    //             const dayOfWeek = prevEnd.getDay();
-    //             prevStart.setDate(prevEnd.getDate() - dayOfWeek);
-    //         } else {
-    //             console.log('2');
-
-    //             prevStart.setDate(prevEnd.getDate() - 6);
-    //         }
-    //         if (prevStart.getMonth() !== prevEnd.getMonth()) {
-    //             console.log('3', prevStart);
-
-    //             prevStart.setFullYear(prevEnd.getFullYear(), prevEnd.getMonth(), 1);
-    //         }
-
-    //         return {
-    //             startDate: prevStart.toISOString().split('T')[0],
-    //             endDate: prevEnd.toISOString().split('T')[0],
-    //         };
-    //     }
-
-    //     if (next) {
-    //         const nextStart = new Date(end);
-    //         nextStart.setDate(end.getDate() + 1);
-    
-    //         let nextEnd = new Date(nextStart);
-    //         nextEnd.setDate(nextStart.getDate() + 6);
-    
-    //         // Adjust nextEnd to the last day of the current month if it crosses month boundaries
-    //         if (nextStart.getMonth() !== nextEnd.getMonth()) {
-    //             const lastDayOfMonth = new Date(
-    //                 nextStart.getFullYear(),
-    //                 nextStart.getMonth() + 1, // Move to the next month
-    //                 0 // Get the last day of the current month
-    //             ).getDate();
-    //             nextEnd.setDate(lastDayOfMonth);
-    //         }
-    
-    //         // Ensure nextEnd stays within the same month as nextStart
-    //         if (nextEnd.getMonth() !== nextStart.getMonth()) {
-    //             nextEnd.setDate(1); // Reset to the first day of the next month
-    //         }
-
-    //         return {
-    //             startDate: nextStart.toISOString().split('T')[0],
-    //             endDate: nextEnd.toISOString().split('T')[0],
-    //         };
-    //     }
-
-
-    //     return { startDate, endDate };
-    // }
-
     adjustWeekRange(startDate, endDate, prev, next) {
         const start = new Date(startDate);
         const end = new Date(endDate);
@@ -185,8 +110,7 @@ export default class FindWeekRange {
     
             let nextEnd = new Date(nextStart);
             nextEnd.setDate(nextStart.getDate() + 6);
-    
-            // Adjust nextEnd to the last day of the current month if it crosses month boundaries
+
             if (nextStart.getMonth() !== nextEnd.getMonth()) {
                 const lastDayOfMonth = new Date(
                     nextStart.getFullYear(),
@@ -197,7 +121,7 @@ export default class FindWeekRange {
             }
 
             if (nextStart.getDate() === 1) {
-                // If `nextStart` is at the start of the month, set `nextEnd` to the coming Saturday
+                
                 const dayOfWeek = nextStart.getDay(); 
                 const daysUntilSaturday = (6 - dayOfWeek) % 7;
                 nextEnd.setDate(nextStart.getDate() + daysUntilSaturday);
