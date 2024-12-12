@@ -45,38 +45,55 @@ export default class AuthController {
     async googleCallback(req, res) {
         const userRepo = new UserRepository();
 
+        const front_end_url = process.env.FRONT_END_URL;
+        
+        let token = null
+        let error = null
+
         try {
+
+            if(!req.user) throw new Error('Authentication failed. User not found.');
+
             const email = req.user?.email;
             const isAdmin = req.user?.isAdmin;
-
-            if (!email) {
-                return res.status(400).json({ message: 'Authentication failed. No user email found.' });
-            }
-
-            // Check if user exists
-            const user = await userRepo.getUserByEmail(email);
-            if (!user) {
-                return res.status(400).json({ message: 'Authentication failed. User not found.' });
-            }
 
             // Check if user is an admin
             if(isAdmin){
                 const isValidAdmin = user.isAdmin || (await userRepo.isAdminByEmail(email));
                 if (!isValidAdmin) {
-                    return res.status(403).json({ message: 'Authentication failed. User is not an admin.' });
+                    throw new Error('Authentication failed. User is not an admin.');                
                 }
             }
 
             // Generate JWT token
-            const token = req.user.token;
+            token = req.user.token;
 
-            const front_end_url = process.env.FRONT_END_URL;
-            // Redirect to client with token
-            return res.redirect(`${front_end_url}/Login/?token=${token}`);
-        } catch (error) {
+            
+        } catch (err) {
             console.error('Error in googleCallback:', error);
-            return res.status(500).json({ message: 'Internal Server Error during authentication.' });
+            error = err.message || 'Authentication failed.';
         }
+        
+        // Redirect to client with token
+        // return res.redirect(`${front_end_url}/Login/?token=${token}`);
+
+        // Prepare HTML for POST redirect
+        const html = `
+            <html>
+                <body>
+                    <form id="redirectForm" method="POST" action="${front_end_url}">
+                        <input type="hidden" name="token" value="${token}">
+                        <input type="hidden" name="error" value="${error}">
+                    </form>
+                    <script>
+                        document.getElementById('redirectForm').submit();
+                    </script>
+                </body>
+            </html>
+        `;
+
+        // Send HTML response for POST redirect
+        return res.send(html);
     }
 
     /**
@@ -94,16 +111,23 @@ export default class AuthController {
      *         description: Internal Server Error.
      */
     async googleFallback(req, res) {
-        try {
-            const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-            const host = req.get('host');
-            const origin = `${protocol}://${host}`;
+        const front_end_url = process.env.FRONT_END_URL;
+        const html = `
+            <html>
+                <body>
+                    <form id="redirectForm" method="POST" action="${front_end_url}">
+                        <input type="hidden" name="token" value="${null}">
+                        <input type="hidden" name="error" value="${{ message: 'Authentication failed.' }}">
+                    </form>
+                    <script>
+                        document.getElementById('redirectForm').submit();
+                    </script>
+                </body>
+            </html>
+        `;
 
-            return res.redirect(`${origin}/Login?error=auth_failed`);
-        } catch (error) {
-            console.error('Error in googleFallback:', error);
-            return res.status(500).json({ message: 'Internal Server Error during fallback.' });
-        }
+        // Send HTML response for POST redirect
+        return res.send(html);
     }
     
     /**
