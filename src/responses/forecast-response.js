@@ -1,5 +1,11 @@
 import moment from "moment";
 export default class ForecastResponse{
+
+        /**
+     * Transform the Projectforecast resource into an object.
+     * @param {Object} forecast - The object with Project forecast information and usernames related to it.
+     * @return {Object} - An object containing selected properties to the client.
+     */
     //Response after creating a new forecast
     async formattedResponse  (forecast) {
         return ({

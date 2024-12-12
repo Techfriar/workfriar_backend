@@ -1,5 +1,10 @@
 import moment from "moment";
 export default class ProjectTeamResponse{
+    /**
+     * Transform the ProjectTeam resource into an object.
+     * @param {Object} team - The object with project and team members.
+     * @return {Object} - An object containing selected properties to the client.
+     */
     async formattedResponse  (team) {
         return ({
             id:team.id,

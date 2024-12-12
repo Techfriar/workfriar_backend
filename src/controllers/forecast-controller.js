@@ -9,7 +9,14 @@ const forecastResponse=new ForecastResponse()
 
 
 export default class ForecastController{
-//Function for mapping items from cline side to database entries
+
+
+   /**
+     *Function for mapping items from client side to database entries
+     * @param {Object} input - The request object.
+     * @return {Object} - An object containing state and message whether the input is valid or not.
+     */
+
    static async formattedForecast(input) {
         const allowedKeys = {
             name: "opportunity_name",
