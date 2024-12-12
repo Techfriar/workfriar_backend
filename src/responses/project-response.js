@@ -49,11 +49,11 @@ export default class ProjectResponse {
     return {
       id: project._id,
       project_name: project.project_name,
-      client: project.client_name,
+      client: project?.client_name.client_name,
       startDate: project.actual_start_date,
       endDate: project.actual_end_date,
+      project_lead: project?.project_lead.full_name,
       status: project.status,
-      project_lead: project.project_lead,
     };
   }
 }

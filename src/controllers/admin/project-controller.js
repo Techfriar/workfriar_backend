@@ -785,20 +785,22 @@ export default class ProjectController {
  */
 
   /**
-   * List all projects where the user is included in the project team
+   * List all open projects where the user is included in the project team
    * 
    */
-  async listProjectsByUser(req, res) {
+  async listAllOpenProjectsByUser(req, res) {
     try {
       // Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
+			const user_id = '6756c0db31d13bdbca748ce3'; // Temporary user ID
 
       const projects = await projectRepo.getAllOpenProjectsByUser(user_id);
-      const projectData = projects.map(async (project) => {
-        return await ProjectResponse.formatGetAllOpenProjectsByUserResponse(project);
-      });
-
+      const projectData = await Promise.all(
+        projects.map(async (project) => {
+          return await ProjectResponse.formatGetAllOpenProjectsByUserResponse(project)
+        })
+      );
+      
       return res.status(200).json({
         status: true,
         message: "Projects retrieved successfully.",
@@ -935,11 +937,13 @@ export default class ProjectController {
       const totalItems = await projectRepo.getProjectCountByUser(user_id);
 
       const projects = await projectRepo.getAllProjectsByUser(user_id, skip, limit);
-      console.log(projects, "projects")
+
       if(projects && projects.length > 0) {
-        const projectData = projects.map(async (project) => {
-          return await ProjectResponse.formatGetAllProjectsByUserResponse(project);
-        });
+        const projectData = await Promise.all(
+          projects.map(async (project) => {
+            return await ProjectResponse.formatGetAllProjectsByUserResponse(project);
+          })
+        );
 
         // Calculate total pages
         const totalPages = Math.ceil(totalItems / limit);

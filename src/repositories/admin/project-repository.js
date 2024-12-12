@@ -163,13 +163,41 @@ export default class ProjectRepository {
      * @returns {Promise<number>} - The count of the projects where the user is included in the project team
         */  
     async getProjectCountByUser(userId) {
-        const count = await Project.countDocuments({
-            $or: [
-                { 'team.team_members': userId },
-                { project_lead: userId }
-            ]
-        });
-        return count;
+        try {
+            // Aggregate to count all projects where the user is a team member or a project lead
+            const projects = await Project.aggregate([
+                {
+                    $lookup: {
+                        from: 'project teams', // Assuming the collection name is 'projectteams'
+                        localField: '_id',
+                        foreignField: 'project',
+                        as: 'team'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$team',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $match: {
+                        $or: [
+                            { project_lead: new mongoose.Types.ObjectId(userId) }, // As project lead
+                            { 'team.team_members': new mongoose.Types.ObjectId(userId) }, // As team member
+                        ],
+                    },
+                },
+                {
+                    $count: 'count', // Count the matched projects
+                },
+            ]);
+            
+            // Extract the count or default to 0 if no projects match
+            return projects[0]?.count || 0;
+        } catch (error) {
+            console.log(error, 'error');
+        }
     }
 
     /**
@@ -188,17 +216,23 @@ export default class ProjectRepository {
                     }
                 },
                 {
+                    $unwind: {
+                        path: '$team',
+                        preserveNullAndEmptyArrays: true // Keep projects without teams
+                    }
+                },
+                {
                     $match: {
                         $and: [
                            { 
                                 $or: [
-                                    { 'team.team_members': userId },
+                                    { 'team.team_members': new mongoose.Types.ObjectId(userId) },
                                     { project_lead: new mongoose.Types.ObjectId(userId) }
                                 ]
                             },
                             {
                                 $or: [
-                                    { open_for_time_entry: {ne: "closed"} },
+                                    { open_for_time_entry: {$ne: "closed"} },
                                     {
                                         $and: [
                                             { effective_close_date: { $ne: null } },
@@ -209,6 +243,12 @@ export default class ProjectRepository {
                             }
                         ]
                         
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$_id',
+                        project_name: { $first: '$project_name' },
                     }
                 }
             ]);
@@ -226,26 +266,69 @@ export default class ProjectRepository {
      */
     async getAllProjectsByUser(userId, skip, limit) {
         try{
+            
+            // console.log(projects_, 'projects_')
             const projects = await Project.aggregate([
                 {
                     $lookup: {
-                        from: 'project teams', // Assuming the collection name is 'projectteams'
+                        from: 'project teams', 
                         localField: '_id',
                         foreignField: 'project',
-                        as: 'team'
+                        as: 'teamDetails'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users', // Collection name for users
+                        localField: 'project_lead',
+                        foreignField: '_id',
+                        as: 'project_lead'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'clients', // Collection name for clients
+                        localField: 'client_name',
+                        foreignField: '_id',
+                        as: 'client'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$teamDetails',
+                        preserveNullAndEmptyArrays: true // Keep projects without teams
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$project_lead',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$client',
+                        preserveNullAndEmptyArrays: true
                     }
                 },
                 {
                     $match: {
-                        $and: [
-                           {
-                                $or: [
-                                    { 'team.team_members': userId },
-                                    { project_lead: new mongoose.Types.ObjectId(userId) }
-                                ]
-                            }
+                        $or: [
+                            { 'teamDetails.team_members': new mongoose.Types.ObjectId(userId) },
+                            { 'project_lead._id': new mongoose.Types.ObjectId(userId) }
                         ]
-
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$_id',
+                        // Add other project fields you want to include
+                        project_lead: { $first: '$project_lead' },
+                        project_name: { $first: '$project_name' },
+                        client_name: { $first: '$client' },
+                        actual_start_date: { $first: '$actual_start_date' },
+                        actual_end_date: { $first: '$actual_end_date' },
+                        status: { $first: '$status' },
                     }
                 }
             ])

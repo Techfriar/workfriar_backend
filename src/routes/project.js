@@ -49,7 +49,7 @@ projectRouter
    */
   projectRouter
     .route('/list-projects-by-user')
-    .post(project.listProjectsByUser)
+    .post(project.listAllOpenProjectsByUser)
   projectRouter
     .route('/get-projects-by-user')
     .post(project.getAllProjectsByUser)

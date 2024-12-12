@@ -164,6 +164,9 @@ export default class AdminController {
  *           schema:
  *             type: object
  *             properties:
+ *               tabKey:
+ *                  type: string
+ *                  example: Operations
  *               page:
  *                 type: integer
  *                 description: Page number (default 1)
@@ -243,11 +246,13 @@ export default class AdminController {
             const limit = parseInt(req.body.limit) || 10;
             const skip = (page - 1) * limit;
 
+            const department = req.body.tabKey
+
             // Fetch total count of employees
-            const totalItems = await userRepo.countAllUsers();
+            const totalItems = await userRepo.countAllUsers(department);
            
             // Fetch all employees from the database
-            const employees = await userRepo.getAllUsers(skip, limit); // Replace with your repository function
+            const employees = await userRepo.getAllUsers(skip, limit, department); // Replace with your repository function
 
             if (employees && employees.length > 0) {
                 // Format employee data if required
