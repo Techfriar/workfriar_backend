@@ -34,13 +34,13 @@ export default class SubscriptionResponse {
         next_due_date: this.formatDate(subscription.next_due_date || null),
         status: subscription.status,
         type: subscription.type,
-        project_name: subscription.project_name
-          ? {
-              id: subscription.project_name._id,
-              name: subscription.project_name.project_name,
-            }
-          : null,
-          icon: subscription.icon
+        project_names: subscription.project_names
+          ? subscription.project_names.map(project => ({
+              id: project._id,
+              name: project.project_name,
+            }))
+          : [],
+        icon: subscription.icon
           ? typeof subscription.icon === "string"
             ? subscription.icon
             : `data:image/png;base64,${subscription.icon}`
@@ -80,13 +80,13 @@ export default class SubscriptionResponse {
         next_due_date: this.formatDate(subscription.next_due_date || null),
         status: subscription.status,
         type: subscription.type,
-        project_name: subscription.project_name
-          ? {
-              id: subscription.project_name._id,
-              name: subscription.project_name.project_name,
-            }
-          : null,
-          icon: subscription.icon
+        project_names: subscription.project_names
+          ? subscription.project_names.map(project => ({
+              id: project._id,
+              name: project.project_name,
+            }))
+          : [],
+        icon: subscription.icon
           ? typeof subscription.icon === "string"
             ? subscription.icon
             : `data:image/png;base64,${subscription.icon}`

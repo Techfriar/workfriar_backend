@@ -80,7 +80,7 @@ export default class SubscriptionRepository {
 
       const [subscriptions, total] = await Promise.all([
         Subscription.find()
-          .populate("project_name", "project_name")
+          .populate("project_names", "project_name")
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit),
@@ -90,7 +90,6 @@ export default class SubscriptionRepository {
       const subscriptionsWithIcons = await Promise.all(
         subscriptions.map(async (subscription) => {
           const iconDoc = await this.getSubscriptionIcon(subscription.provider);
-          console.log(iconDoc,"from");
           
           return {
             ...subscription.toObject(),
@@ -113,7 +112,7 @@ export default class SubscriptionRepository {
   async getSubscriptionById(subscriptionId) {
     try {
       const subscription = await Subscription.findById(subscriptionId).populate(
-        "project_name",
+        "project_names",
         "project_name"
       );
 

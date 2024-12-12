@@ -16,7 +16,7 @@ export default class ProjectResponse {
   static async formatGetByIdProjectResponse(project) {
     return {
       id: project._id,
-      client_name: project.client_name,
+      client_name: project.client_name.client_name,
       project_name: project.project_name,
       description: project.description,
       planned_start_date: this.formatDate(project.planned_start_date),
@@ -40,11 +40,11 @@ export default class ProjectResponse {
   static async formatGetAllProjectResponse(project) {
     return {
       id: project._id,
-      client_name: project.client_name,
+      client_name: project.client_name.client_name,
       project_name: project.project_name,
       actual_start_date: this.formatDate(project.actual_start_date),
       actual_end_date: this.formatDate(project.actual_end_date),
-      project_lead: project.project_lead,
+      project_lead: project.project_lead.full_name,
       open_for_time_entry: project.open_for_time_entry,
       status: project.status,
     };
