@@ -43,6 +43,14 @@ const findWeekRange=new FindWeekRange()
  *               limit:
  *                 type: integer
  *                 example: 10
+ *               prev:
+ *                 type: boolean
+ *                 description: Whether to fetch previous week due timesheets.
+ *                 example: false
+ *               next:
+ *                 type: boolean
+ *                 description: Whether to fetch next week due timesheets.
+ *                 example: true
  *     responses:
  *       200:
  *         description: Successfully fetched and formatted the time sheet summary.
@@ -339,6 +347,14 @@ class TimeSheetSummaryController{
  *                 format: date
  *                 description: The end date of the range to search for time sheets (in YYYY-MM-DD format).
  *                 example: "2024-12-07"
+ *               prev:
+ *                 type: boolean
+ *                 description: Whether to fetch previous week due timesheets.
+ *                 example: false
+ *               next:
+ *                 type: boolean
+ *                 description: Whether to fetch next week due timesheets.
+ *                 example: true
  *     responses:
  *       200:
  *         description: Successfully retrieved due time sheets for the user.
@@ -372,6 +388,7 @@ class TimeSheetSummaryController{
  *                         type: number
  *                         description: Total hours logged in the time sheet range.
  *                         example: 40
+ *                       
  *       400:
  *         description: No due time sheets found for the user within the given date range.
  *         content:
@@ -438,6 +455,7 @@ class TimeSheetSummaryController{
         if(status==="rejected")
         {
              notes=await rejectRepo.getByWeek(startDate,endDate,userId)
+             console.log(notes)
         }
         const formattedData= await timesummaryResponse.formattedPastDue(data)
 
