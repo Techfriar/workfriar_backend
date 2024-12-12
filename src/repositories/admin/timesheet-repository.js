@@ -205,9 +205,9 @@ export default class TimesheetRepository {
 	}
 	
 	//get timesheets for a week
-	async getWeeklyTimesheets(user_id, startDate, endDate, page, limit) {
+	async getWeeklyTimesheets(user_id, startDate, endDate) {
 		try {
-			const skip = (page - 1) * limit;
+
 			const query = {
 				user_id,
 				$or: [
@@ -221,12 +221,8 @@ export default class TimesheetRepository {
 				.populate('project_id', 'projectName') 
 				.populate('task_category_id', 'category') 
 				.lean()
-				.skip(skip)
-				.limit(limit);
-	
-			const totalCount = await Timesheet.countDocuments(query);
-	
-			return { timesheets, totalCount };
+
+			return timesheets;
 		} catch (error) {
 			console.error('Error fetching timesheets:', error);
 			throw error;

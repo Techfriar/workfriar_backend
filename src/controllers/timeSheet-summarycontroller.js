@@ -1,9 +1,12 @@
 import TimeSheetSummary from "../repositories/time-sheet-summary.js";
 import TimeSummaryResponse from "../responses/formatted-summary.js";
+import findTimezone from "../utils/findTimeZone.js";
 import FindWeekRange from "../utils/findWeekRange.js";
+import RejectionNotesRepository from "../repositories/admin/rejection-notes-repository.js";
 
 const timeSheetSummary=new TimeSheetSummary()
 const timesummaryResponse=new TimeSummaryResponse()
+const rejectRepo=new RejectionNotesRepository()
 const findWeekRange=new FindWeekRange()
 /**
  * @swagger
@@ -34,6 +37,12 @@ const findWeekRange=new FindWeekRange()
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de7"
  *                 description: The ID of the project to fetch the summary for.
+ *               page:
+ *                 type: integer
+ *                 example: 3
+ *               limit:
+ *                 type: integer
+ *                 example: 10
  *     responses:
  *       200:
  *         description: Successfully fetched and formatted the time sheet summary.
@@ -64,6 +73,10 @@ const findWeekRange=new FindWeekRange()
  *                         type: number
  *                         format: float
  *                         example: 30.5
+ *                       totalPages:
+ *                         type:number
+ *                         format:int
+ *                         example:7
  *       400:
  *         description: No data available for the given parameters.
  *         content:
@@ -98,21 +111,49 @@ const findWeekRange=new FindWeekRange()
  *                   items: {}
  */
 class TimeSheetSummaryController{
+    
     async TimeSummaryController(req,res)
     {
-        const{startDate,endDate,projectId}=req.body
         try
         {
-            const data=await timeSheetSummary.getTimeSummary(startDate,endDate,projectId)
-            if(data.length>0)
+        let {startDate,endDate,projectId,page=1,limit=10,prev,next}=req.body
+        const pageNumber = parseInt(page,10);
+        const limitNumber = parseInt(limit, 10);
+        const skip=(pageNumber-1)*limitNumber
+
+        if(startDate && endDate)
+        {
+        const adjustDates=findWeekRange.adjustWeekRange(startDate,endDate,prev,next)
+        startDate=new Date(adjustDates.startDate)
+        endDate=new Date(adjustDates.endDate)
+        }
+        else
+        {
+            const timezone = await findTimezone(req);
+				let today = getLocalDateStringForTimezone(timezone, new Date());
+
+				if (typeof today === "string") {
+					today = new Date(today);
+				}
+				startDate = findWeekRange.getWeekStartDate(today);
+				startDate.setUTCHours(0, 0, 0, 0);
+				endDate = findWeekRange.getWeekEndDate(today);
+        }
+        startDate.setUTCHours(0, 0, 0, 0);
+        endDate.setUTCHours(0, 0, 0, 0);
+        let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
+            const data=await timeSheetSummary.getTimeSummary(startDate,endDate,projectId,skip,limitNumber)
+            if(data.timeSummary.length>0)
             {
                
-            const formattedData= await timesummaryResponse.formattedSummary(data)
+            const formattedData= await timesummaryResponse.formattedSummary(data.timeSummary)
                 res.status(200).json(
                     {
                     status:true,
                     message:"Time Summmary",
-                    data:formattedData
+                    data:formattedData,
+                    dateRange:range,
+                    totalPages: Math.ceil(data.total/limitNumber)
                     })
             }
             else
@@ -127,6 +168,7 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
+            console.log(error)
             res.status(500).json(
                 {
                     status:false,
@@ -180,6 +222,10 @@ class TimeSheetSummaryController{
  *                 message:
  *                   type: string
  *                   example: "Due Time Sheet"
+ *                 totalPages: 
+ *                   type:number
+ *                   example:2
+ *                   
  *                 data:
  *                   type: array
  *                   items:
@@ -220,24 +266,27 @@ class TimeSheetSummaryController{
  *                   items: {}
  */
 
-
     async pastDueController(req,res)
     {
         let userId="6746a63bf79ea71d30770de7"
-        const {status,passedUserid}=req.body
+        let {status,passedUserid,page=1,limit=10}=req.body
+        const pageNumber = parseInt(page,10);
+        const limitNumber = parseInt(limit, 10);
+        const skip=(pageNumber-1)*limitNumber
         if(passedUserid) userId = passedUserid
         try
         {
             const {weekStartDate}=await findWeekRange.getWeekRange()
-            const data=await timeSheetSummary.getTimeSheet(userId,weekStartDate,status)
+            const {data,dataCount}=await timeSheetSummary.getTimeSheet(userId,weekStartDate,status,skip,limitNumber)
             const formattedData= await timesummaryResponse.formattedPastDueList(data,status)
             if(data.length>0)
             {
                 res.status(200).json(
                     {
                     status:true,
-                    message:"Past Due",
-                    data:formattedData
+                    message:"Data Fetched",
+                    data:formattedData,
+                    totalPages: Math.ceil(dataCount/limitNumber)
                     })
             }
             else
@@ -359,19 +408,48 @@ class TimeSheetSummaryController{
 
  async getDueTimeSheetController(req,res) {
     let userId="6746a63bf79ea71d30770de7"
-        const {passedUserid,startDate,endDate,status}=req.body
+        let {passedUserid,startDate,endDate,status,prev,next}=req.body
+        if(startDate && endDate)
+            {
+            const adjustDates=findWeekRange.adjustWeekRange(startDate,endDate,prev,next)
+            startDate=new Date(adjustDates.startDate)
+            endDate=new Date(adjustDates.endDate)
+            }
+            else
+            {
+                const timezone = await findTimezone(req);
+                    let today = getLocalDateStringForTimezone(timezone, new Date());
+    
+                    if (typeof today === "string") {
+                        today = new Date(today);
+                    }
+                    startDate = findWeekRange.getWeekStartDate(today);
+                    startDate.setUTCHours(0, 0, 0, 0);
+                    endDate = findWeekRange.getWeekEndDate(today);
+            }
+            startDate.setUTCHours(0, 0, 0, 0);
+            endDate.setUTCHours(0, 0, 0, 0);
+            let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
         if(passedUserid) userId = passedUserid
     try
     {
+        let notes
         const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate,status)
+        if(status==="rejected")
+        {
+             notes=await rejectRepo.getByWeek(startDate,endDate,userId)
+        }
         const formattedData= await timesummaryResponse.formattedPastDue(data)
+
             if(data)
             {
                 res.status(200).json(
                     {
                     status:true,
-                    message:"Due Time Sheet",
-                    data:formattedData
+                    message:"Time Sheet Data",
+                    data:formattedData,
+                    range:range,
+                    notes:notes
                     })
             }
             else
