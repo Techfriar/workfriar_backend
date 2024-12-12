@@ -158,7 +158,7 @@ export default class TimesheetController {
 		try {
 			// Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
+			const user_id = '6746a473ed7e5979a3a1f891'; // Temporary user ID
 
 			const timezone = await findTimezone(req);
 
@@ -692,7 +692,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
+			const user_id = '6746a474ed7e5979a3a1f896';
 			const timezone = await findTimezone(req);
 
 			const startOfDay = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
@@ -1075,69 +1075,235 @@ export default class TimesheetController {
 	 *                   example: []
 	 */
 
+	// async getDueTimesheets(req, res) {
+	// 	try {
+	// 		const user_id = '6746a473ed7e5979a3a1f891';
+	// 		let { startDate, endDate, prev, next } = req.body;
+	// 		if(prev && next) {
+	// 			throw new CustomValidationError('prev and next cannot be true at the same time');
+	// 		}
+
+	// 		console.log(startDate, endDate, prev, next,'controller');
+
+
+	// 		if(!prev && !next) {
+	// 			prev = true;
+	// 			next = false;
+	// 		}
+
+	// 		const currentYear = new Date().getFullYear();
+	// 		const startOfYear = new Date(currentYear, 0, 1);
+
+	// 		let actualStartWeek, actualEndWeek;
+
+	// 		// Determine the initial start and end dates
+	// 		if (!startDate || !endDate || (!prev && !next)) {
+	// 			console.log('fff');
+
+	// 			const timezone = await findTimezone(req);
+	// 			let today = getLocalDateStringForTimezone(timezone, new Date());
+
+	// 			if (typeof today === "string") {
+	// 				today = new Date(today);
+	// 			}
+
+	// 			// Calculate the current week's start and end dates
+	// 			actualStartWeek = FindS.getPreviousSunday(today);
+	// 			actualEndWeek = new Date(actualStartWeek);
+	// 			actualEndWeek.setDate(actualStartWeek.getDate() + 6);
+
+	// 			startDate = FindWeekRange_.getWeekStartDate(today);
+	// 			endDate = FindWeekRange_.getWeekEndDate(today);
+	// 		} else {
+	// 			const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
+	// 			if (validatedDates.error) {
+	// 				throw new CustomValidationError(validatedDates.error);
+	// 			}
+	// 			let adjustedDates = FindWeekRange_.adjustWeekRange(
+	// 				startDate,
+	// 				endDate,
+	// 				prev, 
+	// 				next 
+	// 			);
+
+
+	// 			startDate = new Date(adjustedDates.startDate);
+	// 			endDate = new Date(adjustedDates.endDate);
+	// 		}
+
+	// 		// Ensure consistent time settings
+	// 		startDate.setUTCHours(0, 0, 0, 0);
+	// 		endDate.setUTCHours(0, 0, 0, 0);
+
+	// 		do {
+	// 			let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
+	// 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
+
+	// 			if (timesheets.length > 0) {
+	// 				const savedTimesheets = timesheets.filter(
+	// 					timesheet => timesheet.status !== 'submitted' && timesheet.status !== 'accepted'
+	// 				);
+
+	// 				if (savedTimesheets.length > 0) {
+	// 					const weekDates = [];
+	// 					actualStartWeek = FindS.getPreviousSunday(startDate);
+	// 					actualEndWeek = new Date(actualStartWeek);
+	// 					actualEndWeek.setDate(actualStartWeek.getDate() + 6);
+
+	// 					for (let date = new Date(actualStartWeek); date <= actualEndWeek; date.setDate(date.getDate() + 1)) {
+	// 						weekDates.push(date.toISOString().split('T')[0]);
+	// 					}
+
+	// 					const totalHoursPerDate = {};
+	// 					weekDates.forEach(date => {
+	// 						totalHoursPerDate[date] = { hours: 0, isDisable: true };
+	// 					});
+
+	// 					let totalHours = 0;
+	// 					savedTimesheets.forEach(timesheet => {
+	// 						timesheet.data_sheet.forEach(entry => {
+	// 							const date = new Date(entry.date).toISOString().split('T')[0];
+	// 							const hours = parseFloat(entry.hours);
+	// 							if (totalHoursPerDate[date]) {
+	// 								totalHoursPerDate[date].hours += hours;
+	// 								totalHoursPerDate[date].isDisable = false;
+	// 								totalHours += hours;
+	// 							}
+	// 						});
+	// 					});
+
+	// 					totalHoursPerDate.totalHours = totalHours;
+	// 					const status = await TimesheetRepo.checkSavedTimesheetsAroundRange(user_id,startDate,endDate)
+	// 					console.log(status,'ffff');
+
+
+	// 					return res.status(200).json({
+	// 						success: true,
+	// 						message: "Due timesheets fetched successfully",
+	// 						data: totalHoursPerDate,
+	// 						range: range
+	// 					});
+	// 				}
+	// 			}
+
+	// 			if (startDate <= startOfYear) {
+	// 				break;
+	// 			}
+
+	// 			// Adjust dates to move to the previous week
+
+	// 			adjustedDates = FindWeekRange_.adjustWeekRange(
+	// 				startDate.toISOString(),
+	// 				endDate.toISOString(),
+	// 				prev, 
+	// 				next 
+	// 			);
+
+
+	// 			startDate = new Date(adjustedDates.startDate);
+	// 			endDate = new Date(adjustedDates.endDate);
+	// 		} while (true);
+
+	// 		return res.status(200).json({
+	// 			success: false,
+	// 			message: "No due timesheets found after checking up to the start of the year",
+	// 			data: [],
+	// 			date_range: `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
+	// 		});
+
+	// 	} catch (err) {
+	// 		if (err instanceof CustomValidationError) {
+	// 			res.status(422).json({
+	// 				success: false,
+	// 				message: 'Validation error',
+	// 				errors: err.errors,
+	// 			});
+	// 		} else {
+	// 			return res.status(500).json({
+	// 				success: false,
+	// 				message: err.message,
+	// 				data: []
+	// 			});
+	// 		}
+	// 	}
+	// }
+
+
+
 	async getDueTimesheets(req, res) {
 		try {
 			const user_id = '6746a473ed7e5979a3a1f891';
-			let { startDate, endDate } = req.body;
-	
+			let { startDate, endDate, prev, next } = req.body;
+
+			if (prev && next) {
+				throw new CustomValidationError('prev and next cannot be true at the same time');
+			}
+
+			console.log(startDate, endDate, prev, next, 'controller');
+
+			// Default values for prev and next
+			if (!prev && !next) {
+				prev = true;
+				next = false;
+			}
+
 			const currentYear = new Date().getFullYear();
 			const startOfYear = new Date(currentYear, 0, 1);
-	
-			let actualStartWeek, actualEndWeek;
-	
-			// Determine the initial start and end dates
-			if (!startDate || !endDate) {
-				const timezone = await findTimezone(req);
-				let today = getLocalDateStringForTimezone(timezone, new Date());
-	
-				if (typeof today === "string") {
-					today = new Date(today);
-				}
-	
-				// Calculate the current week's start and end dates
-				actualStartWeek = FindS.getPreviousSunday(today);
-				actualEndWeek = new Date(actualStartWeek);
-				actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-	
-				startDate = FindWeekRange_.getWeekStartDate(today);
-				endDate = FindWeekRange_.getWeekEndDate(today);
-			} else {
-				const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
-				if (validatedDates.error) {
-					throw new CustomValidationError(validatedDates.error);
-				}
-				startDate = new Date(startDate);
-				endDate = new Date(endDate);
-			}
-	
-			// Ensure consistent time settings
-			startDate.setUTCHours(0, 0, 0, 0);
-			endDate.setUTCHours(0, 0, 0, 0);
-	
+			const endOfYear = new Date(currentYear, 11, 31);
 			do {
+				// Determine initial start and end dates
+				if (startDate && endDate) {
+					const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
+					if (validatedDates.error) {
+						throw new CustomValidationError(validatedDates.error);
+					}
+					let adjustedDates = FindWeekRange_.adjustWeekRange(
+						startDate,
+						endDate,
+						prev,
+						next
+					);
+					startDate = new Date(adjustedDates.startDate);
+					endDate = new Date(adjustedDates.endDate);
+				} else {
+					const timezone = await findTimezone(req);
+					let today = getLocalDateStringForTimezone(timezone, new Date());
+					if (typeof today === "string") {
+						today = new Date(today);
+					}
+					actualStartWeek = FindS.getPreviousSunday(today);
+					actualEndWeek = new Date(actualStartWeek);
+					actualEndWeek.setDate(actualStartWeek.getDate() + 6);
+					startDate = FindWeekRange_.getWeekStartDate(today);
+					endDate = FindWeekRange_.getWeekEndDate(today);
+				}
+				startDate.setUTCHours(0, 0, 0, 0);
+				endDate.setUTCHours(0, 0, 0, 0);
+
+
 				let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
 				const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
-	
+
 				if (timesheets.length > 0) {
 					const savedTimesheets = timesheets.filter(
 						timesheet => timesheet.status !== 'submitted' && timesheet.status !== 'accepted'
 					);
-	
+
 					if (savedTimesheets.length > 0) {
 						const weekDates = [];
-						actualStartWeek = FindS.getPreviousSunday(startDate);
-						actualEndWeek = new Date(actualStartWeek);
+						let actualStartWeek = FindS.getPreviousSunday(startDate);
+						let actualEndWeek = new Date(actualStartWeek);
 						actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-	
+
 						for (let date = new Date(actualStartWeek); date <= actualEndWeek; date.setDate(date.getDate() + 1)) {
 							weekDates.push(date.toISOString().split('T')[0]);
 						}
-	
+
 						const totalHoursPerDate = {};
 						weekDates.forEach(date => {
 							totalHoursPerDate[date] = { hours: 0, isDisable: true };
 						});
-	
+
 						let totalHours = 0;
 						savedTimesheets.forEach(timesheet => {
 							timesheet.data_sheet.forEach(entry => {
@@ -1150,41 +1316,35 @@ export default class TimesheetController {
 								}
 							});
 						});
-	
+
 						totalHoursPerDate.totalHours = totalHours;
-	
+						const status = await TimesheetRepo.checkSavedTimesheetsAroundRange(user_id, startDate, endDate);
+
 						return res.status(200).json({
 							success: true,
 							message: "Due timesheets fetched successfully",
 							data: totalHoursPerDate,
-							range: range
+							date_range: range,
+							status
 						});
 					}
 				}
-	
+		
 				if (startDate <= startOfYear) {
 					break;
 				}
-	
-				// Adjust dates to move to the previous week
-				const adjustedDates = FindWeekRange_.adjustWeekRange(
-					startDate.toISOString(),
-					endDate.toISOString(),
-					true, // Move to the previous week
-					false // Do not move forward
-				);
-	
-				startDate = new Date(adjustedDates.startDate);
-				endDate = new Date(adjustedDates.endDate);
+
+
 			} while (true);
-	
+			const status = await TimesheetRepo.checkSavedTimesheetsAroundRange(user_id, startDate, endDate);
+
 			return res.status(200).json({
 				success: false,
 				message: "No due timesheets found after checking up to the start of the year",
 				data: [],
-				date_range: `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
+				status
 			});
-	
+
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
@@ -1196,11 +1356,12 @@ export default class TimesheetController {
 				return res.status(500).json({
 					success: false,
 					message: err.message,
-					data: []
+					data: [],
 				});
 			}
 		}
 	}
+
 
 	//get detailed timesheet report
 	/**
