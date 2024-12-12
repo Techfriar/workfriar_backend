@@ -14,11 +14,17 @@ export default class ProjectStatusReportRepository {
         try {
             const skip = (page - 1) * limit;
             const reports = await ProjectStatusReport.find()
-                .populate("project_name")
-                .populate("project_lead")
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit);
+            .populate({
+                path: "project_name",
+                select: "project_name -_id",
+            })
+            .populate({
+                path: "project_lead",
+                select: "full_name -_id",
+            })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
     
             const totalCount = await ProjectStatusReport.countDocuments();
     
@@ -32,8 +38,14 @@ export default class ProjectStatusReportRepository {
     async getReportById(reportId) {
         try {
             const report = await ProjectStatusReport.findById(reportId)
-                .populate("project_name")
-                .populate("project_lead");
+            .populate({
+                path: "project_name",
+                select: "project_name -_id",
+            })
+            .populate({
+                path: "project_lead",
+                select: "full_name -_id",
+            });
             if (!report) {
                 throw new Error(`Report with ID ${reportId} not found`);
             }
@@ -50,8 +62,14 @@ export default class ProjectStatusReportRepository {
                 reportData,
                 { new: true }
             )
-                .populate("project_name")
-                .populate("project_lead");
+            .populate({
+                path: "project_name",
+                select: "project_name -_id",
+            })
+            .populate({
+                path: "project_lead",
+                select: "full_name -_id",
+            });
             
             if (!report) {
                 throw new Error(`Report with ID ${reportId} not found`);

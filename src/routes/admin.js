@@ -161,5 +161,7 @@ adminRouter.route('/approvalcenter').post(timesheetapproval.getMembers)
 
 adminRouter.route('/managetimesheet').post(timesheetapproval.manageTimeSheet)
 
+adminRouter.route('/manage-all-timesheet').post(timesheetapproval.manageAllTimesheet)
+
 
 export default adminRouter;

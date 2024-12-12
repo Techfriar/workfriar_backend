@@ -16,24 +16,35 @@ export default class ProjectRepository {
     }
   }
 
-    /**
-     * Get all projects
-     * @return {Promise<Project[]>} - All projects
-     */
-    async getAllProjects({ page = 1, limit = 10 } = {}) {
-        try {
-          const skip = (page - 1) * limit;
-          const projects = await Project.find()
-            .populate("project_lead").populate("categories")
+  /**
+   * Get all projects
+   * @return {Promise<Project[]>} - All projects
+   */
+  async getAllProjects({ page = 1, limit = 10 } = {}) {
+    try {
+      const skip = (page - 1) * limit;
+      const projects = await Project.find()
+            .populate({
+                path: "project_lead",
+                select: "full_name -_id",
+            })
+            .populate({
+                path: "categories",
+                select: "category -_id",
+            })
+            .populate({
+                path: "client_name",
+                select: "client_name -_id",
+            })
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
-          const totalCount = await Project.countDocuments();
-          return { projects, totalCount };
-        } catch (error) {
-          throw new Error(`Failed to get projects: ${error.message}`);
-        }
-      }
+      const totalCount = await Project.countDocuments();
+      return { projects, totalCount };
+    } catch (error) {
+      throw new Error(`Failed to get projects: ${error.message}`);
+    }
+  }
 
   /**
    * Get project by id
@@ -43,8 +54,19 @@ export default class ProjectRepository {
   async getProjectById(projectId) {
     try {
       const project = await Project.findById(projectId)
-        .populate("project_lead")
-        .lean();
+      .populate({
+        path: "project_lead",
+        select: "full_name -_id",
+    })
+    .populate({
+        path: "categories",
+        select: "category -_id",
+    })
+    .populate({
+        path: "client_name",
+        select: "name -_id",
+    })
+    .lean();
       if (!project) {
         throw new Error(`Project with ID ${projectId} not found`);
       }
@@ -64,7 +86,19 @@ export default class ProjectRepository {
     try {
       const project = await Project.findByIdAndUpdate(projectId, projectData, {
         new: true,
-      }).populate("project_lead");
+    })
+        .populate({
+            path: "project_lead",
+            select: "full_name -_id",
+        })
+        .populate({
+            path: "categories",
+            select: "category -_id",
+        })
+        .populate({
+            path: "client_name",
+            select: "client_name -_id",
+        });
 
       if (!project) {
         throw new Error(`Project with ID ${projectId} not found`);
