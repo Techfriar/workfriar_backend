@@ -80,7 +80,7 @@ projectSchema.virtual("team", {
   ref: "Project Team", // Name of the Role model
   localField: "_id", // Field in the user schema
   foreignField: "project", // Field in the Role schema
-  justOne: false, // Set to true if a single role per user; false for an array
+  justOne: true, // Set to true if a single role per user; false for an array
   options: { select: "team_members" }, // Default fields to include during population
 });
 

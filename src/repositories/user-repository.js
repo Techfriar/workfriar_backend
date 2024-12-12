@@ -7,19 +7,80 @@ export default class UserRepository {
      * Fetch all users
      * @return Array<User> users
      */
-    async getAllUsers(skip, limit) {
+    async getAllUsers(skip=0, limit=null, department=null) {
         try {
-            // Fetch all users from the database
-            const users = await User.find()
-                .populate('roles')
-                .populate({
-                    path: 'reporting_manager', // Populate reporting_manager
-                    select: 'full_name' // Select specific fields to include
-                })
-                .skip(skip)
-                .limit(limit); // Populate roles if needed
+        
+        // Fetch all users from the database
+             
+        // Construct the query object
+
+        const query = department ? { "roles.department": department } : {};
+        
+            const aggregationPipeline = [
+                {
+                    $lookup: {
+                        from: 'roles',
+                        localField: '_id',
+                        foreignField: 'users',
+                        as: 'roles',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'reporting_manager',
+                        foreignField: '_id',
+                        as: 'reporting_manager',
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$roles',
+                        preserveNullAndEmptyArrays: false,
+                    },
+                },
+                {  
+                    $unwind: {
+                        path: '$reporting_manager',
+                        preserveNullAndEmptyArrays: true,
+                    },
+                },
+                {
+                    $match: query,
+                },
+                {
+                    $group: {
+                        _id: '$_id',
+                        full_name: { $first: '$full_name' },
+                        email: { $first: '$email' },
+                        location: { $first: '$location' },
+                        isAdmin: { $first: '$isAdmin' },
+                        profile_pic: { $first: '$profile_pic' },
+                        status: { $first: '$status' },
+                        reporting_manager: { $first: '$reporting_manager' },
+                        roles: { $push: '$roles' },
+                    },
+                },
+                {
+                    $sort: {
+                        full_name: 1,
+                    },
+                },
+                {
+                    $skip: skip,
+                },
+            ];
+    
+            // Only add the $limit stage if a limit is provided
+            if (limit !== null) {
+                aggregationPipeline.push({ $limit: limit });
+            }
+
+            // Fetch users from the database with filtering and population
+            const users = await User.aggregate(aggregationPipeline);
+            
             return users;
-        } catch (error) {
+        } catch (error) {            
             throw new Error("Failed to fetch users");
         }
     }
@@ -58,7 +119,6 @@ export default class UserRepository {
 
 //adding an  employee to the database
 async addEmployees(name,email,reporting_manager,isAdmin,location,isactive,fileurl) {
-    console.log(isAdmin)
     try {
         const employee = new User({
             full_name: name,
@@ -94,11 +154,35 @@ async  updateEmployee(id, updateData) {
 }
     
     /**
-     * Get Count of all users
+     * Get Count of all users in a department if depertment provided else count all users
+     * @param {String} department - The department to filter users by
      * @returns {Promise<number>}
      */
-    async countAllUsers() {
-        return User.countDocuments();
+    async countAllUsers(department) {
+        try {    
+            const pipeline = [
+                {
+                    $lookup: {
+                        from: 'roles',
+                        localField: '_id',
+                        foreignField: 'users',
+                        as: 'roles',
+                    },
+                },
+                {
+                    $match: department ? { 'roles.department': department } : {},
+                },
+                {
+                    $count: 'count',
+                },
+            ];
+    
+            const result = await User.aggregate(pipeline);
+
+            return result[0]?.count || 0;
+        } catch (error) {
+            throw new Error(`Failed to count users: ${error.message}`);
+        }
     }
 
     /**
