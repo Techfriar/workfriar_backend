@@ -70,13 +70,9 @@ export default class AuthController {
             // Generate JWT token
             const token = req.user.token;
 
-            // Determine origin dynamically
-            const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-            const host = req.get('host');
-            const origin = `${protocol}://${host}`;
-
+            const front_end_url = process.env.FRONT_END_URL;
             // Redirect to client with token
-            return res.redirect(`${origin}/Login/?token=${token}`);
+            return res.redirect(`${front_end_url}/Login/?token=${token}`);
         } catch (error) {
             console.error('Error in googleCallback:', error);
             return res.status(500).json({ message: 'Internal Server Error during authentication.' });
