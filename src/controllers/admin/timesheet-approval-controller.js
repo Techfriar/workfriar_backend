@@ -388,6 +388,11 @@ class TimesheetApprovalController
             if(alreadyRejected && status==="approved")
             {
                 await rejectRepo.delete(alreadyRejected._id)
+                return res.status(200).json({
+                    status:true,
+                    message:"Timesheet Approved",
+                    data:[]
+                })
 
             }
 

@@ -449,7 +449,7 @@ class TimeSheetSummaryController{
                     message:"Time Sheet Data",
                     data:formattedData,
                     range:range,
-                    notes:notes?notes:""
+                    notes:notes
                     })
             }
             else
