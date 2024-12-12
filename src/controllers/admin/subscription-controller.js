@@ -159,7 +159,6 @@ export default class SubscriptionController {
             )
         )
       );
-
       return res.status(200).json({
         status: true,
         message: "Subscriptions retrieved successfully.",

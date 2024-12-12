@@ -1,19 +1,58 @@
 import Subscription from "../../models/admin/subscriptions.js";
+import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export default class SubscriptionRepository {
-  /**
-   * get icon for corresponding subscription
-   */
 
-  async getSubscriptionIcon(subscriptionName) {
+  /**
+   * Fetch subscription icon from Brandfetch API
+   * @param {string} subscriptionName - Name of the subscription
+   * @return {Promise<Object|null>} Icon data or null
+   */
+  async getSubscriptionIcon(provider, subscription_name) {
     try {
-      const slug = SubscriptionIcon.normalizeSubscriptionName(subscriptionName);
-      return await SubscriptionIcon.findOne({ slug });
+      const normalizedName = provider.replace("https://", "");
+    
+      const options = {
+        method: "GET",
+        headers: { Authorization: `Bearer ${process.env.BRANDFETCH_API_KEY}` },
+      };
+    
+      const response = await fetch(
+        `https://api.brandfetch.io/v2/brands/${normalizedName}`,
+        options
+      );
+    
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+    
+      const data = await response.json();
+      
+
+      const darkLogo = data.logos?.find(logo => 
+        logo.theme === 'dark' && 
+        logo.type === 'icon' && 
+        logo.formats?.length > 0
+      );
+  
+      const iconUrl = darkLogo 
+        ? darkLogo.formats[0].src 
+        : (
+            data.logos?.[0]?.formats?.[0]?.src || 
+            data.images?.[0]?.formats?.[0]?.src || 
+            null
+          );
+      
+      return iconUrl ? { url: iconUrl } : null;
     } catch (error) {
-      console.error("Error fetching subscription icon:", error);
+      console.error(`Error fetching icon for ${subscription_name}:`, error.message);
       return null;
     }
   }
+  
 
   /**
    * add a new subscription
@@ -33,7 +72,7 @@ export default class SubscriptionRepository {
    * Get all subscriptions with pagination
    * @param {number} page - Current page number
    * @param {number} limit - Number of items per page
-   * @return {Promise<{subscriptions: Subscription[], total: number}>}
+   * @return {Promise<{subscriptions: Object[], total: number}>}
    */
   async getAllSubscriptions(page, limit) {
     try {
@@ -41,7 +80,7 @@ export default class SubscriptionRepository {
 
       const [subscriptions, total] = await Promise.all([
         Subscription.find()
-          .populate('project_name', 'project_name')
+          .populate("project_name", "project_name")
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit),
@@ -50,52 +89,48 @@ export default class SubscriptionRepository {
 
       const subscriptionsWithIcons = await Promise.all(
         subscriptions.map(async (subscription) => {
-          const iconDoc = await this.getSubscriptionIcon(subscription.subscription_name);
-          const icon = iconDoc?{
-            data: iconDoc.icon.toString('base64'),
-            contentType: iconDoc.contentType
-          }:null;
+          const iconDoc = await this.getSubscriptionIcon(subscription.provider);
+          console.log(iconDoc,"from");
+          
           return {
             ...subscription.toObject(),
-            icon
+            icon: iconDoc ? iconDoc.url : null,
           };
         })
       );
 
-      return { subscriptions, subscriptionsWithIcons, total };
+      return { subscriptions: subscriptionsWithIcons, total };
     } catch (error) {
       throw new Error(`Error fetching subscriptions: ${error.message}`);
     }
   }
 
   /**
- * Get subscription by id
- * @param {String} subscriptionId - The subscription id
- * @return {Promise<Subscription>} - The subscription
- */
-async getSubscriptionById(subscriptionId) {
-  try {
-    const subscription = await Subscription.findById(subscriptionId)
-      .populate('project_name', 'project_name');
-    if (!subscription) {
-      throw new Error(`Subscription with ID ${subscriptionId} not found`);
+   * Get subscription by id
+   * @param {String} subscriptionId - The subscription id
+   * @return {Promise<Object>} - The subscription with icon
+   */
+  async getSubscriptionById(subscriptionId) {
+    try {
+      const subscription = await Subscription.findById(subscriptionId).populate(
+        "project_name",
+        "project_name"
+      );
+
+      if (!subscription) {
+        throw new Error(`Subscription with ID ${subscriptionId} not found`);
+      }
+
+      const iconDoc = await this.getSubscriptionIcon(subscription.provider);
+
+      return {
+        ...subscription.toObject(),
+        icon: iconDoc ? iconDoc.url : null,
+      };
+    } catch (error) {
+      throw new Error(`Error fetching subscription by ID: ${error.message}`);
     }
-
-    const iconDoc = await this.getSubscriptionIcon(subscription.subscription_name);
-    const icon = iconDoc ? {
-      data: iconDoc.icon.toString('base64'),
-      contentType: iconDoc.contentType
-    } : null;
-
-    return {
-      ...subscription.toObject(),
-      icon
-    };
-    
-  } catch (error) {
-    throw new Error(`Error fetching subscription by ID:${error.message}`);
   }
-}
 
   /**
    * Update subscription

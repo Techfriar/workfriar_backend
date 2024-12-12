@@ -1,11 +1,13 @@
 import SubscriptionRepository from "../repositories/admin/subscription-repository.js";
+import moment from "moment";
 
 export default class SubscriptionResponse {
+
   static formatDate(date) {
     if (!date) return null;
     return moment(date).format("DD/MM/YYYY");
   }
-  
+
   static subscriptionRepo = new SubscriptionRepository();
 
   /**
@@ -38,7 +40,11 @@ export default class SubscriptionResponse {
               name: subscription.project_name.project_name,
             }
           : null,
-        icon: subscription.icon || null,
+          icon: subscription.icon
+          ? typeof subscription.icon === "string"
+            ? subscription.icon
+            : `data:image/png;base64,${subscription.icon}`
+          : null,
         createdAt: subscription.createdAt,
         updatedAt: subscription.updatedAt,
       };
@@ -61,7 +67,6 @@ export default class SubscriptionResponse {
       if (!subscription) {
         throw new Error("Subscription not found");
       }
-
       const formattedResponse = {
         id: subscription._id,
         subscription_name: subscription.subscription_name,
@@ -72,7 +77,7 @@ export default class SubscriptionResponse {
         billing_cycle: subscription.billing_cycle,
         currency: subscription.currency,
         payment_method: subscription.payment_method,
-        next_due_date: this.formatChange(subscription.next_due_date || null),
+        next_due_date: this.formatDate(subscription.next_due_date || null),
         status: subscription.status,
         type: subscription.type,
         project_name: subscription.project_name
@@ -81,7 +86,11 @@ export default class SubscriptionResponse {
               name: subscription.project_name.project_name,
             }
           : null,
-        icon: subscription.icon || null,
+          icon: subscription.icon
+          ? typeof subscription.icon === "string"
+            ? subscription.icon
+            : `data:image/png;base64,${subscription.icon}`
+          : null,
         createdAt: subscription.createdAt,
         updatedAt: subscription.updatedAt,
       };
