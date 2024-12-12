@@ -1,13 +1,18 @@
 import RoleRepository from "../../repositories/admin/role-repository.js"
 import ProjectTeamRepository from "../../repositories/admin/project-team-repository.js"
 import ProjectRepository from "../../repositories/admin/project-repository.js"
+import RejectionNotesRepository from "../../repositories/admin/rejection-notes-repository.js"
 import TimesheetRepository from "../../repositories/admin/timesheet-repository.js"
 import TeamMembersResponse from "../../responses/team-members-reponse.js"
+import ManageTimesheetRequest from "../../requests/admin/manage-timesheet-request.js"
+import { CustomValidationError } from "../../exceptions/custom-validation-error.js"
 
 const projectTeamrepo=new ProjectTeamRepository()
 const projectRepo=new ProjectRepository()
 const timesheetrepo=new TimesheetRepository()
 const teammemberResponse=new TeamMembersResponse()
+const rejectRepo=new RejectionNotesRepository()
+const managetimesheetRequest=new ManageTimesheetRequest()
 
 class TimesheetApprovalController 
 {
@@ -175,8 +180,7 @@ class TimesheetApprovalController
  * /admin/managetimesheet:
  *   post:
  *     summary: Updates the status of a timesheet.
- *     tags:
- *       - TimeSheet
+ *     tags: [TimeSheet]
  *     requestBody:
  *       required: true
  *       content:
@@ -246,6 +250,7 @@ class TimesheetApprovalController
     async manageTimeSheet(req,res)
     {
         const {timesheetid,state}=req.body
+
         try
         {
             const {timesheet,status}=await timesheetrepo.updateTimesheetStatus(timesheetid,state)
@@ -273,6 +278,168 @@ class TimesheetApprovalController
                 message:error.message,
                 data:[]
             })
+        }
+    }
+
+    /**
+ * @swagger
+ * /admin/manage-all-timesheet:
+ *   post:
+ *     summary: Manage timesheet statuses (approve or reject).
+ *     description: Updates the status of timesheets for a user within a specific week. Handles approval or rejection and manages any related rejection records.
+ *     tags: [TimeSheet]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               timesheetid:
+ *                 type: string
+ *                 description: The ID of the timesheet to manage.
+ *                 example: "63f1e9f9a6a3bca97e8b4567"
+ *               status:
+ *                 type: string
+ *                 enum: [approved, rejected]
+ *                 description: The new status for the timesheet.
+ *                 example: "approved"
+ *               userid:
+ *                 type: string
+ *                 description: The user ID associated with the timesheet.
+ *                 example: "63f1e9f9a6a3bca97e8b1234"
+ *               notes:
+ *                 type: string
+ *                 description: Notes explaining the rejection (required if status is "rejected").
+ *                 example: "Timesheet contains incomplete data."
+ *     responses:
+ *       200:
+ *         description: Timesheet status updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Whether the request was successful.
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   description: Success message.
+ *                   example: "Timesheet Status updated successfully"
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       422:
+ *         description: Validation error occurred.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Whether the request was successful.
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   description: Validation error message.
+ *                   example: "Invalid input: timesheetd is required."
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   description: Whether the request was successful.
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   description: Error message.
+ *                   example: "Internal server error"
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ */
+
+    async manageAllTimesheet(req,res)
+    {
+        const{timesheetid,status,userid,notes}=req.body
+        try
+        {
+            const validatedData=await managetimesheetRequest.validateData(req.body)
+            if(!validatedData.isValid)
+            {
+                throw new CustomValidationError(validatedData.message)
+            }
+          
+
+            const {startDate,endDate}=await timesheetrepo.getWeekStartAndEndDateByTimesheetId(timesheetid)
+
+            const alreadyRejected=await rejectRepo.getByWeek(startDate,endDate,userid)
+
+            if(alreadyRejected && status==="approved")
+            {
+                await rejectRepo.delete(alreadyRejected._id)
+                return res.status(200).json({
+                    status:true,
+                    message:"Timesheet Approved",
+                    data:[]
+                })
+
+            }
+
+            await timesheetrepo.updateAllTimesheetStatus(startDate,endDate,status,userid)
+
+            if(status==="rejected")
+            {
+                if(alreadyRejected)
+                {
+                    await rejectRepo.update(alreadyRejected._id,notes)
+                    return res.status(200).json({
+                        status:true,
+                        message:"Timesheet Notes updated successfully",
+                        data:[]
+                    })
+                    
+                }
+                else
+                {
+                  await rejectRepo.create(userid,notes,startDate,endDate)
+                  return res.status(200).json({
+                    status:true,
+                    message:"Timesheet Status updated successfully",
+                    data:[]
+                })
+                }
+            } 
+        }
+        catch(error)
+        {
+            console.log(error)
+            if(error instanceof CustomValidationError)
+            {
+                return res.status(422).json(
+                    {status:false,
+                    message:error.message,
+                    data:[]
+                })
+            }
+            else
+            {
+            return res.status(500).json(
+                {status:false,
+                message:"Internal server error",
+                data:[]
+            })
+        }
         }
     }
 }
