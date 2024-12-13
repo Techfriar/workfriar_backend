@@ -158,7 +158,7 @@ export default class TimesheetController {
 		try {
 			// Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6756c072ddd097b3e4bbadd5'; // Temporary user ID
+			const user_id = '6746a473ed7e5979a3a1f891'; // Temporary user ID
 
 			const timezone = await findTimezone(req);
 
@@ -341,7 +341,7 @@ export default class TimesheetController {
 	 *         schema:
 	 *           type: object
 	 *           properties:
-	 *             success:
+	 *             status:
 	 *               type: boolean
 	 *               example: true
 	 *             message:
@@ -373,7 +373,7 @@ export default class TimesheetController {
 	 *         schema:
 	 *           type: object
 	 *           properties:
-	 *             success:
+	 *             status:
 	 *               type: boolean
 	 *               example: false
 	 *             message:
@@ -387,7 +387,7 @@ export default class TimesheetController {
 	 *         schema:
 	 *           type: object
 	 *           properties:
-	 *             success:
+	 *             status:
 	 *               type: boolean
 	 *               example: false
 	 *             message:
@@ -401,7 +401,7 @@ export default class TimesheetController {
 	 *         schema:
 	 *           type: object
 	 *           properties:
-	 *             success:
+	 *             status:
 	 *               type: boolean
 	 *               example: false
 	 *             message:
@@ -437,7 +437,7 @@ export default class TimesheetController {
 
 			if (timesheets.length > 0) {
 				res.status(200).json({
-					success: true,
+					status: true,
 					message: 'User timesheets fetched successfully',
 					data: timesheets,
 					pagination: {
@@ -450,7 +450,7 @@ export default class TimesheetController {
 			}
 			else {
 				res.status(200).json({
-					success: false,
+					status: false,
 					message: 'No timesheets found',
 					data: []
 				})
@@ -622,7 +622,7 @@ export default class TimesheetController {
 	 *         schema:
 	 *           type: object
 	 *           properties:
-	 *             success:
+	 *             status:
 	 *               type: boolean
 	 *               example: true
 	 *             message:
@@ -651,7 +651,7 @@ export default class TimesheetController {
 	 *         schema:
 	 *           type: object
 	 *           properties:
-	 *             success:
+	 *             status:
 	 *               type: boolean
 	 *               example: false
 	 *             message:
@@ -665,7 +665,7 @@ export default class TimesheetController {
 	 *         schema:
 	 *           type: object
 	 *           properties:
-	 *             success:
+	 *             status:
 	 *               type: boolean
 	 *               example: false
 	 *             message:
@@ -692,7 +692,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
+			const user_id = '6746a474ed7e5979a3a1f896';
 			const timezone = await findTimezone(req);
 
 			const startOfDay = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
@@ -716,7 +716,7 @@ export default class TimesheetController {
 					)
 				)
 				res.status(200).json({
-					success: true,
+					status: true,
 					message: 'Current Date timesheets fetched successfully',
 					length: timesheets.length,
 					data
@@ -724,7 +724,7 @@ export default class TimesheetController {
 			}
 			else {
 				res.status(200).json({
-					success: false,
+					status: false,
 					message: 'No timesheets found',
 					data: []
 				})
@@ -733,7 +733,7 @@ export default class TimesheetController {
 		}
 		catch (err) {
 			return res.status(500).json({
-				success: false,
+				status: false,
 				message: err.message,
 				data: [],
 			});
@@ -782,7 +782,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: true
 	 *                 message:
@@ -845,7 +845,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -862,7 +862,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -967,14 +967,14 @@ export default class TimesheetController {
 				data.date_range = range
 
 				res.status(200).json({
-					success: true,
+					status: true,
 					message: 'Weekly timesheets fetched successfully',
 					date_range: range,
 					data: data,
 				});
 			} else {
 				return res.status(200).json({
-					success: false,
+					status: false,
 					message: 'No timesheets found for the provided date range',
 					date_range: range,
 					data: [],
@@ -983,13 +983,13 @@ export default class TimesheetController {
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
-					success: false,
+					status: false,
 					message: 'Validation error',
 					errors: err.errors,
 				});
 			} else {
 				return res.status(500).json({
-					success: false,
+					status: false,
 					message: err.message,
 					data: [],
 				});
@@ -1038,7 +1038,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: true
 	 *                 message:
@@ -1064,7 +1064,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -1074,130 +1074,153 @@ export default class TimesheetController {
 	 *                   type: array
 	 *                   example: []
 	 */
+
 	async getDueTimesheets(req, res) {
 		try {
+			// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+
+			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
-			let flag = true
 			let { startDate, endDate, prev, next } = req.body;
 
+			if (prev && next) {
+				throw new CustomValidationError('prev and next cannot be true at the same time');
+			}
+
 			let actualStartWeek, actualEndWeek;
+
+			// Default values for prev and next
+			if (!prev && !next) {
+				prev = true;
+				next = false;
+			}
+
 			const currentYear = new Date().getFullYear();
 			const startOfYear = new Date(currentYear, 0, 1);
 			const endOfYear = new Date(currentYear, 11, 31);
-
-			if (!prev && !next || (prev && next)) {
-				flag = false
-			}
-
 			do {
+				// Determine initial start and end dates
 				if (startDate && endDate) {
 					const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
 					if (validatedDates.error) {
 						throw new CustomValidationError(validatedDates.error);
 					}
-					const adjustDates = FindWeekRange_.adjustWeekRange(startDate, endDate, prev, next);
-					startDate = new Date(adjustDates.startDate);
-					endDate = new Date(adjustDates.endDate);
-
-					// Find actual start and end of the week
-					actualStartWeek = FindS.getPreviousSunday(startDate);
-					actualEndWeek = new Date(actualStartWeek);
-					actualEndWeek.setDate(actualStartWeek.getDate() + 6);
+					let adjustedDates = FindWeekRange_.adjustWeekRange(
+						startDate,
+						endDate,
+						prev,
+						next
+					);
+					startDate = new Date(adjustedDates.startDate);
+					endDate = new Date(adjustedDates.endDate);
 				} else {
 					const timezone = await findTimezone(req);
 					let today = getLocalDateStringForTimezone(timezone, new Date());
-
 					if (typeof today === "string") {
 						today = new Date(today);
 					}
-
 					actualStartWeek = FindS.getPreviousSunday(today);
 					actualEndWeek = new Date(actualStartWeek);
 					actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-
 					startDate = FindWeekRange_.getWeekStartDate(today);
 					endDate = FindWeekRange_.getWeekEndDate(today);
 				}
-
 				startDate.setUTCHours(0, 0, 0, 0);
 				endDate.setUTCHours(0, 0, 0, 0);
 
-				let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
 
+				let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
 				const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
 
 				if (timesheets.length > 0) {
-					const savedTimesheets = timesheets.filter(timesheet => ((timesheet.status != 'submitted') && (timesheet.status != 'accepted')));
+					const savedTimesheets = timesheets.filter(
+						timesheet => timesheet.status !== 'submitted' && timesheet.status !== 'accepted'
+					);
 
 					if (savedTimesheets.length > 0) {
 						const weekDates = [];
+						let actualStartWeek = FindS.getPreviousSunday(startDate);
+						let actualEndWeek = new Date(actualStartWeek);
+						actualEndWeek.setDate(actualStartWeek.getDate() + 6);
+
 						for (let date = new Date(actualStartWeek); date <= actualEndWeek; date.setDate(date.getDate() + 1)) {
 							weekDates.push(date.toISOString().split('T')[0]);
 						}
 
-						const allDates = FindWeekRange_.getDatesBetween(new Date(startDate), new Date(endDate));
-						const normalizedAllDates = allDates.map(date => new Date(date).toISOString().split('T')[0]);
-
 						const totalHoursPerDate = {};
 						weekDates.forEach(date => {
-							totalHoursPerDate[date] = {
-								hours: 0,
-								isDisable: !normalizedAllDates.includes(date),
-							};
+							totalHoursPerDate[date] = { hours: 0, isDisable: true };
 						});
-						let totalHours = 0;
 
+						let totalHours = 0;
 						savedTimesheets.forEach(timesheet => {
 							timesheet.data_sheet.forEach(entry => {
 								const date = new Date(entry.date).toISOString().split('T')[0];
 								const hours = parseFloat(entry.hours);
 								if (totalHoursPerDate[date]) {
 									totalHoursPerDate[date].hours += hours;
+									totalHoursPerDate[date].isDisable = false;
 									totalHours += hours;
 								}
 							});
 						});
+
 						totalHoursPerDate.totalHours = totalHours;
+						const status = await TimesheetRepo.checkSavedTimesheetsAroundRange(user_id, startDate, endDate);
 
 						return res.status(200).json({
-							success: true,
+							status: true,
 							message: "Due timesheets fetched successfully",
 							data: totalHoursPerDate,
-							range: range
+							date_range: range,
+							key: status
 						});
 					}
 				}
-
-				if ((prev && startDate < startOfYear) || (next && endDate > endOfYear)) {
+		
+				if (startDate <= startOfYear) {
 					break;
 				}
-			} while (flag);
+
+
+			} while (true);
+			const status = await TimesheetRepo.checkSavedTimesheetsAroundRange(user_id, startDate, endDate);
 
 			return res.status(200).json({
-				success: false,
-				message: prev ? "No due timesheets found after checking to the start of the year" :
-					"No due timesheets found after checking to the end of the year",
+				status: false,
+				message: "No due timesheets found after checking up to the start of the year",
 				data: [],
-				range: `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`
+				key: status
 			});
 
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
-					success: false,
+					status: false,
 					message: 'Validation error',
 					errors: err.errors,
 				});
 			} else {
 				return res.status(500).json({
-					success: false,
+					status: false,
 					message: err.message,
-					data: []
+					data: [],
 				});
 			}
 		}
 	}
-
 
 
 	//get detailed timesheet report
@@ -1257,7 +1280,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: true
 	 *                 message:
@@ -1294,7 +1317,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -1311,7 +1334,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -1352,7 +1375,7 @@ export default class TimesheetController {
 
 			const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(startDate));
 
-			const { report, totalCount } = await TimesheetRepo.employeeDetailReport(startDate, endDate, projectIds, userIds, pageNumber, limitNumber);
+			const { report, totalCount } = await TimesheetRepo.getTimesheetReport(startDate, endDate, projectIds, userIds, pageNumber, limitNumber);
 
 			const range = `${startDate.split('T')[0]} - ${endDate.split('T')[0]}`
 
@@ -1397,14 +1420,14 @@ export default class TimesheetController {
 						break;
 					default:
 						return res.status(400).json({
-							success: false,
+							status: false,
 							message: 'Invalid tabKey provided',
 							data: [],
 						});
 				}
 
 				res.status(200).json({
-					success: true,
+					status: true,
 					message: 'Project detail report fetched successfully',
 					length: report.length,
 					date_range: range,
@@ -1419,7 +1442,7 @@ export default class TimesheetController {
 			}
 			else {
 				res.status(200).json({
-					success: false,
+					status: false,
 					message: 'Failed to fetch details for given range',
 					data: [],
 					pagination: {
@@ -1433,14 +1456,14 @@ export default class TimesheetController {
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
-					success: false,
+					status: false,
 					message: 'Validation error',
 					errors: err.errors,
 				});
 			}
 			else {
 				return res.status(500).json({
-					success: false,
+					status: false,
 					message: err.message,
 					data: []
 				});
@@ -1479,7 +1502,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: true
 	 *                 message:
@@ -1503,7 +1526,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -1520,7 +1543,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -1532,6 +1555,7 @@ export default class TimesheetController {
 	 */
 	async getTimesheetSnapshot(req, res) {
 		try {
+
 			// Extract token from Authorization header
 			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
 
@@ -1562,27 +1586,29 @@ export default class TimesheetController {
 			const endDate = new Date(Date.UTC(year, month, 0));
 			const end = endDate.toISOString()
 
+			
 			const timesheetData = await TimesheetRepo.getMonthlySnapshot(user_id, start, end)
 
 			const defaultStatuses = ['saved', 'accepted', 'rejected'];
 			const responseData = defaultStatuses.map(status => {
 				const existingStatus = timesheetData.find(item => item.status === status);
 				return {
-					status,
+					status: status=='accepted'?'approved':status,
 					count: existingStatus ? existingStatus.count : 0
 				};
 			});
+			
 
 			if (timesheetData.length > 0) {
 				res.status(200).json({
-					success: true,
+					status: true,
 					message: 'Timesheet Snapshot fetched successfully',
 					data: responseData
 				})
 			}
 			else {
 				res.status(200).json({
-					success: false,
+					status: false,
 					message: 'No timesheets found for given range',
 					data: []
 				})
@@ -1591,14 +1617,14 @@ export default class TimesheetController {
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
-					success: false,
+					status: false,
 					message: 'Validation error',
 					errors: err.errors,
 				});
 			}
 			else {
 				return res.status(500).json({
-					success: false,
+					status: false,
 					message: err.message,
 					data: []
 				});
@@ -1634,7 +1660,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: true
 	 *                 message:
@@ -1650,7 +1676,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -1666,7 +1692,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -1703,7 +1729,7 @@ export default class TimesheetController {
 			const deleteTimesheet = await TimesheetRepo.deleteTimesheet(timesheetId)
 			if (deleteTimesheet) {
 				res.status(200).json({
-					success: true,
+					status: true,
 					message: 'Timesheet deleted successfully',
 					data: []
 				})
@@ -1712,14 +1738,14 @@ export default class TimesheetController {
 		catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
-					success: false,
+					status: false,
 					message: 'Validation error',
 					errors: err.errors,
 				});
 			}
 			else {
 				return res.status(500).json({
-					success: false,
+					status: false,
 					message: err.message,
 					data: []
 				});
@@ -1744,7 +1770,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: true
 	 *                 message:
@@ -1800,7 +1826,7 @@ export default class TimesheetController {
 	 *             schema:
 	 *               type: object
 	 *               properties:
-	 *                 success:
+	 *                 status:
 	 *                   type: boolean
 	 *                   example: false
 	 *                 message:
@@ -1842,13 +1868,13 @@ export default class TimesheetController {
 
 			const timesheet = await TimesheetRepo.timesheetCount(user_id, start)
 			res.status(200).json({
-				success: true,
+				status: true,
 				message: 'Timesheet count fetched successfully',
 				data: timesheet
 			})
 		} catch (error) {
 			return res.status(500).json({
-				success: false,
+				status: false,
 				message: error.message,
 				data: [],
 			});

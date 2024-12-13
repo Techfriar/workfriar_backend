@@ -13,7 +13,7 @@ const findWeekRange=new FindWeekRange()
  * /admin/timesummary:
  *   post:
  *     summary: Fetch and format the time sheet summary.
- *     description: Returns a formatted time sheet summary based on the provided start date, end date, and project ID.
+ *     description: Returns a formatted time sheet summary based on the provided start date, end date, project ID, and optional pagination parameters.
  *     tags:
  *       - TimeSheet
  *     requestBody:
@@ -27,22 +27,32 @@ const findWeekRange=new FindWeekRange()
  *                 type: string
  *                 format: date
  *                 example: "2023-12-01"
- *                 description: The start date for the summary.
+ *                 description: The start date for the summary. If not provided, the current week's start date will be used.
  *               endDate:
  *                 type: string
  *                 format: date
  *                 example: "2023-12-31"
- *                 description: The end date for the summary.
+ *                 description: The end date for the summary. If not provided, the current week's end date will be used.
  *               projectId:
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de7"
  *                 description: The ID of the project to fetch the summary for.
  *               page:
  *                 type: integer
- *                 example: 3
+ *                 example: 1
+ *                 description: The page number for pagination. Defaults to 1.
  *               limit:
  *                 type: integer
  *                 example: 10
+ *                 description: The number of items per page. Defaults to 10.
+ *               prev:
+ *                 type: boolean
+ *                 description: Whether to fetch the previous week's timesheets.
+ *                 example: false
+ *               next:
+ *                 type: boolean
+ *                 description: Whether to fetch the next week's timesheets.
+ *                 example: true
  *     responses:
  *       200:
  *         description: Successfully fetched and formatted the time sheet summary.
@@ -65,18 +75,30 @@ const findWeekRange=new FindWeekRange()
  *                       team_member:
  *                         type: string
  *                         example: "John Doe"
+ *                         description: The name of the team member.
  *                       total_time:
  *                         type: number
  *                         format: float
  *                         example: 40.5
+ *                         description: The total time logged by the team member in hours.
  *                       approved_time:
  *                         type: number
  *                         format: float
  *                         example: 30.5
- *                       totalPages:
- *                         type:number
- *                         format:int
- *                         example:7
+ *                         description: The total approved time in hours.
+ *                       submitted_or_rejected_time:
+ *                         type: number
+ *                         format: float
+ *                         example: 30.5
+ *                         description: The total rejected or submitted time in hours.
+ *                 dateRange:
+ *                   type: string
+ *                   example: "2023-12-01 - 2023-12-31"
+ *                   description: The date range for the summary.
+ *                 totalPages:
+ *                   type: integer
+ *                   example: 7
+ *                   description: The total number of pages based on the limit.
  *       400:
  *         description: No data available for the given parameters.
  *         content:
@@ -339,6 +361,14 @@ class TimeSheetSummaryController{
  *                 format: date
  *                 description: The end date of the range to search for time sheets (in YYYY-MM-DD format).
  *                 example: "2024-12-07"
+ *               prev:
+ *                 type: boolean
+ *                 description: Whether to fetch previous week due timesheets.
+ *                 example: false
+ *               next:
+ *                 type: boolean
+ *                 description: Whether to fetch next week due timesheets.
+ *                 example: true
  *     responses:
  *       200:
  *         description: Successfully retrieved due time sheets for the user.
@@ -372,6 +402,7 @@ class TimeSheetSummaryController{
  *                         type: number
  *                         description: Total hours logged in the time sheet range.
  *                         example: 40
+ *                       
  *       400:
  *         description: No due time sheets found for the user within the given date range.
  *         content:
@@ -438,6 +469,7 @@ class TimeSheetSummaryController{
         if(status==="rejected")
         {
              notes=await rejectRepo.getByWeek(startDate,endDate,userId)
+             console.log(notes)
         }
         const formattedData= await timesummaryResponse.formattedPastDue(data)
 

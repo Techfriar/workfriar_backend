@@ -385,5 +385,21 @@ export default class ProjectRepository {
             throw new Error(`Failed to get projects: ${error.message}`);
         }
     }
+
+    async getCategoriesByProject(projectid)
+    {
+        try
+        {
+            const projectCategories = await Project.findById(projectid).populate({
+                path: "categories",
+                select: "_id category",
+            })
+            .lean();
+            return projectCategories.categories;
+        }catch(error)
+        {
+            throw new Error(error)
+        }
+    }
   
 }

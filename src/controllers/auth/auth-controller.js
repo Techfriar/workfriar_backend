@@ -75,25 +75,25 @@ export default class AuthController {
         }
         
         // Redirect to client with token
-        // return res.redirect(`${front_end_url}/Login/?token=${token}`);
+        return res.redirect(`${front_end_url}/${token?'?token='+token:''}${error?'?error='+error:''}`);
 
         // Prepare HTML for POST redirect
-        const html = `
-            <html>
-                <body>
-                    <form id="redirectForm" method="POST" action="${front_end_url}">
-                        <input type="hidden" name="token" value="${token}">
-                        <input type="hidden" name="error" value="${error}">
-                    </form>
-                    <script>
-                        document.getElementById('redirectForm').submit();
-                    </script>
-                </body>
-            </html>
-        `;
+        // const html = `
+        //     <html>
+        //         <body>
+        //             <form id="redirectForm" method="POST" action="${front_end_url}">
+        //                 <input type="hidden" name="token" value="${token}">
+        //                 <input type="hidden" name="error" value="${error}">
+        //             </form>
+        //             <script>
+        //                 document.getElementById('redirectForm').submit();
+        //             </script>
+        //         </body>
+        //     </html>
+        // `;
 
         // Send HTML response for POST redirect
-        return res.send(html);
+        // return res.send(html);
     }
 
     /**
@@ -112,22 +112,25 @@ export default class AuthController {
      */
     async googleFallback(req, res) {
         const front_end_url = process.env.FRONT_END_URL;
-        const html = `
-            <html>
-                <body>
-                    <form id="redirectForm" method="POST" action="${front_end_url}">
-                        <input type="hidden" name="token" value="${null}">
-                        <input type="hidden" name="error" value="${{ message: 'Authentication failed.' }}">
-                    </form>
-                    <script>
-                        document.getElementById('redirectForm').submit();
-                    </script>
-                </body>
-            </html>
-        `;
+
+        // Redirect to login page
+        return res.redirect(`${front_end_url}/${error?'?error='+'Authentication failed.':''}`);
+        // const html = `
+        //     <html>
+        //         <body>
+        //             <form id="redirectForm" method="POST" action="${front_end_url}">
+        //                 <input type="hidden" name="token" value="${null}">
+        //                 <input type="hidden" name="error" value="${{ message: 'Authentication failed.' }}">
+        //             </form>
+        //             <script>
+        //                 document.getElementById('redirectForm').submit();
+        //             </script>
+        //         </body>
+        //     </html>
+        // `;
 
         // Send HTML response for POST redirect
-        return res.send(html);
+        // return res.send(html);
     }
     
     /**
