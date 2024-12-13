@@ -8,7 +8,7 @@ class TimesheetResponse{
     async currentDateTimesheetResponse(timesheet){
         return{
             project_id: timesheet.project_id,
-            project_name: timesheet.projectName || '',
+            project_name: timesheet.project_name || '',
             hours: timesheet.total_hours
         }
     }
@@ -16,7 +16,7 @@ class TimesheetResponse{
     async weeklyTimesheetResponse(timesheet){
         return{
             timesheet_id: timesheet._id,
-            project_name: timesheet.project_id.projectName,
+            project_name: timesheet.project_id.project_name,
             category_name: timesheet.task_category_id.category,
             task_detail: timesheet.task_detail,
             data_sheet: timesheet.data_sheet,
@@ -27,7 +27,7 @@ class TimesheetResponse{
 
     async projectSummaryTimesheetResponse(report,month,year){
         return{    
-            project_name: report.projectName,
+            project_name: report.project_name,
             logged_hours: report.loggedHours,
             approved_hours: report.approvedHours,
             year,
@@ -41,7 +41,7 @@ class TimesheetResponse{
             date_range:range,
             year,
             month,
-            project_name: report.projectName,
+            project_name: report.project_name,
             logged_hours: report.loggedHours,
             approved_hours: report.approvedHours,
         }
@@ -52,7 +52,7 @@ class TimesheetResponse{
             year,
             month,
             employee: report._id,
-            project_name: project.projectName,
+            project_name: project.project_name,
             logged_hours: project.loggedHours,
             approved_hours: project.approvedHours,
         }));
@@ -66,7 +66,7 @@ class TimesheetResponse{
             year,
             month,
             employee: report._id,
-            project_name: project.projectName,
+            project_name: project.project_name,
             logged_hours: project.loggedHours,
             approved_hours: project.approvedHours,
         }));
