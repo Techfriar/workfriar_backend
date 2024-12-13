@@ -49,7 +49,7 @@ UserSchema.virtual('roles', {
     ref: 'Role', // Name of the Role model
     localField: '_id', // Field in the user schema
     foreignField: 'users', // Field in the Role schema
-    justOne: false, // Set to true if a single role per user; false for an array
+    justOne: true, // Set to true if a single role per user; false for an array
     options: { select: 'role department _id permissions status' }, // Default fields to include during population
 });
 
