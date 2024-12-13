@@ -87,6 +87,35 @@ class TimeSheetSummary{
             throw new Error(error.message);
         }
     }
+
+    async getSpecifiedDates(date)
+    {
+        try { 
+            const timesheetDateRanges = await Timesheet.aggregate([
+                { $match: { status: "saved", endDate: { $lt: date } } }, 
+                {
+                    $group: {
+                        _id: null,
+                        uniqueRanges: { $addToSet: { start_date: "$startDate", end_date: "$endDate" } }
+                    }
+                },
+                { $unwind: "$uniqueRanges" }, 
+                {
+                    $project: {
+                        _id: 0,
+                        start_date: "$uniqueRanges.start_date",
+                        end_date: "$uniqueRanges.end_date"
+                    }
+                }
+            ]);
+            return timesheetDateRanges;
+        } 
+        catch(error)
+        {
+            throw new Error(error)
+        }
+    }
+
     
 }
 export default  TimeSheetSummary

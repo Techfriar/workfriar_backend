@@ -112,7 +112,7 @@ class EmployeeController{
         }
          const isAdminResult=await userRepo.checkPermission(role)
          const isAdmin=isAdminResult.status
-        const isactive=status==="active"?true:false
+         const isactive=status==="active"
      
         const data=await userRepo.addEmployees(name,email,reporting_manager,isAdmin,location,isactive,fileurl)
 
@@ -369,7 +369,7 @@ async editEmployee(req, res) {
 
         const isAdminResult=await userRepo.checkPermission(role)
         const isAdmin=isAdminResult.status
-       const isactive=status==="active"?true:false
+        const isactive=status==="active"
 
         if (req.files?.employee_profile) {
             const fileArray = Array.isArray(req.files.employee_profile)
