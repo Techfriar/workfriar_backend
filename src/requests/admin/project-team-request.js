@@ -2,6 +2,13 @@ import Joi from 'joi';
 import Project from '../../models/projects.js';
 class ProjectTeamRequest {
 
+    
+   /**
+     *Validate the users input for creating a new projec team
+     * @param {Object} input - The request object from client side
+     * @return {Object} - An object containing state and message whether the input is valid or not.
+     */
+
 static teamDataSchema = Joi.object({
     project: Joi.string()
         .required()

@@ -1,5 +1,12 @@
 import Joi from "joi";
 class CreateForecastRequest {
+
+   /**
+     *Validate the users input for creating a new project forecast.
+     * @param {Object} forecastInput - The request object.
+     * @return {Object} - An object containing state and message whether the input is valid or not.
+     */
+
   static forecastValidation = Joi.object({
     name: Joi.string().required().min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/).messages({
       "string.empty": "Name is required",

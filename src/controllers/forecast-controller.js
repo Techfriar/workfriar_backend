@@ -9,7 +9,14 @@ const forecastResponse=new ForecastResponse()
 
 
 export default class ForecastController{
-//Function for mapping items from cline side to database entries
+
+
+   /**
+     *Function for mapping items from client side to database entries
+     * @param {Object} input - The request object.
+     * @return {Object} - An object containing state and message whether the input is valid or not.
+     */
+
    static async formattedForecast(input) {
         const allowedKeys = {
             name: "opportunity_name",
@@ -242,18 +249,17 @@ export default class ForecastController{
                 if (error instanceof CustomValidationError) {
                     return res.status(422).json({
                         status: false,
-                        message: "Validation Failed",
-                        errors: error.errors, 
+                        message: `Validation Failed ${error.errors}`,
+                        data:[] , 
                     });
                 } else {
                     return res.status(500).json({
                         status: false,
                         message: "Internal Server Error",
-                        errors: error.message || error,
+                        data: [],
                     });
                 }
         }
-        
     }   
  /**
  * @swagger
@@ -314,6 +320,12 @@ export default class ForecastController{
  *                       opportunity_stage:
  *                         type: string
  *                         example: "Closed Won"
+ *                       opportunity_start_date:
+ *                         type: string
+ *                         example: "01/01/2024"
+ *                       opportunity_close_date:
+ *                         type: string
+ *                         example: "01/01/2024"
  *                       status:
  *                         type: string
  *                         example: "Not Started"
@@ -840,14 +852,14 @@ export default class ForecastController{
                 if (error instanceof CustomValidationError) {
                     return res.status(422).json({
                         status: false,
-                        message: "Validation Failed",
-                        errors: error.errors, 
+                        message: `Validation Failed ${error.errors}`,
+                        data: [], 
                     });
                 } else {
                     return res.status(500).json({
                         status: false,
-                        message: "Internal Server Error",
-                        errors: error.message || error,
+                        message: `Internal Server Error${error.message}`,
+                        data: [] ,
                     });
                 }
         }
