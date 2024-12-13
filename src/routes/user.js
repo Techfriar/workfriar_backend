@@ -17,6 +17,8 @@ userRouter
 // Route to get all categories
 userRouter.route("/getcategories").post(categoryController.getCategories)
 
+
+
 userRouter
     .route('/notifications')
     .post(notification.getNotifications

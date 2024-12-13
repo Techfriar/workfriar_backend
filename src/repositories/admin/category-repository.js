@@ -30,6 +30,7 @@ export default class CategoryRepository{
         throw new Error(error)
     }
  }
+ 
 
  //Update the time entry for category
  async updateCategory(updateFields, id) {
