@@ -12,7 +12,7 @@ class NotificationRepository{
 
     static async getUserNotifications(user_id){
         try {
-            return await Notification.find({user_id: user_id}).sort({createdAt: -1});
+            return await Notification.find({user_id: user_id}).sort({createdAt: -1}).limit(3);
         } catch (error) {
             throw new Error(error);
         }
