@@ -17,7 +17,7 @@ authRouter
 
 authRouter
     .route('/google-callback')
-    .get( passport.authenticate('google', { session: false }), auth.googleCallback )
+    .get( passport.authenticate('google', { session: false, failureRedirect: '/api/auth/google-fallback' }), auth.googleCallback )
 
 authRouter
     .route('/google-fallback')

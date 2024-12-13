@@ -14,8 +14,14 @@ export default class UserRepository {
              
         // Construct the query object
 
-        const query = department ? { "roles.department": department } : {};
-        
+        let query = {};
+        if (department) {
+            query = { 
+                "roles.department": { 
+                    $regex: new RegExp(department, 'i') 
+                } 
+            };
+        }
             const aggregationPipeline = [
                 {
                     $lookup: {
