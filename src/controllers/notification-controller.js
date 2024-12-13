@@ -7,6 +7,7 @@ class NotificationController {
     static NotificationRepo = new NotificationRepository();
     static NotificationRequest = new NotificationRequest();
     async createNotification(user_id, message, type) {
+        console.log("Notification",user_id,message,type)
         try {
             if (!user_id || !message) {
                 throw new CustomValidationError('UserId and message are required fields');
