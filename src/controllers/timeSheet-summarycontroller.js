@@ -1,5 +1,6 @@
 import TimeSheetSummary from "../repositories/time-sheet-summary.js";
 import TimeSummaryResponse from "../responses/formatted-summary.js";
+import FormattedDates from "../responses/format-dates.js";
 import findTimezone from "../utils/findTimeZone.js";
 import FindWeekRange from "../utils/findWeekRange.js";
 import RejectionNotesRepository from "../repositories/admin/rejection-notes-repository.js";
@@ -8,6 +9,7 @@ const timeSheetSummary=new TimeSheetSummary()
 const timesummaryResponse=new TimeSummaryResponse()
 const rejectRepo=new RejectionNotesRepository()
 const findWeekRange=new FindWeekRange()
+const formatDates=new FormattedDates()
 /**
  * @swagger
  * /admin/timesummary:
@@ -158,7 +160,6 @@ class TimeSheetSummaryController{
 					today = new Date(today);
 				}
 				startDate = findWeekRange.getWeekStartDate(today);
-				startDate.setUTCHours(0, 0, 0, 0);
 				endDate = findWeekRange.getWeekEndDate(today);
         }
         startDate.setUTCHours(0, 0, 0, 0);
@@ -190,7 +191,6 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
-            console.log(error)
             res.status(500).json(
                 {
                     status:false,
@@ -455,7 +455,6 @@ class TimeSheetSummaryController{
                         today = new Date(today);
                     }
                     startDate = findWeekRange.getWeekStartDate(today);
-                    startDate.setUTCHours(0, 0, 0, 0);
                     endDate = findWeekRange.getWeekEndDate(today);
             }
             startDate.setUTCHours(0, 0, 0, 0);
@@ -504,5 +503,107 @@ class TimeSheetSummaryController{
                 })
         }
     }
+
+    /**
+ * @swagger
+ * /user/getduedates:
+ *   post:
+ *     summary: Fetches specified dates based on the week start date.
+ *     description: Returns data for the specified week start date. If no data is found, it returns an appropriate response. 
+ *     tags:
+ *       - TimeSheet
+ *     responses:
+ *       200:
+ *         description: Successfully fetched the data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Data Fetched
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     description: Details about the fetched data.
+ *       404:
+ *         description: No data found for the specified week start date.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: No Data
+ *                 data:
+ *                   type: array
+ *                   example: []
+ *       500:
+ *         description: Internal Server Error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal Server Error
+ *                 data:
+ *                   type: array
+ *                   example: []
+ */
+
+   async getDatesController(req,res)
+   {
+        try{
+            const date=new Date()
+            const weekStartDate=findWeekRange.getWeekStartDate(date)
+            const data=await timeSheetSummary.getSpecifiedDates(weekStartDate)
+            const formattedDates=await formatDates.formattedDateResponse(data)
+            if(data.length>0)
+            {
+               return res.status(200).json(
+                    {
+                    status:true,
+                    message:"Data Fetched",
+                    data:formattedDates,
+                    })
+
+            }
+            {
+               return res.status(400).json(
+                    {
+                    status:false,
+                    message:"No Data",
+                    data:[]
+                    })
+            }
+
+
+        }
+        catch(error)
+        {
+            console.log(error)
+           return res.status(500).json(
+                {
+                    status:false,
+                    message:"Internal Server Error",
+                    data:[],
+                })
+        }
+   }
+    
 }
 export default TimeSheetSummaryController
