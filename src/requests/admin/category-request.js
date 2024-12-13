@@ -4,6 +4,11 @@ import CategoryRepository from '../../repositories/admin/category-repository.js'
 const categoryRepo = new CategoryRepository();
 
 class CreateCategoryRequest {
+       /**
+     *Validate the users input for creating a new category.
+     * @param {newCategory,timeentry}  - The elements from client side .
+     * @return {Object} - An object containing state and message whether the input is valid or not.
+     */
 
     static categorySchema = Joi.object({
         category: Joi.string()
