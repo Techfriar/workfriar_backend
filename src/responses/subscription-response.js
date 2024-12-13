@@ -2,7 +2,6 @@ import SubscriptionRepository from "../repositories/admin/subscription-repositor
 import moment from "moment";
 
 export default class SubscriptionResponse {
-
   static formatDate(date) {
     if (!date) return null;
     return moment(date).format("DD/MM/YYYY");
@@ -20,6 +19,11 @@ export default class SubscriptionResponse {
       if (!subscription) {
         throw new Error("Subscription not found");
       }
+
+      const iconDoc = await this.subscriptionRepo.getSubscriptionIcon(
+        subscription.provider, 
+        subscription.subscription_name
+      );
 
       const formattedResponse = {
         id: subscription._id,
@@ -40,11 +44,7 @@ export default class SubscriptionResponse {
               name: project.project_name,
             }))
           : [],
-        icon: subscription.icon
-          ? typeof subscription.icon === "string"
-            ? subscription.icon
-            : `data:image/png;base64,${subscription.icon}`
-          : null,
+        icon: iconDoc ? iconDoc.url : null,
         createdAt: subscription.createdAt,
         updatedAt: subscription.updatedAt,
       };
@@ -67,6 +67,12 @@ export default class SubscriptionResponse {
       if (!subscription) {
         throw new Error("Subscription not found");
       }
+
+      const iconDoc = await this.subscriptionRepo.getSubscriptionIcon(
+        subscription.provider, 
+        subscription.subscription_name
+      );
+
       const formattedResponse = {
         id: subscription._id,
         subscription_name: subscription.subscription_name,
@@ -86,11 +92,7 @@ export default class SubscriptionResponse {
               name: project.project_name,
             }))
           : [],
-        icon: subscription.icon
-          ? typeof subscription.icon === "string"
-            ? subscription.icon
-            : `data:image/png;base64,${subscription.icon}`
-          : null,
+        icon: iconDoc ? iconDoc.url : null,
         createdAt: subscription.createdAt,
         updatedAt: subscription.updatedAt,
       };
