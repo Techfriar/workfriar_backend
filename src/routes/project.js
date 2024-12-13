@@ -54,5 +54,14 @@ projectRouter
     .route('/get-projects-by-user')
     .post(project.getAllProjectsByUser)
 
+  /**
+   * List all categories under a project
+   * For to select the category in the timesheet creation
+   * @param {string} projectId
+   */
+
+  projectRouter
+    .route('/get-categories')
+    .post(project.getCategoriesByProject)
 
 export default projectRouter;
