@@ -1,4 +1,4 @@
-function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) {
+export default function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) {
     function getDetailedWeekRanges(fullStartDate, fullEndDate) {
         const ranges = [];
         
@@ -75,12 +75,7 @@ function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) {
         }
     }
 
-    // Log full data to console
-    console.log('Total Ranges:', weekRanges.length);
-    console.log('Full Data:', JSON.stringify(weekRanges, null, 2));
-
     return weekRanges;
 }
 
 
-generateWeekDateRanges();

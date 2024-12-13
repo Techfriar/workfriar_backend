@@ -803,7 +803,7 @@ export default class ProjectController {
     try {
       // Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6756c0db31d13bdbca748ce3'; // Temporary user ID
+			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
 
       const projects = await projectRepo.getAllOpenProjectsByUser(user_id);
       const projectData = await Promise.all(

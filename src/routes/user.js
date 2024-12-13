@@ -22,6 +22,8 @@ userRouter.route("/getcategories").post(categoryController.getCategories)
 
 userRouter.route("/getduedates").post(timesetSummary.getDatesController)
 
+userRouter.route("/getdates").post(timesetSummary.getAllDatesController)
+
 userRouter
     .route('/notifications')
     .post(notification.getNotifications
