@@ -203,7 +203,7 @@ export default class TimesheetController {
 			} = timesheetData;
 
 			// Create new timesheet if necessary
-			const resolvedTimesheetId = await this.resolveTimesheetId({
+			const {resolvedTimesheetId, userLocation} = await this.resolveTimesheetId({
 				timesheetId,
 				user_id,
 				project_id,
@@ -222,7 +222,7 @@ export default class TimesheetController {
 			// Validate project and data sheet
 			await Promise.all([
 				TimesheetRequest.validateProjectStatus(timesheet.project_id),
-				TimesheetRequest.validateAndProcessDataSheet(data_sheet, timesheet)
+				TimesheetRequest.validateAndProcessDataSheet(data_sheet, timesheet, userLocation)
 			]);
 
 			return {
@@ -254,7 +254,7 @@ export default class TimesheetController {
 			}
 
 			// Validate references before creating
-			await Promise.all([
+			const [{user}, error] = await Promise.all([
 				TimesheetRequest.validateReferences(project_id, user_id, task_category_id),
 				TimesheetRequest.validateProjectStatus(project_id)
 			]);
@@ -263,7 +263,7 @@ export default class TimesheetController {
 			const today = getLocalDateStringForTimezone(timezone, new Date());
 
 			// Determine week range
-			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(today);
+			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(new Date(today));
 
 			// Create new timesheet
 			const newTimesheet = await TimesheetRepo.createTimesheet(
@@ -277,10 +277,10 @@ export default class TimesheetController {
 				status
 			);
 
-			return newTimesheet._id;
+			return {resolvedTimesheetId: newTimesheet._id, userLocation: user.location}
 		}
 
-		return timesheetId;
+		return {resolvedTimesheetId: timesheetId, userLocation: null};
 	}
 
 	/**

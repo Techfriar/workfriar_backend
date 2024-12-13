@@ -8,6 +8,7 @@ import GetUserRequest from '../../requests/admin/fetch-employee-request.js'
 import RoleRequest from '../../requests/admin/role-request.js'
 import UserResponse from '../../responses/user-response.js'
 import bcryptPassword from '../../utils/bcryptPassword.js'
+import capitalizeWords from '../../utils/capitalizeWords.js'
 
 const employeeRepo = new UserRepository()
 const userRepo = new UserRepository()
@@ -246,7 +247,10 @@ export default class AdminController {
             const limit = parseInt(req.body.limit) || 10;
             const skip = (page - 1) * limit;
 
-            const department = req.body.tabKey
+            let department = req.body.tabKey
+
+            if(!department || department == "all") department = null
+            else department = capitalizeWords(department)
 
             // Fetch total count of employees
             const totalItems = await userRepo.countAllUsers(department);
