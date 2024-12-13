@@ -803,7 +803,7 @@ export default class ProjectController {
     try {
       // Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6756c0db31d13bdbca748ce3'; // Temporary user ID
+			const user_id = '6756c072ddd097b3e4bbadd5'; // Temporary user ID
 
       const projects = await projectRepo.getAllOpenProjectsByUser(user_id);
       const projectData = await Promise.all(
@@ -992,6 +992,114 @@ export default class ProjectController {
           data: []
         })
       }
+      return res.status(500).json({
+        status: false,
+        message: error.message,
+        data: []
+      });
+    }
+  }
+  
+/**
+ * @swagger
+ * /project/get-categories:
+ *   post:
+ *     tags:
+ *       - Project
+ *     summary: Get categories for a specific project
+ *     description: Retrieves all categories associated with the given project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - projectId
+ *             properties:
+ *               projectId:
+ *                 type: string
+ *                 description: The ID of the project to get categories for
+ *     responses:
+ *       200:
+ *         description: Categories retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Categories retrieved successfully.
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category:
+ *                         type: string
+ *                         description: The name of the category
+ *                       categoryId:
+ *                         type: string
+ *                         description: The ID of the category
+ *       400:
+ *         description: Bad request (e.g., missing projectId)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Project ID is required.
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Failed to retrieve categories.
+ *                 data:
+ *                   type: array
+ *                   items: {}
+ */
+  async getCategoriesByProject(req, res) {
+    try {
+      const projectId = req.body.projectId;
+
+      await CreateTimesheetRequest.validateProjectStatus(projectId)
+
+      const categories = await projectRepo.getCategoriesByProject(projectId);
+
+      return res.status(200).json({
+        status: true,
+        message: "Categories retrieved successfully.",
+        data: categories
+      });
+    } catch (error) {
+      if(error instanceof CustomValidationError){
+        return res.status(400).json({
+          status: false,
+          message: error.message,
+          data: []
+        })
+      }
+      
       return res.status(500).json({
         status: false,
         message: error.message,
