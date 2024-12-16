@@ -28,10 +28,8 @@ function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) {
     }
 
     function getWeekStartEnd(date) {
-
         const currentDate = new Date(date);
         
- 
         const dayOfWeek = currentDate.getDay();
         const startOfWeek = new Date(currentDate);
         startOfWeek.setDate(currentDate.getDate() - dayOfWeek);
@@ -75,12 +73,7 @@ function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) {
         }
     }
 
-    // Log full data to console
-    console.log('Total Ranges:', weekRanges.length);
-    console.log('Full Data:', JSON.stringify(weekRanges, null, 2));
-
     return weekRanges;
 }
-
 
 generateWeekDateRanges();
