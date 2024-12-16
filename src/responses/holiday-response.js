@@ -1,10 +1,6 @@
 import moment from "moment";
 
 export default class HolidayResponse {
-  static formatDate(date) {
-    if (!date) return null;
-    return moment(date).format("DD/MM/YYYY");
-  }
     /**
      * Transform the holiday resource into an object.
      * @param {Object} holiday - The holiday object to transform
@@ -15,13 +11,19 @@ export default class HolidayResponse {
           id: holiday._id,
           holiday_name: holiday.holiday_name,
           holiday_type: holiday.holiday_type,
-          start_date: this.formatDate(holiday.start_date),
-          end_date: this.formatDate(holiday.end_date),
+          start_date: moment(holiday.start_date).format('ddd, DD MMMM, YYYY'),
+          end_date: moment(holiday.end_date).format('ddd, DD MMMM, YYYY'),
           location: holiday.location,
           createdAt: holiday.createdAt,
           updatedAt: holiday.updatedAt,
         };
       }
-      
-  }
-  
+
+    static async demoformat(holiday) {
+        return {
+          holiday_id: holiday._id,
+          holiday_name: holiday.holiday_name,
+          holiday_date: moment(holiday.start_date).format('ddd, DD MMMM, YYYY'),
+        };
+      }
+  }
