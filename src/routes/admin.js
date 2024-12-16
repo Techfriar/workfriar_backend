@@ -79,6 +79,7 @@ adminRouter.route("/pastdue").post(timeSheetSummary.pastDueController)
 
 adminRouter.route("/getduetimesheet").post(timeSheetSummary.getDueTimeSheetController)
 
+
 /**
  * Admin profile view
  */
@@ -96,7 +97,7 @@ adminRouter
     .route('/employees-data')
     .post(
         // authenticateAdmin,
-        checkPermissions('Users', 'view'),
+        // checkPermissions('Users', 'view'),
         admin.listAllEmployeesData
     )
 adminRouter

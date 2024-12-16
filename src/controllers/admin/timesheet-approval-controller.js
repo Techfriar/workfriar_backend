@@ -5,6 +5,8 @@ import RejectionNotesRepository from "../../repositories/admin/rejection-notes-r
 import TimesheetRepository from "../../repositories/admin/timesheet-repository.js"
 import TeamMembersResponse from "../../responses/team-members-reponse.js"
 import ManageTimesheetRequest from "../../requests/admin/manage-timesheet-request.js"
+import UserRepository from "../../repositories/user-repository.js"
+import NotificationController from "../notification-controller.js"
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js"
 
 const projectTeamrepo=new ProjectTeamRepository()
@@ -12,7 +14,9 @@ const projectRepo=new ProjectRepository()
 const timesheetrepo=new TimesheetRepository()
 const teammemberResponse=new TeamMembersResponse()
 const rejectRepo=new RejectionNotesRepository()
+const notification=new NotificationController()
 const managetimesheetRequest=new ManageTimesheetRequest()
+const userRepository=new UserRepository()
 
 class TimesheetApprovalController 
 {
@@ -249,13 +253,16 @@ class TimesheetApprovalController
  */
     async manageTimeSheet(req,res)
     {
+        const userId="6756c072ddd097b3e4bbadd5"//id comes from token
         const {timesheetid,state}=req.body
 
         try
         {
+            const user=await userRepository.getUserById(userId)
             const {timesheet,status}=await timesheetrepo.updateTimesheetStatus(timesheetid,state)
             if(status)
             {
+                await notification.createNotification(timesheet.user_id,`Timesheet  has been ${timesheet.status} by ${user.full_name}`,"info")
                 return res.status(200).json({
                     status:true,
                     message:"Timesheet Status updated successfully",
@@ -371,6 +378,9 @@ class TimesheetApprovalController
 
     async manageAllTimesheet(req,res)
     {
+        const adminId="6756c072ddd097b3e4bbadd5"//id comes from token
+        const admin=await userRepository.getUserById(adminId)
+        
         const{timesheetid,status,userid,notes}=req.body
         try
         {
@@ -387,6 +397,7 @@ class TimesheetApprovalController
 
             if(alreadyRejected && status==="approved")
             {
+                await notification.createNotification(userid,`Timesheet  has been ${status} by ${admin.full_name}`,"info")
                 await rejectRepo.delete(alreadyRejected._id)
                 return res.status(200).json({
                     status:true,

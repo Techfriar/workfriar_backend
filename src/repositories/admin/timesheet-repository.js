@@ -7,45 +7,45 @@ export default class TimesheetRepository {
 		const normalizedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 		return normalizedDate;
 	};
-  
-	async getTimesheetById(timesheetId) {
-        try {
-            // Find the timesheet by its ID
-            const timesheet = await Timesheet.findById(timesheetId);
 
-            // Return the timesheet or null if not found
-            return timesheet || null;
-        } catch (error) {
-            console.error(`Error retrieving timesheet with ID ${timesheetId}:`, error);
-            throw new Error('Failed to retrieve timesheet');
-        }
-    }
+	async getTimesheetById(timesheetId) {
+		try {
+			// Find the timesheet by its ID
+			const timesheet = await Timesheet.findById(timesheetId);
+
+			// Return the timesheet or null if not found
+			return timesheet || null;
+		} catch (error) {
+			console.error(`Error retrieving timesheet with ID ${timesheetId}:`, error);
+			throw new Error('Failed to retrieve timesheet');
+		}
+	}
 
 	// Method to create and save the timesheet
-	async createTimesheet(project_id, user_id, task_category_id, task_detail, startDate, endDate, data_sheet=[], status='in_progress') {
+	async createTimesheet(project_id, user_id, task_category_id, task_detail, startDate, endDate, data_sheet = [], status = 'in_progress') {
 		try {
-		// Normalize dates to UTC midnight
-		const normalizedStartDate = this.normalizeToUTCDate(startDate);
-		const normalizedEndDate = this.normalizeToUTCDate(endDate);
+			// Normalize dates to UTC midnight
+			const normalizedStartDate = this.normalizeToUTCDate(startDate);
+			const normalizedEndDate = this.normalizeToUTCDate(endDate);
 
-		// Create the new timesheet
-		const newTimesheet = new Timesheet({
-			project_id,
-			user_id,
-			task_category_id,
-			task_detail,
-			startDate: normalizedStartDate,
-			endDate: normalizedEndDate,
-			data_sheet,
-			status,
-		});
+			// Create the new timesheet
+			const newTimesheet = new Timesheet({
+				project_id,
+				user_id,
+				task_category_id,
+				task_detail,
+				startDate: normalizedStartDate,
+				endDate: normalizedEndDate,
+				data_sheet,
+				status,
+			});
 
-		// Save to the database
-		await newTimesheet.save();
-		return newTimesheet;
+			// Save to the database
+			await newTimesheet.save();
+			return newTimesheet;
 		} catch (err) {
 
-		throw new Error('Error while creating timesheet: ' + err.message);
+			throw new Error('Error while creating timesheet: ' + err.message);
 		}
 	}
 
@@ -54,17 +54,17 @@ export default class TimesheetRepository {
 		try {
 			// Find the timesheet by ID
 			const timesheet = await Timesheet.findById(timesheetId);
-		
+
 			// Validate each entry in the new data_sheet
 			data_sheet.forEach(entry => {
 				const { date, isHoliday, hours } = entry;
 				if (!date || !hours || typeof isHoliday === 'undefined') {
 					throw new Error('Each data sheet entry must contain a date, isHoliday, and hours');
 				}
-		
+
 				// Check if the date is already present
 				const existingEntry = timesheet.data_sheet.find(ds => new Date(ds.date).toISOString() === new Date(date).toISOString());
-			
+
 				if (existingEntry) {
 					// Update existing entry if date matches
 					existingEntry.isHoliday = isHoliday;
@@ -78,13 +78,13 @@ export default class TimesheetRepository {
 					});
 				}
 			});
-		
+
 			// Set the new status for the timesheet
 			timesheet.status = status;
-		
+
 			// Save the updated timesheet
 			await timesheet.save();
-		
+
 			return timesheet;
 		} catch (error) {
 			throw new Error(`Error updating timesheet: ${error.message}`);
@@ -113,22 +113,22 @@ export default class TimesheetRepository {
 		}
 	}
 
-	  
+
 	//Get timesheet using userId
-	async getUserTimesheets(user_id, page, limit){
+	async getUserTimesheets(user_id, page, limit) {
 		try {
 			const skip = (page - 1) * limit;
 
 			const timesheets = await Timesheet.find({ user_id })
 				.skip(skip)
 				.limit(limit);
-		
+
 			const totalCount = await Timesheet.countDocuments({ user_id });
-		
+
 			return { timesheets, totalCount };
-        } catch (error) {
-            throw new Error(error); 
-        }
+		} catch (error) {
+			throw new Error(error);
+		}
 	}
 
 	//get Timesheet based on current date
@@ -191,19 +191,19 @@ export default class TimesheetRepository {
 					$project: {
 						_id: 1,
 						project_id: "$_id",
-						projectName: "$project.projectName",
+						project_name: "$project.project_name",
 						total_hours: 1,
 						entries: 1,
 					},
 				},
 			]);
-	
+
 			return timesheets;
 		} catch (error) {
 			throw new Error(error.message);
 		}
 	}
-	
+
 	//get timesheets for a week
 	async getWeeklyTimesheets(user_id, startDate, endDate) {
 		try {
@@ -211,313 +211,71 @@ export default class TimesheetRepository {
 			const query = {
 				user_id,
 				$or: [
-					{ startDate: { $gte: startDate, $lte: endDate } }, 
-					{ endDate: { $gte: startDate, $lte: endDate } }, 
-					{ startDate: { $lte: startDate }, endDate: { $gte: endDate } } 
+					{ startDate: { $gte: startDate, $lte: endDate } },
+					{ endDate: { $gte: startDate, $lte: endDate } },
+					{ startDate: { $lte: startDate }, endDate: { $gte: endDate } }
 				]
 			};
-	
+
 			const timesheets = await Timesheet.find(query)
-				.populate('project_id', 'projectName') 
-				.populate('task_category_id', 'category') 
+				.populate('project_id', 'project_name')
+				.populate('task_category_id', 'category')
 				.lean()
 
 			return timesheets;
 		} catch (error) {
-			console.error('Error fetching timesheets:', error);
-			throw error;
+			throw new Error(error.message);
 		}
 	}
-	
-		async projectSummaryReport(start, end, projectIds) {
+
+	// FILEPATH: c:/Users/LENOVO/Desktop/MERN(A)/TECHFRIAR/workfriar_backend/src/repositories/admin/timesheet-repository.js
+
+	async checkSavedTimesheetsAroundRange(user_id, startDate, endDate) {
 		try {
-		  const matchStage = {
-			$match: {
-			  endDate: { $gte: start, $lte: end },
-			},
-		  };
-	  
-		  if (projectIds && projectIds.length > 0) {
-			matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
-		  }
-	  
-		  return await Timesheet.aggregate([
-			matchStage, 
-			{
-			  $unwind: { path: "$data_sheet", preserveNullAndEmptyArrays: true },
-			},
-			{
-			  $group: {
-				_id: "$project_id",
-				loggedHours: {
-				  $sum: { $toDouble: "$data_sheet.hours" },
-				},
-				approvedHours: {
-					$sum: {
-					  $cond: [
-						{ $eq: ["$status", "accepted"] }, 
-						{ $toDouble: "$data_sheet.hours" }, 
-						0, 
-					  ],
-					},
-				},
-				timesheets: { $push: "$$ROOT" },
-			  },
-			},
-			{
-			  $lookup: {
-				from: "projects",
-				localField: "_id",
-				foreignField: "_id",
-				as: "projectDetails",
-			  },
-			},
-			{
-			  $lookup: {
-				from: "categories",
-				localField: "timesheets.task_category_id",
-				foreignField: "_id",
-				as: "taskCategories",
-			  },
-			},
-			{
-			  $addFields: {
-				projectName: { $arrayElemAt: ["$projectDetails.projectName", 0] },
-				categories: {
-				  $map: {
-					input: "$taskCategories",
-					as: "category",
-					in: "$$category.category",
-				  },
-				},
-			  },
-			},
-			{
-			  $project: {
-				projectDetails: 0,
-				taskCategories: 0,
-			  },
-			},
-		  ]).exec();
-		} catch (error) {
-		  throw new Error(error);
-		}
-	  }
+			// Find saved timesheets before the given range
+			const savedBefore = await Timesheet.findOne({
+				user_id,
+				status: 'saved',
+				endDate: { $lt: startDate }
+			}).sort({ endDate: -1 }).lean();
 
-	async projectDetailReport(startOfMonth,endOfMonth,projectIds) {
+			// Find saved timesheets after the given range
+			const savedAfter = await Timesheet.findOne({
+				user_id,
+				status: 'saved',
+				startDate: { $gt: endDate }
+			}).sort({ startDate: 1 }).lean();
 
-		try {
-			const startDate = new Date(startOfMonth);
-			const endDate = new Date(endOfMonth);
-
-			const matchStage = {
-				$match: {
-					endDate: { $gte: startDate, $lte: endDate },
-				},
+			return {
+				isPrev: savedBefore ? true : false,
+				isNext: savedAfter ? true : false
 			};
-	
-			if (projectIds && projectIds.length > 0) {
-				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
-			}
-
-			return await Timesheet.aggregate([
-				matchStage,
-				{
-					$unwind: { path: "$data_sheet", preserveNullAndEmptyArrays: true },
-				},
-				{
-					$group: {
-						_id: "$project_id",
-						loggedHours: {
-							$sum: { $toDouble: "$data_sheet.hours" },
-						},
-						approvedHours: {
-							$sum: {
-							  $cond: [
-								{ $eq: ["$status", "accepted"] }, 
-								{ $toDouble: "$data_sheet.hours" }, 
-								0, 
-							  ],
-							},
-						},
-						timesheets: { $push: "$$ROOT" },
-					},
-				},
-				{
-					$lookup: {
-						from: "projects",
-						localField: "_id",
-						foreignField: "_id",
-						as: "projectDetails",
-					},
-				},
-				{
-					$lookup: {
-						from: "categories",
-						localField: "timesheets.task_category_id",
-						foreignField: "_id",
-						as: "taskCategories",
-					},
-				},
-				{
-					$addFields: {
-						projectName: { $arrayElemAt: ["$projectDetails.projectName", 0] },
-						categories: {
-							$map: {
-								input: "$taskCategories",
-								as: "category",
-								in: "$$category.category",
-							},
-						},
-					},
-				},
-				{
-					$project: {
-						projectDetails: 0, 
-						taskCategories: 0,
-					},
-				},
-			]).exec();
 		} catch (error) {
-			throw new Error(error);
+			throw new Error(error.message);
 		}
 	}
 
-	async employeeSummaryReport(start, end, projectIds, userIds) {
-		try {
-			const matchStage = {
-				$match: {
-					endDate: { $gte: start, $lte: end },
-				},
-			};
-	
-			if (projectIds && projectIds.length > 0) {
-				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
-			}
-	
-			if (userIds && userIds.length > 0) {
-				matchStage.$match.user_id = { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) };
-			}
-	
-			return await Timesheet.aggregate([
-				matchStage,
-				{
-					$unwind: { path: "$data_sheet", preserveNullAndEmptyArrays: true },
-				},
-				{
-					$group: {
-						_id: { user_id: "$user_id", project_id: "$project_id" },
-						loggedHours: {
-							$sum: { $toDouble: "$data_sheet.hours" },
-						},
-						approvedHours: {
-							$sum: {
-								$cond: [
-									{ $eq: ["$status", "accepted"] },
-									{ $toDouble: "$data_sheet.hours" },
-									0,
-								],
-							},
-						},
-						timesheets: { $push: "$$ROOT" },
-					},
-				},
-				{
-					$lookup: {
-						from: "projects",
-						localField: "_id.project_id",
-						foreignField: "_id",
-						as: "projectDetails",
-					},
-				},
-				{
-					$lookup: {
-						from: "categories",
-						localField: "timesheets.task_category_id",
-						foreignField: "_id",
-						as: "taskCategories",
-					},
-				},
-				{
-					$lookup: {
-						from: "users",
-						localField: "_id.user_id",
-						foreignField: "_id",
-						as: "userDetails",
-					},
-				},
-				{
-					$addFields: {
-						projectName: {
-							$arrayElemAt: ["$projectDetails.projectName", 0],
-						},
-						projectId: "$_id.project_id",
-						userId: "$_id.user_id",
-						categories: {
-							$map: {
-								input: "$taskCategories",
-								as: "category",
-								in: "$$category.category",
-							},
-						},
-						userName: { $arrayElemAt: ["$userDetails.full_name", 0] },
-					},
-				},
-				{
-					$project: {
-						projectDetails: 0,
-						taskCategories: 0,
-						userDetails: 0,
-						timesheets: 0,
-					},
-				},
-				{
-					$group: {
-						_id: "$userName",
-						userId: { $first: "$userId" },
-						projects: {
-							$push: {
-								projectName: "$projectName",
-								project_id: "$projectId",
-								loggedHours: "$loggedHours",
-								approvedHours: "$approvedHours",
-								categories: "$categories",
-							},
-						},
-						totalLoggedHours: { $sum: "$loggedHours" },
-						totalApprovedHours: { $sum: "$approvedHours" },
-					},
-				},
-				{
-					$sort: { _id: 1 },
-				},
-			]).exec();
-		} catch (error) {
-			throw new Error(error);
-		}
-	}
-		
-	//gettimesheet report
-	async employeeDetailReport(start, end, projectIds, userIds, page = 1, limit = 10) {
+	//get timesheet report
+	async getTimesheetReport(start, end, projectIds, userIds, page = 1, limit = 10) {
 		try {
 			const startDate = new Date(start);
 			const endDate = new Date(end);
 			const skip = (page - 1) * limit;
-	
+
 			const matchStage = {
 				$match: {
 					endDate: { $gte: startDate, $lte: endDate },
 				},
 			};
-	
+
 			if (projectIds && projectIds.length > 0) {
 				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
-	
+
 			if (userIds && userIds.length > 0) {
 				matchStage.$match.user_id = { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) };
 			}
-	
+
 			const aggregationPipeline = [
 				matchStage,
 				{
@@ -567,8 +325,8 @@ export default class TimesheetRepository {
 				},
 				{
 					$addFields: {
-						projectName: { 
-							$arrayElemAt: ["$projectDetails.projectName", 0]
+						project_name: {
+							$arrayElemAt: ["$projectDetails.project_name", 0]
 						},
 						categories: {
 							$map: {
@@ -593,7 +351,7 @@ export default class TimesheetRepository {
 						_id: "$userName",
 						projects: {
 							$push: {
-								projectName: "$projectName",
+								project_name: "$project_name",
 								project_id: "$_id.project_id",
 								loggedHours: "$loggedHours",
 								approvedHours: "$approvedHours",
@@ -608,7 +366,7 @@ export default class TimesheetRepository {
 					$sort: { _id: 1 },
 				},
 			];
-	
+
 			const facetStage = {
 				$facet: {
 					paginatedResults: [
@@ -622,66 +380,66 @@ export default class TimesheetRepository {
 					]
 				}
 			};
-	
+
 			aggregationPipeline.push(facetStage);
-	
+
 			const result = await Timesheet.aggregate(aggregationPipeline).exec();
-	
+
 			const paginatedResults = result[0].paginatedResults;
 			const totalCount = result[0].totalCount[0] ? result[0].totalCount[0].count : 0;
-	
+
 			return {
 				report: paginatedResults,
 				totalCount: totalCount
 			};
-	
+
 		} catch (error) {
 			throw new Error(error);
 		}
 	}
-	
+
 	//get timesheet snapshot for a month
 	async getMonthlySnapshot(userId, start, endDate) {
 		try {
-		  const startDate = new Date(start);
-		  const end = new Date(endDate);
+			const startDate = new Date(start);
+			const end = new Date(endDate);
 
-		  return await Timesheet.aggregate([
-			{
-			  $match: {
-				user_id: new mongoose.Types.ObjectId(userId),
-				endDate: {
-				  $gte: startDate, 
-				  $lte: end 
+			return await Timesheet.aggregate([
+				{
+					$match: {
+						user_id: new mongoose.Types.ObjectId(userId),
+						endDate: {
+							$gte: startDate,
+							$lte: end
+						}
+					}
+				},
+				{
+					$group: {
+						_id: "$status",
+						count: { $sum: 1 }
+					}
+				},
+				{
+					$project: {
+						_id: 0,
+						status: "$_id",
+						count: 1
+					}
 				}
-			  }
-			},
-			{
-			  $group: {
-				_id: "$status",
-				count: { $sum: 1 } 
-			  }
-			},
-			{
-			  $project: {
-				_id: 0, 
-				status: "$_id", 
-				count: 1
-			  }
-			}
-		  ]);
+			]);
 		} catch (error) {
-		  console.error("Error in getMonthlySnapshot:", error);
-		  throw new Error(error.message || "An error occurred");
+			console.error("Error in getMonthlySnapshot:", error);
+			throw new Error(error.message || "An error occurred");
 		}
-	  }
-	  
+	}
+
 	//delete timesheet by id
-	  async deleteTimesheet(timesheetId){
-		try{
+	async deleteTimesheet(timesheetId) {
+		try {
 			const timesheet = await Timesheet.findByIdAndDelete(timesheetId)
 			return timesheet
-		}catch (error) {
+		} catch (error) {
 			throw new Error(error);
 		}
 	}
@@ -690,7 +448,7 @@ export default class TimesheetRepository {
 	async timesheetCount(userId, start) {
 		try {
 			const startDate = new Date(start);
-	
+
 			const result = await Timesheet.aggregate([
 				{
 					$match: {
@@ -770,13 +528,13 @@ export default class TimesheetRepository {
 				totalApproved: 0,
 				totalRejected: 0
 			};
-	
+
 			return totalCounts;
 		} catch (error) {
 			throw new Error(error.message);
 		}
 	}
-	
+
 	/**
 	 * Update timesheet status
 	 * @param {string} getTimesheetById
@@ -786,7 +544,7 @@ export default class TimesheetRepository {
 	async updateTimesheetStatus(timesheetId, status) {
 		try {
 			const timesheet = await Timesheet.findByIdAndUpdate(timesheetId, { status: status }, { new: true });
-			return {timesheet, status: true};
+			return { timesheet, status: true };
 		} catch (error) {
 			throw new Error(error);
 		}

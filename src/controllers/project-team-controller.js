@@ -124,7 +124,6 @@ class ProjectTeamController{
                         message: "Internal Server Error",
                         errors: error.message || error,
                     });
-                
             }
         }
     }

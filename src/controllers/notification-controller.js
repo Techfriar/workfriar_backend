@@ -88,8 +88,8 @@ class NotificationController {
             // }
             // const decoded = jwt.decode(token);
             // const user_id = decoded.UserId;
-            // const { user_id } = req.body;
-            const user_id = '6746a473ed7e5979a3a1f891'
+            
+            const user_id = '6756c072ddd097b3e4bbadd5'
             if (!user_id) {
                 throw new CustomValidationError('UserId is a required field');
             }

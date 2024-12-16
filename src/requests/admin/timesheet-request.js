@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import ProjectRepository from '../../repositories/admin/project-repository.js'
 import TaskCateogryRepository from '../../repositories/admin/category-repository.js'
 import UserRepository from '../../repositories/user-repository.js';
-import HolidayRepository from '../../repositories/holiday-repository.js';
+import HolidayRepository from '../../repositories/admin/holiday-repository.js';
 import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
 import IsDateInRange from '../../utils/isDateInRange.js';
 import TimesheetRepository from '../../repositories/admin/timesheet-repository.js';
@@ -107,7 +107,7 @@ export default class CreateTimesheetRequest {
 		}
 	}
 
-	static async validateAndProcessDataSheet(data_sheet, timesheet) {
+	static async validateAndProcessDataSheet(data_sheet, timesheet, userLocation) {
 		// Validate that data_sheet is an array
 		if (!Array.isArray(data_sheet)) throw new CustomValidationError('Data sheet should be an array')
 		
@@ -121,7 +121,7 @@ export default class CreateTimesheetRequest {
 				throw new CustomValidationError(`Date ${item.date} is outside the timesheet's start and end date range`)
 			}
 	
-			const isHoliday = await this.HolidayRepo.isHoliday(item.date);
+			const isHoliday = await this.HolidayRepo.isHoliday(item.date, userLocation);
 			item.isHoliday = isHoliday; // Add isHoliday field directly to the item
 		}
 	

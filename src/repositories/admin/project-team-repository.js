@@ -28,7 +28,7 @@ class ProjectTeamRepository
         {
             const teamData=await projectTeam.find().populate({
                 path: 'project',  
-                select: 'projectName _id'    
+                select: 'project_name _id'    
             }).populate({
                     path: 'team_members' ,  
                     select: 'full_name profile_pic'    
@@ -48,7 +48,7 @@ class ProjectTeamRepository
                 .find({ project: id })
                 .populate({
                     path: 'project',
-                    select: 'projectName _id',
+                    select: 'project_name _id',
                 })
                 .populate({
                     path: 'team_members',
