@@ -1146,79 +1146,87 @@ export default class TimesheetController {
 			startDate.setUTCHours(0, 0, 0, 0);
 			endDate.setUTCHours(0, 0, 0, 0);
 
-			let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
-
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
 
 			if (timesheets.length > 0) {
 				const savedTimesheets = timesheets.filter(
 					timesheet => timesheet.status !== 'submitted' && timesheet.status !== 'accepted'
 				);
-
+	
 				if (savedTimesheets.length > 0) {
 					const weekDates = [];
 					let actualStartWeek = FindS.getPreviousSunday(startDate);
 					let actualEndWeek = new Date(actualStartWeek);
 					actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-
+					
 					for (let date = new Date(actualStartWeek); date <= actualEndWeek; date.setDate(date.getDate() + 1)) {
 						weekDates.push(new Date(date));
 					}
-
+					
 					let totalHoursPerDate = [];
-
-					// Initialize `totalHoursPerDate` as an array of objects
+					
+					
 					weekDates.forEach(date => {
 						const normalizedDate = date.toISOString().split('T')[0];
 						const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
 						totalHoursPerDate.push({
-							date: normalizedDate,
-							hours: 0,
+							date: normalizedDate.split('-').reverse().slice(0, 2).join('/'),
+							hours: "00:00",
 							isDisable: true,
-							dayOfWeek: dayOfWeek
+							dayOfWeek: dayOfWeek.toLocaleUpperCase()
 						});
 					});
-
+					
 					let totalHours = 0;
-
-					// Process saved timesheets to calculate total hours
+					
+					
 					savedTimesheets.forEach(timesheet => {
 						timesheet.data_sheet.forEach(entry => {
 							const normalizedDate = new Date(entry.date).toISOString().split('T')[0];
 							const hours = parseFloat(entry.hours);
-
-							// Find the matching date in `totalHoursPerDate` array
+					
+							
 							const dateEntry = totalHoursPerDate.find(item => item.date === normalizedDate);
 							if (dateEntry) {
-								dateEntry.hours += hours; 
+								if (dateEntry.hours === "00:00") {
+									dateEntry.hours = hours; 
+								} else {
+									dateEntry.hours += hours;
+								}
 								dateEntry.isDisable = false;
-								totalHours += hours; 
+								totalHours += hours;
 							}
 						});
 					});
-
+					
 					totalHoursPerDate.push({
-						date: "total",
+						date: "TOTAL",
 						hours: totalHours,
 						isDisable: false,
-						dayOfWeek: "total"
-					})
-
-
+						dayOfWeek: ""
+					});
+				
 					return res.status(200).json({
 						status: true,
 						message: "Due timesheets fetched successfully",
 						data: totalHoursPerDate,
-
+					});
+				} else {
+					return res.status(200).json({
+						status: true,
+						message: "No saved timesheets found",
+						data: totalHoursPerDate,
 					});
 				}
+				
+				
 			}
 
 			return res.status(200).json({
 				status: false,
 				message: "No due timesheets found",
 				data: [],
-				key: status
+			
 			});
 
 		} catch (err) {
