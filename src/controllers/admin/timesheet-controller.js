@@ -1096,7 +1096,7 @@ export default class TimesheetController {
 		try {
 			// Extract token from Authorization header
 			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-
+	
 			// if (!token) {
 			// 	return res.status(401).json({ 
 			// 		status:false,
@@ -1104,24 +1104,24 @@ export default class TimesheetController {
 			// 		data: []
 			// 	});
 			// }
-
+	
 			// // Decode the token without verifying it (get the payload)
 			// const decoded = jwt.decode(token);  // Decode without verification
-
+	
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
 			let { startDate, endDate } = req.body;
-
+	
 			let actualStartWeek, actualEndWeek;
 			if (startDate && endDate) {
 				const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
 				if (validatedDates.error) {
 					throw new CustomValidationError(validatedDates.error);
 				}
-
+	
 				startDate = new Date(startDate);
 				endDate = new Date(endDate);
-
+	
 				// Find actual start and end of the week
 				actualStartWeek = FindS.getPreviousSunday(startDate);
 				actualEndWeek = new Date(actualStartWeek);
@@ -1129,84 +1129,102 @@ export default class TimesheetController {
 			} else {
 				const timezone = await findTimezone(req);
 				let today = getLocalDateStringForTimezone(timezone, new Date());
-
+	
 				if (typeof today === "string") {
 					today = new Date(today);
 				}
-
+	
 				actualStartWeek = FindS.getPreviousSunday(today);
 				actualEndWeek = new Date(actualStartWeek);
 				actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-
+	
 				startDate = FindWeekRange_.getWeekStartDate(today);
 				startDate.setUTCHours(0, 0, 0, 0);
 				endDate = FindWeekRange_.getWeekEndDate(today);
 			}
-
+	
 			startDate.setUTCHours(0, 0, 0, 0);
 			endDate.setUTCHours(0, 0, 0, 0);
-
+	
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
-
+	
 			if (timesheets.length > 0) {
 				const savedTimesheets = timesheets.filter(
 					timesheet => timesheet.status !== 'submitted' && timesheet.status !== 'accepted'
 				);
+				
+				
 	
 				if (savedTimesheets.length > 0) {
 					const weekDates = [];
 					let actualStartWeek = FindS.getPreviousSunday(startDate);
 					let actualEndWeek = new Date(actualStartWeek);
 					actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-					
+	
 					for (let date = new Date(actualStartWeek); date <= actualEndWeek; date.setDate(date.getDate() + 1)) {
 						weekDates.push(new Date(date));
 					}
-					
+	
 					let totalHoursPerDate = [];
-					
-					
+	
+	
 					weekDates.forEach(date => {
 						const normalizedDate = date.toISOString().split('T')[0];
 						const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+						const isDisable = !(normalizedDate >= startDate.toISOString().split('T')[0] && normalizedDate <= endDate.toISOString().split('T')[0]);
 						totalHoursPerDate.push({
 							date: normalizedDate.split('-').reverse().slice(0, 2).join('/'),
 							hours: "00:00",
-							isDisable: true,
+							isDisable,
 							dayOfWeek: dayOfWeek.toLocaleUpperCase()
 						});
 					});
-					
+
 					let totalHours = 0;
-					
-					
+
 					savedTimesheets.forEach(timesheet => {
-						timesheet.data_sheet.forEach(entry => {
-							let normalizedDate = new Date(entry.date).toISOString().split('T')[0];
-							normalizedDate = normalizedDate.split('-').reverse().slice(0, 2).join('/')
-							const hours = parseFloat(entry.hours);
+						if (timesheet.data_sheet.length === 0) {
+							return;
+						}
+					  timesheet.data_sheet.forEach(entry => {
+						let normalizedDate = new Date(entry.date).toISOString().split('T')[0];
+						normalizedDate = normalizedDate.split('-').reverse().slice(0, 2).join('/');
+						const [hours, minutes] = entry.hours.split(':').map(Number);
+						const dateEntry = totalHoursPerDate.find(item => item.date === normalizedDate);
+						if (dateEntry) {
+						  if (dateEntry.hours === "00:00") {
+							dateEntry.hours = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+						  } else {
+							// Accumulate hours and minutes
+							const [currentHours, currentMinutes] = dateEntry.hours.split(':').map(Number);
+							const newHours = currentHours + hours;
+							const newMinutes = currentMinutes + minutes;
 					
-							
-							const dateEntry = totalHoursPerDate.find(item => item.date === normalizedDate);
-							if (dateEntry) {
-								if (dateEntry.hours === "00:00") {
-									dateEntry.hours = hours; 
-								} else {
-									dateEntry.hours += hours;
-								}
-								dateEntry.isDisable = false;
-								totalHours += hours;
-							}
-						});
+							// Normalize minutes over 60 into hours
+							dateEntry.hours = `${String(Math.floor(newHours + (newMinutes / 60))).padStart(2, '0')}:${String(newMinutes % 60).padStart(2, '0')}`;
+						  }
+						  dateEntry.isDisable = false;
+						}
+					  });
 					});
+					
+					// Calculate the total hours across all dates
+					totalHours = totalHoursPerDate.reduce((acc, entry) => {
+					  const [hours, minutes] = entry.hours.split(':').map(Number);
+					  return acc + hours * 60 + minutes;
+					}, 0);
+					
+					// Convert the total minutes to hours and minutes, padded with leading zeros
+					const totalHoursFormatted = `${String(Math.floor(totalHours / 60)).padStart(2, '0')}:${String(totalHours % 60).padStart(2, '0')}`;
 					
 					totalHoursPerDate.push({
-						date: "TOTAL",
-						hours: totalHours,
-						isDisable: false,
-						dayOfWeek: ""
+					  date: "TOTAL",
+					  hours: totalHoursFormatted,
+					  isDisable: false,
+					  dayOfWeek: ""
 					});
-				
+					
+	
 					return res.status(200).json({
 						status: true,
 						message: "Due timesheets fetched successfully",
@@ -1219,17 +1237,15 @@ export default class TimesheetController {
 						data: totalHoursPerDate,
 					});
 				}
-				
-				
+	
 			}
-
+	
 			return res.status(200).json({
 				status: false,
 				message: "No due timesheets found",
 				data: [],
-			
 			});
-
+	
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
@@ -1246,7 +1262,7 @@ export default class TimesheetController {
 			}
 		}
 	}
-
+	
 
 	//get detailed timesheet report
 	/**
