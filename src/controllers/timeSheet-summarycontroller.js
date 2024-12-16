@@ -684,6 +684,7 @@ class TimeSheetSummaryController{
         const data=(await generateWeekDateRanges())
         const result=await getDateRangeAroundInput(date,10,data)
         const formattedDates = await formatDates.formattedDateResponse(result);
+        
 
      res.status(200).json(
         {
