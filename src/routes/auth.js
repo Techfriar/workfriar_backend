@@ -23,6 +23,14 @@ authRouter
     .route('/google-fallback')
     .get(auth.googleFallback)
 
+authRouter
+    .route('/verify-admin')
+    .post(auth.verifyAdmin)
+
+authRouter
+    .route('/verify-user')
+    .post(auth.verifyUser)
+
 /**
  * logout route
   */
