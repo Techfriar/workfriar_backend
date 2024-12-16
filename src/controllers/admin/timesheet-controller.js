@@ -707,7 +707,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 
 			// const user_id = decoded.UserId;
-			const user_id = '6746a474ed7e5979a3a1f896';
+			const user_id = '6756c072ddd097b3e4bbadd5';
 			const timezone = await findTimezone(req);
 
 			const startOfDay = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
