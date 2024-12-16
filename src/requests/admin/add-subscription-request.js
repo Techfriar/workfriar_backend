@@ -84,12 +84,10 @@ class AddSubscriptionRequest {
   }
 
   async validate() {
-    // Validate using Joi
     const { error, value } = AddSubscriptionRequest.schema.validate(this.data, {
       abortEarly: false,
     });
 
-    // Collect validation errors
     const validationErrors = {};
     if (error) {
       error.details.forEach((err) => {
@@ -97,7 +95,6 @@ class AddSubscriptionRequest {
       });
     }
 
-    // Additional validation for project existence when type is Project Specific
     if (value.type === "Project Specific" && value.project_name) {
       const project = await Project.findById(value.project_name);
       if (!project) {
@@ -105,8 +102,7 @@ class AddSubscriptionRequest {
       }
     }
 
-    // Check for existing subscription name only if it's provided
-    // Temporarily comment out or modify this block for testing
+
     if (value.subscription_name) {
       const existingSubscription =
         await AddSubscriptionRequest.subscriptionRepo.checkSubscriptionExists(

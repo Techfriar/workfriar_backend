@@ -159,7 +159,6 @@ export default class SubscriptionController {
             )
         )
       );
-
       return res.status(200).json({
         status: true,
         message: "Subscriptions retrieved successfully.",
@@ -392,6 +391,97 @@ export default class SubscriptionController {
         status: false,
         message: "Failed to delete subscription.",
         errors: error,
+      });
+    }
+  }
+
+  /**
+   * Get Subscription Renewals
+   *
+   * @swagger
+   * /subscription/get-renewals:
+   *   post:
+   *     tags:
+   *       - Subscription
+   *     summary: Get subscriptions categorized by renewal status
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               page:
+   *                 type: integer
+   *                 minimum: 1
+   *                 default: 1
+   *                 description: Page number for pagination
+   *               limit:
+   *                 type: integer
+   *                 minimum: 1
+   *                 maximum: 100
+   *                 default: 10
+   *                 description: Number of items per page
+   *     responses:
+   *       200:
+   *         description: Success
+   *       400:
+   *         description: Bad Request - Invalid pagination parameters
+   *       500:
+   *         description: Internal Server Error
+   */
+  async getSubscriptionRenewals(req, res) {
+    try {
+      const { page = 1, limit = 10 } = req.body;
+
+      if (!Number.isInteger(page) || page < 1) {
+        return res.status(400).json({
+          status: false,
+          message: "Invalid page number. Page must be a positive integer.",
+          data: null,
+        });
+      }
+      const renewalData = await subscriptionRepo.getRenewalSubscriptions(
+        page,
+        limit
+      );
+
+      const formatCategory = async (category) => {
+        return {
+          items: await Promise.all(
+            category.items.map((subscription) =>
+              SubscriptionResponse.formatGetAllSubscriptionResponse(
+                subscription
+              )
+            )
+          ),
+          total: category.total,
+          totalPages: category.totalPages,
+        };
+      };
+
+      const formattedData = {
+        overdue: await formatCategory(renewalData.overdue),
+        upcoming: await formatCategory(renewalData.upcoming),
+        active: await formatCategory(renewalData.active),
+        pagination: {
+          currentPage: page,
+          perPage: limit,
+        },
+      };
+
+      return res.status(200).json({
+        status: true,
+        message: "Subscription renewals fetched successfully.",
+        data: formattedData,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: "Failed to fetch subscription renewals.",
+        errors: error.message || error,
       });
     }
   }
