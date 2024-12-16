@@ -1182,7 +1182,8 @@ export default class TimesheetController {
 					
 					savedTimesheets.forEach(timesheet => {
 						timesheet.data_sheet.forEach(entry => {
-							const normalizedDate = new Date(entry.date).toISOString().split('T')[0];
+							let normalizedDate = new Date(entry.date).toISOString().split('T')[0];
+							normalizedDate = normalizedDate.split('-').reverse().slice(0, 2).join('/')
 							const hours = parseFloat(entry.hours);
 					
 							
