@@ -249,7 +249,7 @@ export default class HolidayController {
  * Get Next Holidays
  *
  * @swagger
- * /holiday/next:
+ * /holiday/dashboard-holiday:
  *   post:
  *     tags:
  *       - Holiday
