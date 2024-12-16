@@ -572,9 +572,8 @@ class TimeSheetSummaryController{
         try{
             const date=new Date()
             const weekStartDate=findWeekRange.getWeekStartDate(date)
-            const result=await timeSheetSummary.getSpecifiedDates(weekStartDate)
-            const formattedDates=await formatDates.formattedDateResponse(result)
-            
+            const data=await timeSheetSummary.getSpecifiedDates(weekStartDate)
+            const formattedDates=await formatDates.formattedDateResponse(data)
             if(data.length>0)
             {
                return res.status(200).json(
@@ -585,7 +584,6 @@ class TimeSheetSummaryController{
                     })
 
             }
-            else
             {
                return res.status(400).json(
                     {
@@ -682,14 +680,17 @@ class TimeSheetSummaryController{
    {
     try
     {
-    const {date}=req.body
-     const data=await generateWeekDateRanges()
-     const dates=await getDateRangeAroundInput(date,10,data)
+        const {date}=req.body
+        const data=(await generateWeekDateRanges())
+        const result=await getDateRangeAroundInput(date,10,data)
+        const formattedDates = await formatDates.formattedDateResponse(result);
+        
+
      res.status(200).json(
         {
         status:true,
         message:"Data Fetched",
-        data:dates,
+        data:formattedDates,
         })
     }
     catch(error)
