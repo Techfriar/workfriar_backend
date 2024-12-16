@@ -1,9 +1,11 @@
 import TimeSheetSummary from "../repositories/time-sheet-summary.js";
 import TimeSummaryResponse from "../responses/formatted-summary.js";
 import FormattedDates from "../responses/format-dates.js";
+import generateWeekDateRanges from "../utils/find-week-range.js";
 import findTimezone from "../utils/findTimeZone.js";
 import FindWeekRange from "../utils/findWeekRange.js";
 import RejectionNotesRepository from "../repositories/admin/rejection-notes-repository.js";
+import { getDateRangeAroundInput } from "../utils/find-weeks.js";
 
 const timeSheetSummary=new TimeSheetSummary()
 const timesummaryResponse=new TimeSummaryResponse()
@@ -603,6 +605,101 @@ class TimeSheetSummaryController{
                     data:[],
                 })
         }
+   }
+/**
+ * @swagger
+ * /user/getdates:
+ *   post:
+ *     summary: Retrieves the date ranges around a specific input date.
+ *     description: This endpoint returns the date ranges around a specific input date, including the weeks before and after, based on the logic in the getDateRangeAroundInput function.
+ *     tags:
+ *       - TimeSheet
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-11-10"
+ *                 description: The date around which the ranges are calculated.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the date ranges around the input date.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Data Fetched"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       startDate:
+ *                         type: string
+ *                         format: date
+ *                         example: "2024-11-03"
+ *                       endDate:
+ *                         type: string
+ *                         format: date
+ *                         example: "2024-11-09"
+ *                       label:
+ *                         type: string
+ *                         example: "Nov 3-Nov 9, 2024"
+ *                       month:
+ *                         type: string
+ *                         example: "November"
+ *                       week:
+ *                         type: integer
+ *                         example: 0
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
+   async getAllDatesController(req,res)
+   {
+    try
+    {
+    const {date}=req.body
+     const data=await generateWeekDateRanges()
+     const dates=await getDateRangeAroundInput(date,10,data)
+     res.status(200).json(
+        {
+        status:true,
+        message:"Data Fetched",
+        data:dates,
+        })
+    }
+    catch(error)
+    {
+        res.status(500).json(
+            {
+                status:false,
+                message:"Internal server error",
+                data:[],
+            })
+    }
    }
     
 }

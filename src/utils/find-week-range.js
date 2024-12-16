@@ -1,4 +1,4 @@
-function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) {
+export default function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) {
     function getDetailedWeekRanges(fullStartDate, fullEndDate) {
         const ranges = [];
         
@@ -76,4 +76,4 @@ function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) {
     return weekRanges;
 }
 
-generateWeekDateRanges();
+
