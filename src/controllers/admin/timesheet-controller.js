@@ -1190,9 +1190,9 @@ export default class TimesheetController {
 							// Find the matching date in `totalHoursPerDate` array
 							const dateEntry = totalHoursPerDate.find(item => item.date === normalizedDate);
 							if (dateEntry) {
-								dateEntry.hours += hours; // Add hours
-								dateEntry.isDisable = false; // Enable date
-								totalHours += hours; // Increment total hours
+								dateEntry.hours += hours; 
+								dateEntry.isDisable = false;
+								totalHours += hours; 
 							}
 						});
 					});
@@ -1203,19 +1203,16 @@ export default class TimesheetController {
 						isDisable: false,
 						dayOfWeek: "total"
 					})
-					const status = await TimesheetRepo.checkSavedTimesheetsAroundRange(user_id, startDate, endDate);
+
 
 					return res.status(200).json({
 						status: true,
 						message: "Due timesheets fetched successfully",
 						data: totalHoursPerDate,
-						date_range: range,
-						key: status
+
 					});
 				}
 			}
-
-			const status = await TimesheetRepo.checkSavedTimesheetsAroundRange(user_id, startDate, endDate);
 
 			return res.status(200).json({
 				status: false,
