@@ -10,15 +10,16 @@ export default class FormattedDates {
         let index = 0;
 
         const data = dates.map((date) => {
-            const startDate = moment(date.start_date);
-            const endDate = moment(date.end_date);
+
+            const startDate = moment(date.startDate);
+            const endDate = moment(date.endDate);
 
             const label = `${startDate.format("MMM")} ${startDate.format("D")}-${endDate.format("MMM")} ${endDate.format("D")}, ${startDate.format("YYYY")}`;
 
             return {
-                startdate: startDate.toISOString(),
+                startDate: startDate.toISOString().split('T')[0],
                 month: startDate.format("MMMM"),
-                enddate: endDate.toISOString(),
+                endDate: endDate.toISOString().split('T')[0],
                 week: index++,
                 label: label
             };
