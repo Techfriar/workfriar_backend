@@ -46,6 +46,9 @@ export default class TimesheetController {
  *                 items:
  *                   type: object
  *                   properties:
+ *                     passedDate:
+ *                       type: string
+ *                       description: The date of the timesheet
  *                     timesheetId:
  *                       type: string
  *                       description: Existing timesheet ID (optional for new timesheets)
@@ -158,7 +161,7 @@ export default class TimesheetController {
 		try {
 			// Authentication (uncomment and implement proper token verification in production)
 			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6746a473ed7e5979a3a1f891'; // Temporary user ID
+			const user_id = '6756c072ddd097b3e4bbadd5'; // Temporary user ID
 
 			const timezone = await findTimezone(req);
 
@@ -199,7 +202,8 @@ export default class TimesheetController {
 				project_id,
 				task_category_id,
 				task_detail,
-				status = 'in_progress'
+				status = 'in_progress',
+				passedDate=undefined 
 			} = timesheetData;
 
 			// Create new timesheet if necessary
@@ -210,7 +214,8 @@ export default class TimesheetController {
 				task_category_id,
 				task_detail,
 				status,
-				timezone
+				timezone,
+				passedDate
 			});
 
 			// Validate existing timesheet
@@ -244,7 +249,8 @@ export default class TimesheetController {
 		task_category_id,
 		task_detail,
 		status,
-		timezone
+		timezone,
+		passedDate
 	}) {
 		// If no timesheetId is provided but required parameters exist, create a new timesheet		
 		if (!timesheetId) {
@@ -259,8 +265,14 @@ export default class TimesheetController {
 				TimesheetRequest.validateProjectStatus(project_id)
 			]);
 
+			let day = new Date()
+
+			// If passedDate is provided, set today to that date
+			if(passedDate){
+				day = new Date(passedDate)
+			}
 			// Create a date object for today in the user's timezone, set to start of day
-			const today = getLocalDateStringForTimezone(timezone, new Date());
+			const today = getLocalDateStringForTimezone(timezone, day);
 
 			// Determine week range
 			const { weekStartDate, weekEndDate } = FindWeekRange_.getWeekRange(new Date(today));

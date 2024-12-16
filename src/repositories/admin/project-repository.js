@@ -386,7 +386,7 @@ export default class ProjectRepository {
         }
     }
 
-    async getCategoryByProject(projectid)
+    async getCategoriesByProject(projectid)
     {
         try
         {
@@ -395,7 +395,7 @@ export default class ProjectRepository {
                 select: "_id category",
             })
             .lean();
-            return projectCategories;
+            return projectCategories.categories;
         }catch(error)
         {
             throw new Error(error)
