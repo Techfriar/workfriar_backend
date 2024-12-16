@@ -8,7 +8,7 @@ const categoryController = new CategoryController();
 const userRouter = express.Router()
 
 const user = new UserController()
-const timesetSummary = new TimeSheetSummaryController()
+const timesheetSummary = new TimeSheetSummaryController()
 const notification = new NotificationController()
 
 userRouter
@@ -20,9 +20,9 @@ userRouter
 userRouter.route("/getcategories").post(categoryController.getCategories)
 
 
-userRouter.route("/getduedates").post(timesetSummary.getDatesController)
+userRouter.route("/getduedates").post(timesheetSummary.getDatesController)
 
-userRouter.route("/getdates").post(timesetSummary.getAllDatesController)
+userRouter.route("/getdates").post(timesheetSummary.getAllDatesController)
 
 userRouter
     .route('/notifications')
