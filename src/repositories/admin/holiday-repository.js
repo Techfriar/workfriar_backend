@@ -14,12 +14,12 @@ export default class HolidayRepository {
       throw new Error(`Error adding holiday:${error.message}`);
     }
   }
-/**
+  /**
    * Get all holidays with advanced filtering
    * @param {Object} filters - Filtering options
    * @returns {Promise<Array>} - List of holidays
    */
-async getAllHolidays(filters = {}) {
+  async getAllHolidays(filters = {}) {
     try {
       // Construct dynamic query
       const query = {};
@@ -36,13 +36,13 @@ async getAllHolidays(filters = {}) {
 
       // Holiday Name Filter (case-insensitive partial match)
       if (filters.holiday_name) {
-        query.holiday_name = { $regex: filters.holiday_name, $options: 'i' };
+        query.holiday_name = { $regex: filters.holiday_name, $options: "i" };
       }
 
       // Year Filter
       if (filters.year) {
         query.$expr = {
-          $eq: [{ $year: '$start_date' }, Number(filters.year)]
+          $eq: [{ $year: "$start_date" }, Number(filters.year)],
         };
       }
 
@@ -132,33 +132,42 @@ async getAllHolidays(filters = {}) {
 
   /**
    * Find a holiday by date and location
-   * @param {*} date 
-   * @param {*} location 
-   * @returns 
+   * @param {*} date
+   * @param {*} location
+   * @returns
    */
   async isHoliday(date, location) {
     try {
-        // Ensure that the date is a valid Date object
-        const parsedDate = new Date(date);
+      // Ensure that the date is a valid Date object
+      const parsedDate = new Date(date);
 
-        if (isNaN(parsedDate)) {
-            throw new Error("Invalid date format");
-        }
+      if (isNaN(parsedDate)) {
+        throw new Error("Invalid date format");
+      }
 
-        // Normalize the date to remove time portion
-        parsedDate.setHours(0, 0, 0, 0);
+      // Normalize the date to remove time portion
+      parsedDate.setHours(0, 0, 0, 0);
 
-        // Find a holiday where the date falls within the start and end range and matches the location
-        const holiday = await Holiday.findOne({
-            start_date: { $lte: parsedDate }, // Check if the date is on or after the start_date
-            end_date: { $gte: parsedDate }, // Check if the date is on or before the end_date
-            location, // Match the specified location
-        });
+      // Find a holiday where the date falls within the start and end range and matches the location
+      const holiday = await Holiday.findOne({
+        start_date: { $lte: parsedDate }, // Check if the date is on or after the start_date
+        end_date: { $gte: parsedDate }, // Check if the date is on or before the end_date
+        location, // Match the specified location
+      });
 
-        return holiday ? true : false; // Return true if a holiday is found, false otherwise
+      return holiday ? true : false; // Return true if a holiday is found, false otherwise
     } catch (err) {
-        throw new Error("Error while checking holiday: " + err.message);
+      throw new Error("Error while checking holiday: " + err.message);
     }
-}
+  }
 
+  async getNextHolidays(currentDate) {
+    try {
+      return await Holiday.find({ start_date: { $gte: currentDate } }).sort({
+        start_date: 1,
+      });
+    } catch (error) {
+      throw new Error(`Error fetching next holidays: ${error.message}`);
+    }
+  }
 }

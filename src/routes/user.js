@@ -28,4 +28,10 @@ userRouter
     .route('/notifications')
     .post(notification.getNotifications
 )
+
+userRouter
+    .route('/all-notifications')
+    .post(notification.getAllNotification
+)
+
 export default userRouter

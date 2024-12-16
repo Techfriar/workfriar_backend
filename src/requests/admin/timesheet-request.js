@@ -114,8 +114,21 @@ export default class CreateTimesheetRequest {
 		for (const item of data_sheet) {
 			if (!item.date || !item.hours) throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')
 
-      if(item.hours < 0) throw new CustomValidationError('Hours cannot be negative')
-      if(item.hours > 24) throw new CustomValidationError('Hours cannot be greater than 24')
+      // Parse the string as a float
+      const hours = parseFloat(item.hours);
+
+      // Check if parsing was successful and if the hours are valid
+      if (isNaN(hours) || !/^\d{1,2}\.\d{2}$/.test(item.hours)) {
+        throw new CustomValidationError("Hours must be a valid number in the format 'HH.MM'");
+      }
+
+      if (hours < 0) {
+        throw new CustomValidationError("Hours cannot be negative");
+      }
+
+      if (hours > 24) {
+        throw new CustomValidationError("Hours cannot be greater than 24");
+      }
 	
 			if (!IsDateInRange.isDateInRange(item.date, timesheet.startDate, timesheet.endDate)) {
 				throw new CustomValidationError(`Date ${item.date} is outside the timesheet's start and end date range`)

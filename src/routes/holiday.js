@@ -16,14 +16,14 @@ holidayRouter
     holiday.getAllHolidays
   );
   holidayRouter
-  .route("/get/:id")
-  .post(
-    holiday.getHolidayById
-  );
-  holidayRouter
   .route("/update/:id")
   .post(
     holiday.updateHoliday
   );
+  holidayRouter
+  .route("/dashboard-holiday")
+  .post(
+    holiday.getNextHolidays
+  )
 
 export default holidayRouter;
