@@ -1,5 +1,7 @@
 import UserRepository from '../../repositories/user-repository.js';
 import passport from '../../config/passport-config.js'
+import jwt from 'jsonwebtoken'
+import { isTokenBlacklisted } from '../../services/blackListToken.js';
 
 
 /**
@@ -8,7 +10,22 @@ import passport from '../../config/passport-config.js'
  *   name: Auth
  *   description: Endpoints for authentication using Google OAuth.
  */
-export default class AuthController {
+export default class  AuthController {
+
+    /**
+     * For handling errors
+     * @param {*} res 
+     * @param {*} message 
+     * @param {*} status 
+     * @returns 
+     */
+    static async handleError(res, message, status = 401) {
+        return res.status(status).json({
+            status: false,
+            message: message,
+            data: {token:null}
+        });
+    }
 
     /**
      * @swagger
@@ -54,8 +71,8 @@ export default class AuthController {
 
             if(!req.user) throw new Error('Authentication failed. User not found.');
 
-            const email = req.user?.email;
-            const isAdmin = req.user?.isAdmin;
+            const email = req.email;
+            const isAdmin = req.isAdmin;
 
             // Check if user is an admin
             if(isAdmin){
@@ -67,8 +84,7 @@ export default class AuthController {
 
             // Generate JWT token
             token = req.user.token;
-
-            
+       
         } catch (err) {
             console.error('Error in googleCallback:', error);
             error = err.message || 'Authentication failed.';
@@ -114,23 +130,8 @@ export default class AuthController {
         const front_end_url = process.env.FRONT_END_URL;
 
         // Redirect to login page
-        return res.redirect(`${front_end_url}/${error?'?error='+'Authentication failed.':''}`);
-        // const html = `
-        //     <html>
-        //         <body>
-        //             <form id="redirectForm" method="POST" action="${front_end_url}">
-        //                 <input type="hidden" name="token" value="${null}">
-        //                 <input type="hidden" name="error" value="${{ message: 'Authentication failed.' }}">
-        //             </form>
-        //             <script>
-        //                 document.getElementById('redirectForm').submit();
-        //             </script>
-        //         </body>
-        //     </html>
-        // `;
+        return res.redirect(`${front_end_url}/'?error='+'Authentication failed.':''}`);
 
-        // Send HTML response for POST redirect
-        // return res.send(html);
     }
     
     /**
@@ -203,4 +204,224 @@ export default class AuthController {
             return res.status(500).json({ message: 'Internal Server Error during logout.' });
         }
     }
+
+    /**
+     * @swagger
+     * /auth/verify-admin:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Verify admin status
+     *     description: Verifies if the user is an admin based on the provided token
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               token:
+     *                 type: string
+     *                 description: JWT token for authentication
+     *     responses:
+     *       200:
+     *         description: Admin verified successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: Admin verified successfully
+     *                 token:
+     *                   type: string
+     *                   description: The verified JWT token
+     *       401:
+     *         description: Unauthorized
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: Unauthorized
+     *                 token:
+     *                   type: string
+     *                   example: null
+     *       500:
+     *         description: Internal Server Error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: Internal Server Error during admin verification.
+     *                 token:
+     *                   type: string
+     *                   example: null
+     */
+    
+    async verifyAdmin(req, res) {
+
+        const userRepo = new UserRepository();
+
+        try {
+            let { token } = req.body;
+            token = token.split(' ')[1]
+                if (token) {
+                    // if(await isTokenBlacklisted(token)) {
+                    //     return handleError(res, 'Unauthorized', 401)
+                    // }
+        
+                    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+                        if (decoded) {
+                            const { userId } = decoded
+                            const user = await userRepo.getUserById(userId)
+                            req.session.user = user
+                            if (err || !decoded.isAdmin || !user.isAdmin) {
+                                return AuthController.handleError(res, 'Unauthorized', 401)
+                            }
+
+                            return res.status(200).json({ 
+                                status: true,
+                                message: 'Admin verified successfully',
+                                data: {token} 
+                            });
+                        } else {
+                            return AuthController.handleError(res, 'Unauthorized', 401)
+                        }
+                    })
+                } else {
+                    return AuthController.handleError(res, 'Unauthorized', 401)
+                }
+
+        } catch (error) {
+            console.error('Error in verifyAdmin:', error);
+            return AuthController.handleError(res, 'Internal Server Error during admin verification.', 500);
+        }
+    }
+
+    /**
+     * @swagger
+     * /auth/verify-user:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Verify user status
+     *     description: Verifies if the user is valid based on the provided token
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               token:
+     *                 type: string
+     *                 description: JWT token for authentication
+     *     responses:
+     *       200:
+     *         description: User verified successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: User verified successfully
+     *                 token:
+     *                   type: string
+     *                   description: The verified JWT token
+     *       401:
+     *         description: Unauthorized
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: Unauthorized
+     *                 token:
+     *                   type: string
+     *                   example: null
+     *       500:
+     *         description: Internal Server Error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: Internal Server Error during user verification.
+     *                 token:
+     *                   type: string
+     *                   example: null
+     */
+    async verifyUser(req, res) {
+
+        const userRepo = new UserRepository();
+
+        try {
+            let { token } = req.body;
+            token = token.split(' ')[1]
+                if (token) {
+                    // if(await isTokenBlacklisted(token)) {
+                    //     return handleError(res, 'Unauthorized', 401)
+                    // }
+
+                    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+                        if (decoded) {
+                            const { userId } = decoded
+                            const user = await userRepo.getUserById(userId)
+                            req.session.user = user
+                            if(err) {
+                                return AuthController.handleError(res, 'Unauthorized', 401)
+                            }
+
+                            return res.status(200).json({
+                                status: true,
+                                message: 'User verified successfully',
+                                data: {token}
+                            });
+                            
+                        } else {
+                            return AuthController.handleError(res, 'Unauthorized', 401)
+                        }
+                    })
+                } else {
+                    return AuthController.handleError(res, 'Unauthorized', 401)
+                }
+
+            
+        } catch (error) {
+            console.error('Error in verifyUser:', error);
+            return AuthController.handleError(res, 'Internal Server Error during user verification.', 500);
+        }
+    }   
+   
 }
