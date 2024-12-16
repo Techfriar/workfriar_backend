@@ -156,22 +156,66 @@ export default class TimesheetRepository {
 					},
 				},
 				{
+					// Add fields to convert "HH:mm" into total minutes
+					$addFields: {
+						hoursInMinutes: {
+							$let: {
+								vars: {
+									parts: { $split: ["$data_sheet.hours", ":"] }, // Split "HH:mm" into [HH, mm]
+								},
+								in: {
+									$add: [
+										{ $multiply: [{ $toInt: { $arrayElemAt: ["$$parts", 0] } }, 60] }, // HH * 60
+										{ $toInt: { $arrayElemAt: ["$$parts", 1] } }, // mm
+									],
+								},
+							},
+						},
+					},
+				},
+				{
 					$group: {
 						_id: {
 							project_id: "$project_id",
 							date: "$data_sheet.date",
 						},
-						total_hours: { $sum: { $toDouble: "$data_sheet.hours" } },
+						total_minutes: { $sum: "$hoursInMinutes" }, // Sum the minutes
 					},
 				},
 				{
 					$group: {
 						_id: "$_id.project_id",
-						total_hours: { $sum: "$total_hours" },
+						total_minutes: { $sum: "$total_minutes" },
 						entries: {
 							$push: {
 								date: "$_id.date",
-								hours: "$total_hours",
+								minutes: "$total_minutes",
+							},
+						},
+					},
+				},
+				{
+					// Convert total minutes back to "HH:mm" format
+					$addFields: {
+						total_hours: {
+							$let: {
+								vars: {
+									hours: { $floor: { $divide: ["$total_minutes", 60] } }, // Get hours
+									minutes: { $mod: ["$total_minutes", 60] }, // Get remaining minutes
+								},
+								in: {
+									$concat: [
+										{ $toString: "$$hours" },
+										":",
+										{
+											$cond: {
+												if: { $gte: ["$$minutes", 10] },
+												then: { $toString: "$$minutes" },
+												else: { $concat: ["0", { $toString: "$$minutes" }] },
+											},
+										},
+									],
+								},
 							},
 						},
 					},
@@ -193,16 +237,47 @@ export default class TimesheetRepository {
 						project_id: "$_id",
 						project_name: "$project.project_name",
 						total_hours: 1,
-						entries: 1,
+						entries: {
+							$map: {
+								input: "$entries",
+								as: "entry",
+								in: {
+									date: "$$entry.date",
+									hours: {
+										$let: {
+											vars: {
+												hours: { $floor: { $divide: ["$$entry.minutes", 60] } },
+												minutes: { $mod: ["$$entry.minutes", 60] },
+											},
+											in: {
+												$concat: [
+													{ $toString: "$$hours" },
+													":",
+													{
+														$cond: {
+															if: { $gte: ["$$minutes", 10] },
+															then: { $toString: "$$minutes" },
+															else: { $concat: ["0", { $toString: "$$minutes" }] },
+														},
+													},
+												],
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			]);
-
+	
 			return timesheets;
 		} catch (error) {
+			console.error(error);
 			throw new Error(error.message);
-		}
+	    }
 	}
+	  
 
 	//get timesheets for a week
 	async getWeeklyTimesheets(user_id, startDate, endDate) {
