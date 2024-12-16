@@ -34,5 +34,10 @@ subscriptionRouter
   .post(
     subscription.deleteSubscription
   );
+  subscriptionRouter
+  .route("/get-renewals")
+  .post(
+    subscription.getSubscriptionRenewals
+  );
 
 export default subscriptionRouter;

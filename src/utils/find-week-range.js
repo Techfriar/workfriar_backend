@@ -28,10 +28,8 @@ export default function generateWeekDateRanges(yearsBefore = 3, yearsAfter = 1) 
     }
 
     function getWeekStartEnd(date) {
-
         const currentDate = new Date(date);
         
- 
         const dayOfWeek = currentDate.getDay();
         const startOfWeek = new Date(currentDate);
         startOfWeek.setDate(currentDate.getDate() - dayOfWeek);

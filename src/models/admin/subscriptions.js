@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 /**
  * Define the subscription schema
  */
-
 const subscriptionSchema = mongoose.Schema(
   {
     subscription_name: {
@@ -60,11 +59,10 @@ const subscriptionSchema = mongoose.Schema(
       enum: ["Common", "Project Specific"],
       default: "Common"
     },
-    project_name: {
+    project_names: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
-      default: null
-    },
+    }],
   },
   {
     timestamps: true,
