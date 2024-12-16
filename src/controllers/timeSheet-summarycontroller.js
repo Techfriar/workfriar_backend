@@ -572,8 +572,9 @@ class TimeSheetSummaryController{
         try{
             const date=new Date()
             const weekStartDate=findWeekRange.getWeekStartDate(date)
-            const data=await timeSheetSummary.getSpecifiedDates(weekStartDate)
-            const formattedDates=await formatDates.formattedDateResponse(data)
+            const result=await timeSheetSummary.getSpecifiedDates(weekStartDate)
+            const formattedDates=await formatDates.formattedDateResponse(result)
+            
             if(data.length>0)
             {
                return res.status(200).json(
@@ -584,6 +585,7 @@ class TimeSheetSummaryController{
                     })
 
             }
+            else
             {
                return res.status(400).json(
                     {
@@ -597,7 +599,6 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
-            console.log(error)
            return res.status(500).json(
                 {
                     status:false,
