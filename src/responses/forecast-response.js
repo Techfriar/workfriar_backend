@@ -1,5 +1,11 @@
 import moment from "moment";
 export default class ForecastResponse{
+
+        /**
+     * Transform the Projectforecast resource into an object.
+     * @param {Object} forecast - The object with Project forecast information and usernames related to it.
+     * @return {Object} - An object containing selected properties to the client.
+     */
     //Response after creating a new forecast
     async formattedResponse  (forecast) {
         return ({
@@ -14,6 +20,8 @@ export default class ForecastResponse{
             id: forecast.id,
             opportunity_name: forecast.opportunity_name,
             opportunity_manager:forecast.opportunity_manager.full_name,
+            start_date:forecast.opportunity_start_date,
+            end_date:forecast.opportunity_close_date,
             opportunity_date: `${moment(forecast.opportunity_start_date).format('MM/DD/YYYY')} - ${moment(forecast.opportunity_close_date).format('MM/DD/YYYY')}`,
             client_name:forecast.client_name,
             opportunity_stage:forecast.opportunity_stage,

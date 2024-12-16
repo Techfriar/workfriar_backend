@@ -1,5 +1,6 @@
 import TimeSheetSummary from "../repositories/time-sheet-summary.js";
 import TimeSummaryResponse from "../responses/formatted-summary.js";
+import FormattedDates from "../responses/format-dates.js";
 import findTimezone from "../utils/findTimeZone.js";
 import FindWeekRange from "../utils/findWeekRange.js";
 import RejectionNotesRepository from "../repositories/admin/rejection-notes-repository.js";
@@ -8,12 +9,13 @@ const timeSheetSummary=new TimeSheetSummary()
 const timesummaryResponse=new TimeSummaryResponse()
 const rejectRepo=new RejectionNotesRepository()
 const findWeekRange=new FindWeekRange()
+const formatDates=new FormattedDates()
 /**
  * @swagger
  * /admin/timesummary:
  *   post:
  *     summary: Fetch and format the time sheet summary.
- *     description: Returns a formatted time sheet summary based on the provided start date, end date, and project ID.
+ *     description: Returns a formatted time sheet summary based on the provided start date, end date, project ID, and optional pagination parameters.
  *     tags:
  *       - TimeSheet
  *     requestBody:
@@ -27,22 +29,32 @@ const findWeekRange=new FindWeekRange()
  *                 type: string
  *                 format: date
  *                 example: "2023-12-01"
- *                 description: The start date for the summary.
+ *                 description: The start date for the summary. If not provided, the current week's start date will be used.
  *               endDate:
  *                 type: string
  *                 format: date
  *                 example: "2023-12-31"
- *                 description: The end date for the summary.
+ *                 description: The end date for the summary. If not provided, the current week's end date will be used.
  *               projectId:
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de7"
  *                 description: The ID of the project to fetch the summary for.
  *               page:
  *                 type: integer
- *                 example: 3
+ *                 example: 1
+ *                 description: The page number for pagination. Defaults to 1.
  *               limit:
  *                 type: integer
  *                 example: 10
+ *                 description: The number of items per page. Defaults to 10.
+ *               prev:
+ *                 type: boolean
+ *                 description: Whether to fetch the previous week's timesheets.
+ *                 example: false
+ *               next:
+ *                 type: boolean
+ *                 description: Whether to fetch the next week's timesheets.
+ *                 example: true
  *     responses:
  *       200:
  *         description: Successfully fetched and formatted the time sheet summary.
@@ -65,18 +77,30 @@ const findWeekRange=new FindWeekRange()
  *                       team_member:
  *                         type: string
  *                         example: "John Doe"
+ *                         description: The name of the team member.
  *                       total_time:
  *                         type: number
  *                         format: float
  *                         example: 40.5
+ *                         description: The total time logged by the team member in hours.
  *                       approved_time:
  *                         type: number
  *                         format: float
  *                         example: 30.5
- *                       totalPages:
- *                         type:number
- *                         format:int
- *                         example:7
+ *                         description: The total approved time in hours.
+ *                       submitted_or_rejected_time:
+ *                         type: number
+ *                         format: float
+ *                         example: 30.5
+ *                         description: The total rejected or submitted time in hours.
+ *                 dateRange:
+ *                   type: string
+ *                   example: "2023-12-01 - 2023-12-31"
+ *                   description: The date range for the summary.
+ *                 totalPages:
+ *                   type: integer
+ *                   example: 7
+ *                   description: The total number of pages based on the limit.
  *       400:
  *         description: No data available for the given parameters.
  *         content:
@@ -136,7 +160,6 @@ class TimeSheetSummaryController{
 					today = new Date(today);
 				}
 				startDate = findWeekRange.getWeekStartDate(today);
-				startDate.setUTCHours(0, 0, 0, 0);
 				endDate = findWeekRange.getWeekEndDate(today);
         }
         startDate.setUTCHours(0, 0, 0, 0);
@@ -168,7 +191,6 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
-            console.log(error)
             res.status(500).json(
                 {
                     status:false,
@@ -339,6 +361,14 @@ class TimeSheetSummaryController{
  *                 format: date
  *                 description: The end date of the range to search for time sheets (in YYYY-MM-DD format).
  *                 example: "2024-12-07"
+ *               prev:
+ *                 type: boolean
+ *                 description: Whether to fetch previous week due timesheets.
+ *                 example: false
+ *               next:
+ *                 type: boolean
+ *                 description: Whether to fetch next week due timesheets.
+ *                 example: true
  *     responses:
  *       200:
  *         description: Successfully retrieved due time sheets for the user.
@@ -372,6 +402,7 @@ class TimeSheetSummaryController{
  *                         type: number
  *                         description: Total hours logged in the time sheet range.
  *                         example: 40
+ *                       
  *       400:
  *         description: No due time sheets found for the user within the given date range.
  *         content:
@@ -424,7 +455,6 @@ class TimeSheetSummaryController{
                         today = new Date(today);
                     }
                     startDate = findWeekRange.getWeekStartDate(today);
-                    startDate.setUTCHours(0, 0, 0, 0);
                     endDate = findWeekRange.getWeekEndDate(today);
             }
             startDate.setUTCHours(0, 0, 0, 0);
@@ -438,6 +468,7 @@ class TimeSheetSummaryController{
         if(status==="rejected")
         {
              notes=await rejectRepo.getByWeek(startDate,endDate,userId)
+             console.log(notes)
         }
         const formattedData= await timesummaryResponse.formattedPastDue(data)
 
@@ -472,5 +503,107 @@ class TimeSheetSummaryController{
                 })
         }
     }
+
+    /**
+ * @swagger
+ * /user/getduedates:
+ *   post:
+ *     summary: Fetches specified dates based on the week start date.
+ *     description: Returns data for the specified week start date. If no data is found, it returns an appropriate response. 
+ *     tags:
+ *       - TimeSheet
+ *     responses:
+ *       200:
+ *         description: Successfully fetched the data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Data Fetched
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     description: Details about the fetched data.
+ *       404:
+ *         description: No data found for the specified week start date.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: No Data
+ *                 data:
+ *                   type: array
+ *                   example: []
+ *       500:
+ *         description: Internal Server Error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal Server Error
+ *                 data:
+ *                   type: array
+ *                   example: []
+ */
+
+   async getDatesController(req,res)
+   {
+        try{
+            const date=new Date()
+            const weekStartDate=findWeekRange.getWeekStartDate(date)
+            const data=await timeSheetSummary.getSpecifiedDates(weekStartDate)
+            const formattedDates=await formatDates.formattedDateResponse(data)
+            if(data.length>0)
+            {
+               return res.status(200).json(
+                    {
+                    status:true,
+                    message:"Data Fetched",
+                    data:formattedDates,
+                    })
+
+            }
+            {
+               return res.status(400).json(
+                    {
+                    status:false,
+                    message:"No Data",
+                    data:[]
+                    })
+            }
+
+
+        }
+        catch(error)
+        {
+            console.log(error)
+           return res.status(500).json(
+                {
+                    status:false,
+                    message:"Internal Server Error",
+                    data:[],
+                })
+        }
+   }
+    
 }
 export default TimeSheetSummaryController
