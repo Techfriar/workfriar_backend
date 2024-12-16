@@ -10,7 +10,7 @@ const transactionSchema = mongoose.Schema(
       type: Date,
       required: true,
     },
-    subscription_id: {
+    subscription_name: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subscription",
       required: true,

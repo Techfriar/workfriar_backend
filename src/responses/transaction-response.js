@@ -17,7 +17,7 @@ export default class TransactionResponse{
         return {
             id: transaction._id,
             transaction_date: this.formatDate(transaction.transaction_date),
-            subscription_id: transaction.subscription_id,
+            subscription_name: transaction.subscription_name,
             description: transaction.description,
             transaction_currency: transaction.transaction_currency,
             transaction_amount: transaction.transaction_amount,
@@ -30,7 +30,7 @@ export default class TransactionResponse{
             next_due_date: this.formatDate(transaction.next_due_date) || null,
             is_deleted: transaction.is_deleted,
             deleted_at: transaction.deleted_at,
-            receipts: array.isArray(transaction.receipts) ? transaction.receipts.map(receipt => generateFileUrl(receipt)) : transaction.receipts ? [generateFileUrl(transaction.receipts)] : [],
+            receipts: Array.isArray(transaction.receipts) ? transaction.receipts.map(receipt => generateFileUrl(receipt)) : transaction.receipts ? [generateFileUrl(transaction.receipts)] : [],
             createdAt: transaction.createdAt,
             updatedAt: transaction.updatedAt
         };

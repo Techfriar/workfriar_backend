@@ -30,7 +30,7 @@ export default class TransactionController {
    *               transaction_date:
    *                 type: string
    *                 format: date
-   *               subscription_id:
+   *               subscription_name:
    *                 type: string
    *               description:
    *                 type: string
@@ -159,7 +159,7 @@ export default class TransactionController {
           return {
             transactionDate: formatted.transaction_date,
             subscriptionName:
-              transaction.subscription_id?.subscription_name || "N/A",
+              transaction.subscription_name?.subscription_name || "N/A",
             description: formatted.description,
             transactionCurrency: formatted.transaction_currency,
             transaction_amount: formatted.transaction_amount,
