@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export default class HolidayResponse {
     /**
      * Transform the holiday resource into an object.
@@ -9,13 +11,19 @@ export default class HolidayResponse {
           id: holiday._id,
           holiday_name: holiday.holiday_name,
           holiday_type: holiday.holiday_type,
-          start_date: holiday.start_date,
-          end_date: holiday.end_date,
+          start_date: moment(holiday.start_date).format('ddd, DD MMMM, YYYY'),
+          end_date: moment(holiday.end_date).format('ddd, DD MMMM, YYYY'),
           location: holiday.location,
           createdAt: holiday.createdAt,
           updatedAt: holiday.updatedAt,
         };
       }
-      
-  }
-  
+
+    static async demoformat(holiday) {
+        return {
+          holiday_id: holiday._id,
+          holiday_name: holiday.holiday_name,
+          holiday_date: moment(holiday.start_date).format('ddd, DD MMMM, YYYY'),
+        };
+      }
+  }

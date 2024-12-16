@@ -3,7 +3,7 @@
  * @param {Array} transactions - Array of transaction objects
  * @returns {String} CSV formatted string
  */
-const convertTransactionsToCSV = (transactions) => {
+export const convertTransactionsToCSV = (transactions) => {
     // Define headers based on the screenshot
     const headers = [
         'Transaction Date',
@@ -51,9 +51,18 @@ const convertTransactionsToCSV = (transactions) => {
  */
 const formatAmount = (amount) => {
     if (!amount) return '$0.00';
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+
+    // Remove any existing dollar sign or commas from the amount
+    const cleanAmount = typeof amount === 'string' 
+        ? amount.replace(/[$,]/g, '') 
+        : amount;
+
+    const numAmount = parseFloat(cleanAmount);
+    if (isNaN(numAmount)) return '$0.00'; // Handle invalid numbers
+
     return `$${numAmount.toFixed(2)}`;
 };
+
 
 /**
  * Format a field value for CSV
@@ -75,7 +84,7 @@ const formatCSVField = (value) => {
  * @param {Array} transactions - Array of transaction objects
  * @param {String} filename - Name of the file to save
  */
-const saveTransactionsToCSV = (transactions, filename) => {
+export const saveTransactionsToCSV = (transactions, filename) => {
     const csvContent = convertTransactionsToCSV(transactions);
     
     if (typeof window !== 'undefined') {
@@ -96,9 +105,4 @@ const saveTransactionsToCSV = (transactions, filename) => {
         const fs = require('fs');
         fs.writeFileSync(filename, csvContent);
     }
-};
-
-module.exports = {
-    convertTransactionsToCSV,
-    saveTransactionsToCSV
 };
