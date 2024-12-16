@@ -6,6 +6,7 @@ import TimesheetResponse from '../../responses/timesheet-response.js';
 import findTimezone from '../../utils/findTimeZone.js';
 import FindS from '../../utils/findSunday.js';
 import getLocalDateStringForTimezone from '../../utils/getLocalDateStringForTimezone.js';
+import HolidayRepository from '../../repositories/admin/holiday-repository.js';
 
 
 const TimesheetRepo = new TimesheetRepository()
@@ -13,6 +14,8 @@ const TimesheetRepo = new TimesheetRepository()
 const FindWeekRange_ = new FindWeekRange()
 
 const timesheetResponse = new TimesheetResponse()
+
+const HolidayRepo = new HolidayRepository()
 
 // Admin controller to add a timesheet
 export default class TimesheetController {
@@ -883,6 +886,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
+			const user_location = 'India'
 
 			let { startDate, endDate, prev, next } = req.body;
 
@@ -921,12 +925,27 @@ export default class TimesheetController {
 			startDate.setUTCHours(0, 0, 0, 0);
 			endDate.setUTCHours(0, 0, 0, 0);
 			let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
+
 			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
 
+			let allDates = FindWeekRange_.getDatesBetween(actualStartWeek, actualEndWeek);
+
+			const weekDates = await Promise.all(
+				allDates.map(async (date) => {
+					let dateString = date.toISOString().split('T')[0];
+					let holiday = await HolidayRepo.isHoliday(date, user_location);
+					return {
+						date: date,
+						normalized_date: dateString,
+						day_of_week: date.toLocaleDateString('en-US', { weekday: 'short' }),
+						is_holiday: holiday,
+						is_disable: !(dateString >= startDate.toISOString().split('T')[0] && dateString <= endDate.toISOString().split('T')[0]),
+					};
+				})
+			);			
 
 			if (timesheets.length > 0) {
 				const modifydata = timesheets.map((item) => {
-					const allDates = FindWeekRange_.getDatesBetween(actualStartWeek, actualEndWeek);
 					let total_hours = 0;
 
 					const existingDataMap = new Map(item.data_sheet.map(data => [
@@ -940,18 +959,18 @@ export default class TimesheetController {
 						const existingData = existingDataMap.get(dateString);
 						if (existingData) {
 							total_hours += parseFloat(existingData.hours);
-							existingData.normalizedDate = dateString;
-							existingData.dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
-							existingData.isDisable = !(dateString >= startDate.toISOString().split('T')[0] && dateString <= endDate.toISOString().split('T')[0]);
+							existingData.normalized_date = dateString;
+							existingData.day_of_week = date.toLocaleDateString('en-US', { weekday: 'short' });
+							existingData.is_disable = !(dateString >= startDate.toISOString().split('T')[0] && dateString <= endDate.toISOString().split('T')[0]);
 							return existingData;
 						} else {
 							return {
 								date: date,
 								hours: '00:00',
-								normalizedDate: dateString,
-								dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'short' }),
-								isHoliday: false,
-								isDisable: !(dateString >= startDate.toISOString().split('T')[0] && dateString <= endDate.toISOString().split('T')[0]),
+								normalized_date: dateString,
+								day_of_week: date.toLocaleDateString('en-US', { weekday: 'short' }),
+								is_holiday: false,
+								is_disable: !(dateString >= startDate.toISOString().split('T')[0] && dateString <= endDate.toISOString().split('T')[0]),
 							};
 						}
 					});
@@ -971,6 +990,7 @@ export default class TimesheetController {
 					message: 'Weekly timesheets fetched successfully',
 					date_range: range,
 					data: data,
+					weekDates
 				});
 			} else {
 				return res.status(200).json({
@@ -978,6 +998,7 @@ export default class TimesheetController {
 					message: 'No timesheets found for the provided date range',
 					date_range: range,
 					data: [],
+					weekDates
 				});
 			}
 		} catch (err) {
@@ -1142,6 +1163,7 @@ export default class TimesheetController {
 
 
 				let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
+
 				const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
 
 				if (timesheets.length > 0) {
@@ -1159,25 +1181,44 @@ export default class TimesheetController {
 							weekDates.push(date.toISOString().split('T')[0]);
 						}
 
-						const totalHoursPerDate = {};
-						weekDates.forEach(date => {
-							totalHoursPerDate[date] = { hours: 0, isDisable: true };
-						});
+						let totalHoursPerDate = [];
 
+						// Initialize `totalHoursPerDate` as an array of objects
+						weekDates.forEach(date => {
+							const normalizedDate = date.toISOString().split('T')[0];
+							const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+							totalHoursPerDate.push({
+								date: normalizedDate,
+								hours: 0,
+								isDisable: true,
+								dayOfWeek: dayOfWeek
+							});
+						});
+						
 						let totalHours = 0;
+						
+						// Process saved timesheets to calculate total hours
 						savedTimesheets.forEach(timesheet => {
 							timesheet.data_sheet.forEach(entry => {
-								const date = new Date(entry.date).toISOString().split('T')[0];
+								const normalizedDate = new Date(entry.date).toISOString().split('T')[0];
 								const hours = parseFloat(entry.hours);
-								if (totalHoursPerDate[date]) {
-									totalHoursPerDate[date].hours += hours;
-									totalHoursPerDate[date].isDisable = false;
-									totalHours += hours;
+						
+								// Find the matching date in `totalHoursPerDate` array
+								const dateEntry = totalHoursPerDate.find(item => item.date === normalizedDate);
+								if (dateEntry) {
+									dateEntry.hours += hours; // Add hours
+									dateEntry.isDisable = false; // Enable date
+									totalHours += hours; // Increment total hours
 								}
 							});
 						});
 
-						totalHoursPerDate.totalHours = totalHours;
+						totalHoursPerDate.push({
+							date: "total",
+							hours: totalHours,
+							isDisable: false,
+							dayOfWeek: "total"
+						})
 						const status = await TimesheetRepo.checkSavedTimesheetsAroundRange(user_id, startDate, endDate);
 
 						return res.status(200).json({
@@ -1190,7 +1231,7 @@ export default class TimesheetController {
 					}
 				}
 		
-				if (startDate <= startOfYear) {
+				if (startDate <= startOfYear || endDate >= endOfYear) {
 					break;
 				}
 
