@@ -1112,14 +1112,14 @@ export default class TimesheetController {
 			// const user_id = decoded.UserId;
 			const user_id = '6756c072ddd097b3e4bbadd5';
 			let { startDate, endDate } = req.body;
-	
+
 			let actualStartWeek, actualEndWeek;
 			if (startDate && endDate) {
 				const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
 				if (validatedDates.error) {
 					throw new CustomValidationError(validatedDates.error);
 				}
-	
+
 				startDate = new Date(startDate);
 				endDate = new Date(endDate);
 	
@@ -1159,14 +1159,13 @@ export default class TimesheetController {
 					let actualStartWeek = FindS.getPreviousSunday(startDate);
 					let actualEndWeek = new Date(actualStartWeek);
 					actualEndWeek.setDate(actualStartWeek.getDate() + 6);
-	
+
 					for (let date = new Date(actualStartWeek); date <= actualEndWeek; date.setDate(date.getDate() + 1)) {
 						weekDates.push(new Date(date));
 					}
 	
 					let totalHoursPerDate = [];
-	
-	
+		
 					weekDates.forEach(date => {
 						const normalizedDate = date.toISOString().split('T')[0];
 						const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
@@ -1206,7 +1205,7 @@ export default class TimesheetController {
 						}
 					  });
 					});
-					
+
 					// Calculate the total hours across all dates
 					totalHours = totalHoursPerDate.reduce((acc, entry) => {
 					  const [hours, minutes] = entry.hours.split(':').map(Number);
@@ -1223,7 +1222,6 @@ export default class TimesheetController {
 					  dayOfWeek: ""
 					});
 					
-	
 					return res.status(200).json({
 						status: true,
 						message: "Due timesheets fetched successfully",
@@ -1235,8 +1233,7 @@ export default class TimesheetController {
 						message: "No saved timesheets found",
 						data: [],
 					});
-				}
-	
+				}	
 			}
 	
 			return res.status(200).json({
@@ -1612,6 +1609,7 @@ export default class TimesheetController {
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
 			let { year, month } = req.body;
+
 			const validatedValues = await TimesheetRequest.validateYearMonth({ year, month })
 			if (validatedValues.error) {
 				throw new CustomValidationError(validatedValues.error)
@@ -1625,7 +1623,6 @@ export default class TimesheetController {
 			const endDate = new Date(Date.UTC(year, month, 0));
 			const end = endDate.toISOString()
 
-
 			const timesheetData = await TimesheetRepo.getMonthlySnapshot(user_id, start, end)
 
 			const defaultStatuses = ['saved', 'accepted', 'rejected'];
@@ -1636,7 +1633,6 @@ export default class TimesheetController {
 					count: existingStatus ? existingStatus.count : 0
 				};
 			});
-
 
 			if (timesheetData.length > 0) {
 				res.status(200).json({
@@ -1652,7 +1648,6 @@ export default class TimesheetController {
 					data: []
 				})
 			}
-
 		} catch (err) {
 			if (err instanceof CustomValidationError) {
 				res.status(422).json({
@@ -1770,6 +1765,13 @@ export default class TimesheetController {
 				res.status(200).json({
 					status: true,
 					message: 'Timesheet deleted successfully',
+					data: []
+				})
+			}
+			else{
+				res.status(400).json({
+					status: false,
+					message: 'Failed to delete timesheet',
 					data: []
 				})
 			}
@@ -2026,7 +2028,7 @@ export default class TimesheetController {
 					timesheet => timesheet.status !== 'submitted' && timesheet.status !== 'accepted'
 				);
 				if (savedTimesheets.length > 0) {
-						// Submit all timesheets concurrently
+						// Submit all timesheets
 						await Promise.all(
 							savedTimesheets.map((item) => TimesheetRepo.submitTimesheet(item._id))
 						);
