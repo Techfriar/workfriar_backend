@@ -28,7 +28,7 @@ export default class ProjectResponse {
           name: category.category,
         }}),
       actual_end_date: this.formatDate(project.actual_end_date),
-      project_lead: project.project_lead,
+      project_lead: project.project_lead.full_name,
       billing_model: project.billing_model,
       project_logo: project.project_logo ? generateFileUrl(project.project_logo) : null,
       open_for_time_entry: project.open_for_time_entry,
