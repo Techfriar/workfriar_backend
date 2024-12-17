@@ -7,19 +7,18 @@ export default class FormattedDates {
      * @return {Array} - An array of transformed date objects.
      */
     async formattedDateResponse(dates) {
+
         let index = 0;
 
         const data = dates.map((date) => {
-
             const startDate = moment(date.startDate);
             const endDate = moment(date.endDate);
-
             const label = `${startDate.format("MMM")} ${startDate.format("D")}-${endDate.format("MMM")} ${endDate.format("D")}, ${startDate.format("YYYY")}`;
 
             return {
-                startDate: startDate.toISOString().split('T')[0],
+                startDate: date.startDate,
                 month: startDate.format("MMMM"),
-                endDate: endDate.toISOString().split('T')[0],
+                endDate: date.endDate,
                 week: index++,
                 label: label
             };

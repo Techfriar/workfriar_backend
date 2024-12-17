@@ -30,6 +30,5 @@ export function getDateRangeAroundInput(inputDate, rangeCount, weekRanges) {
     if (!found) {
         return []; 
     }
-
     return result;
 }
