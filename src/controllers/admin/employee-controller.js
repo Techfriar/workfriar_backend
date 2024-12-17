@@ -33,7 +33,7 @@ class EmployeeController{
  *                 type: string
  *                 description: Email of the employee
  *                 example: john.doe@example.com
- *               role:
+ *               role_id:
  *                 type: string
  *                 description: Role of the employee
  *                 example: Manager
@@ -41,6 +41,10 @@ class EmployeeController{
  *                 type: string
  *                 description: Reporting manager's user ID
  *                 example: 607d1f77bcf86cd799439011
+ *               phone_number:
+ *                 type: string
+ *                 description: users phone Number 
+ *                 example: 9087886467
  *               location:
  *                 type: string
  *                 description: Location of the employee
@@ -92,15 +96,14 @@ class EmployeeController{
 
     async addEmployees(req,res)
     {
-        const {name,email,role,reporting_manager,location,status}=req.body
-        const validationResult = await employeeRequest.validateEmployee(req.body);
-        if (!validationResult.isValid) {
-            throw new CustomValidationError(validationResult.message);
-        }
-        let fileurl=" "
         try
         {
-            
+        const {name,email,role_id,reporting_manager,phone_number,location,status}=req.body.data
+        const validationResult = await employeeRequest.validateEmployee(req.body.data);
+        if (!validationResult.isValid) {
+            throw new CustomValidationError(validationResult.errors);
+        }
+        let fileurl=" "   
         if (req.files?.profile_pic) {
             const fileArray = Array.isArray(req.files.profile_pic)? req.files.profile_pic: [req.files.profile_pic];
             for (const file of fileArray) {
@@ -110,26 +113,26 @@ class EmployeeController{
         }
         }
         }
-         const isAdminResult=await userRepo.checkPermission(role)
+         const isAdminResult=await userRepo.checkPermission(role_id)
          const isAdmin=isAdminResult.status
          const isactive=status==="active"
      
-        const data=await userRepo.addEmployees(name,email,reporting_manager,isAdmin,location,isactive,fileurl)
+        const data=await userRepo.addEmployees(name,email,reporting_manager,phone_number,isAdmin,location,isactive,fileurl)
 
 
         if(data.status)
         {
-            const roleData=await RoleRepository.addUsersToRole(role,[data.data._id])
+            const roleData=await RoleRepository.addUsersToRole(role_id,[data.data._id])
             if(roleData.status)
             {
-                res.status(200).json({
+                return res.status(200).json({
                     status:true,
                     message:"Employee added successfully",
                     data:data.data
                 })
             }else
             {
-                res.status(400).json({
+                return res.status(400).json({
                     status:false,
                     message:"Failed to add employee to role",
                     data:[]
@@ -138,7 +141,7 @@ class EmployeeController{
         }
         else
         {
-            res.status(400).json({
+            return res.status(400).json({
                 status:false,
                 message:"Failed to add employee",
                 data:[]
@@ -149,13 +152,13 @@ class EmployeeController{
         {
             if(error instanceof CustomValidationError)
             {
-                res.status(422).json({
+               return  res.status(422).json({
                     status:false,
-                    message:error.message,
+                    message:"Validation Error",
                     errors:error.errors
                 })
             }
-            res.status(500).json({
+            return res.status(500).json({
                 status:false,
                 message:"Internal Server Error",
                 errors:error
@@ -171,21 +174,20 @@ class EmployeeController{
  *     description: This endpoint allows you to fetch roles within a specified department.
  *     tags:
  *       - Employees
- *     parameters:
- *       - in: body
- *         name: department
- *         description: Department for which roles are to be fetched
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             department:
- *               type: string
- *               description: Department name to get roles for
- *               example: "Technical"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               department:
+ *                 type: string
+ *                 description: The department name.
+ *                 example: "Technical"
  *     responses:
  *       200:
- *         description: Successfully fetched roles for the department
+ *         description: Roles fetched successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -209,7 +211,7 @@ class EmployeeController{
  *                         type: string
  *                         example: "Technical"
  *       400:
- *         description: Failed to fetch roles
+ *         description: Bad request, department name is missing or invalid.
  *         content:
  *           application/json:
  *             schema:
@@ -222,7 +224,7 @@ class EmployeeController{
  *                   type: string
  *                   example: "Failed to fetch roles"
  *       500:
- *         description: Internal Server Error
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -239,9 +241,11 @@ class EmployeeController{
  *                   example: "Error details"
  */
 
+
     async getRoles(req,res)
     {
         const {department}=req.body
+
         try
         {
             const data=await userRepo.getRoles(department)
@@ -302,7 +306,7 @@ class EmployeeController{
  *                 type: string
  *                 description: Email of the employee
  *                 example: john.doe@example.com
- *               role:
+ *               role_id:
  *                 type: string
  *                 description: Role of the employee
  *                 example: Manager
@@ -358,19 +362,20 @@ class EmployeeController{
  */
 
 async editEmployee(req, res) {
-    const { id, name, email, role, reporting_manager, location, status } = req.body;
+    const { id, name, email, role_id,phone_number,reporting_manager, location, status } = req.body.data;
     let fileurl="";
-
+    let isAdmin,isactive,isAdminResult;
     try {
-        const validationResult = await employeeRequest.validateEmployeeEdit(req.body);
+        const validationResult = await employeeRequest.validateEmployeeEdit(req.body.data);
         if (!validationResult.isValid) {
-            throw new CustomValidationError(validationResult.message);
+            throw new CustomValidationError(validationResult.errors);
         }
-
-        const isAdminResult=await userRepo.checkPermission(role)
-        const isAdmin=isAdminResult.status
-        const isactive=status==="active"
-
+        if(role_id)
+        {
+         isAdminResult=await userRepo.checkPermission(role_id)
+         isAdmin=isAdminResult.status
+         isactive=status==="active"
+        }
         if (req.files?.employee_profile) {
             const fileArray = Array.isArray(req.files.employee_profile)
                 ? req.files.employee_profile
@@ -388,6 +393,7 @@ async editEmployee(req, res) {
         if (name) updateData.full_name = name;
         if (email) updateData.email = email;
         if (reporting_manager) updateData.reporting_manager = reporting_manager;
+        if (phone_number) updateData.phone_number = phone_number;
         if (location) updateData.location = location;
         if (status) updateData.status = status;
         if (fileurl) updateData.profile_pic = fileurl;
@@ -403,10 +409,11 @@ async editEmployee(req, res) {
                 data: null
             });
         }
-        if (role) {
+
+        if (role_id) {
             await RoleRepository.removeUserFromAllRoles(id);
 
-            const roleData=await RoleRepository.addUsersToRole(role,[updatedEmployee.data._id])
+            const roleData=await RoleRepository.addUsersToRole(role_id,[updatedEmployee.data._id])
 
             if (!roleData.status) {
                 return res.status(400).json({
@@ -424,11 +431,10 @@ async editEmployee(req, res) {
         });
 
     } catch (error) {
-      
         if (error instanceof CustomValidationError) {
             return res.status(422).json({
                 status: false,
-                message: error.message,
+                message: "Validation Failed",
                 errors: error.errors
             });
         }
