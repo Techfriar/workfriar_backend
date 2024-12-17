@@ -710,7 +710,10 @@ export default class TimesheetController {
 			const user_id = '6756c072ddd097b3e4bbadd5';
 			const timezone = await findTimezone(req);
 
-			const startOfDay = new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
+			let startOfDay = getLocalDateStringForTimezone(timezone, new Date());
+			if (typeof startOfDay === "string") {
+				startOfDay = new Date(startOfDay);
+			}
 			startOfDay.setUTCHours(0, 0, 0, 0);
 
 			const endOfDay = new Date(startOfDay);
@@ -890,11 +893,8 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);
 			// const user_id = decoded.UserId;
 			const user_id = '6746a473ed7e5979a3a1f891';
-			const userLocation =  "India";
 			const user_location = 'India';
-
 			let { startDate, endDate } = req.body;
-
 			let actualStartWeek, actualEndWeek;
 
 			if (startDate && endDate) {
@@ -1110,7 +1110,7 @@ export default class TimesheetController {
 			// const decoded = jwt.decode(token);  // Decode without verification
 	
 			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
+			const user_id = '6756c072ddd097b3e4bbadd5';
 			let { startDate, endDate } = req.body;
 	
 			let actualStartWeek, actualEndWeek;
@@ -1153,10 +1153,8 @@ export default class TimesheetController {
 				const savedTimesheets = timesheets.filter(
 					timesheet => timesheet.status !== 'submitted' && timesheet.status !== 'accepted'
 				);
-				
-				
-	
-				if (savedTimesheets.length > 0) {
+
+				if (savedTimesheets.length > 0) {					
 					const weekDates = [];
 					let actualStartWeek = FindS.getPreviousSunday(startDate);
 					let actualEndWeek = new Date(actualStartWeek);
@@ -1235,7 +1233,7 @@ export default class TimesheetController {
 					return res.status(200).json({
 						status: true,
 						message: "No saved timesheets found",
-						data: totalHoursPerDate,
+						data: [],
 					});
 				}
 	
@@ -1424,8 +1422,7 @@ export default class TimesheetController {
 			if (report.length > 0) {
 				let data;
 				switch (tabKey) {
-					case 'project_summary':
-						// Flatten all projects into a single array
+					case 'project_summary':					
 						data = await Promise.all(
 							report.flatMap(item =>
 								item.projects.map(async (item) => {
@@ -1920,6 +1917,146 @@ export default class TimesheetController {
 				message: error.message,
 				data: [],
 			});
+		}
+	}
+
+	//submit due timesheets
+	/**
+	 * @swagger
+	 * /timesheet/submit-due-timesheets:
+	 *   post:
+	 *     summary: Submit due timesheets for a given date range
+	 *     description: Submits all saved timesheets within the specified date range that have not been submitted or accepted.
+	 *     tags:
+	 *       - Timesheet
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               startDate:
+	 *                 type: string
+	 *                 format: date
+	 *                 description: The start date of the range (YYYY-MM-DD)
+	 *                 example: "2023-05-01"
+	 *               endDate:
+	 *                 type: string
+	 *                 format: date
+	 *                 description: The end date of the range (YYYY-MM-DD)
+	 *                 example: "2023-05-07"
+	 *     responses:
+	 *       200:
+	 *         description: Timesheets submitted successfully or no timesheets found
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 status:
+	 *                   type: boolean
+	 *                   example: true
+	 *                 message:
+	 *                   type: string
+	 *                   example: "Timesheets submitted successfully"
+	 *       422:
+	 *         description: Validation error
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 status:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: "Validation error"
+	 *                 errors:
+	 *                   type: object
+	 *       500:
+	 *         description: Internal server error
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 status:
+	 *                   type: boolean
+	 *                   example: false
+	 *                 message:
+	 *                   type: string
+	 *                   example: "An error occurred while submitting timesheets"
+	 *                 data:
+	 *                   type: array
+	 *                   items: {}
+	 */
+
+	async submitDueTimesheets(req,res){
+		try{
+			// Extract token from Authorization header
+			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+	
+			// if (!token) {
+			// 	return res.status(401).json({ 
+			// 		status:false,
+			// 		message: 'No token provided',
+			// 		data: []
+			// 	});
+			// }
+	
+			// // Decode the token without verifying it (get the payload)
+			// const decoded = jwt.decode(token);  // Decode without verification
+	
+			// const user_id = decoded.UserId;
+			const user_id = '6756c072ddd097b3e4bbadd5';
+			let { startDate, endDate } = req.body;
+			const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
+			if (validatedDates.error) {
+				throw new CustomValidationError(validatedDates.error);
+			}
+			startDate = new Date(startDate);
+			endDate = new Date(endDate);
+			startDate.setUTCHours(0, 0, 0, 0);
+			endDate.setUTCHours(0, 0, 0, 0);
+			const timesheets = await TimesheetRepo.getWeeklyTimesheets(user_id, startDate, endDate);
+			if (timesheets.length > 0) {
+				const savedTimesheets = timesheets.filter(
+					timesheet => timesheet.status !== 'submitted' && timesheet.status !== 'accepted'
+				);
+				if (savedTimesheets.length > 0) {
+						// Submit all timesheets concurrently
+						await Promise.all(
+							savedTimesheets.map((item) => TimesheetRepo.submitTimesheet(item._id))
+						);
+			
+						return res.status(200).json({
+							status: true,
+							message: 'Timesheets submitted successfully',
+						});
+					} else {
+						return res.status(200).json({
+							status: false,
+							message: 'No timesheets found for the given date range',
+						});
+				}
+			}
+
+		}catch (err) {
+			if (err instanceof CustomValidationError) {
+				res.status(422).json({
+					status: false,
+					message: 'Validation error',
+					errors: err.errors,
+				});
+			} else {
+				return res.status(500).json({
+					status: false,
+					message: err.message,
+					data: [],
+				});
+			}
 		}
 	}
 
