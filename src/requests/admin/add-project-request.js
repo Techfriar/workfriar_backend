@@ -17,7 +17,7 @@ class AddProjectRequest {
       "string.empty": "Please enter the project description.",
       "any.required": "Please enter the project description.",
     }),
-    planned_start_date: Joi.required().messages({
+    planned_start_date: Joi.date().required().messages({
       "date.base": "Please enter a valid planned start date.",
       "any.required": "Please enter the planned start date.",
     }),

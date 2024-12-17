@@ -17,7 +17,7 @@ export default class TransactionResponse{
         return {
             id: transaction._id,
             transaction_date: this.formatDate(transaction.transaction_date),
-            subscription_name: transaction.subscription_name,
+            subscription_name: transaction.subscription_name?.subscription_name,
             description: transaction.description,
             transaction_currency: transaction.transaction_currency,
             transaction_amount: transaction.transaction_amount,
@@ -26,7 +26,7 @@ export default class TransactionResponse{
             card_holder_name: transaction.card_holder_name,
             last_four_digits: transaction.last_four_digits,
             card_expiry: transaction.card_expiry,
-            license_count: transaction.license_count,
+            license_count: transaction.license_count.license_count,
             next_due_date: this.formatDate(transaction.next_due_date) || null,
             is_deleted: transaction.is_deleted,
             deleted_at: transaction.deleted_at,

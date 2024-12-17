@@ -13,75 +13,97 @@ const updateStatus = new UpdateStatusRequest();
 
 export default class ProjectController {
   /**
-   * Add Project
-   *
-   * @swagger
-   * /project/add:
-   *   post:
-   *     tags:
-   *       - Project
-   *     summary: Add project
-   *     security:
-   *       - bearerAuth: []
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         multipart/form-data:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               client_name:
-   *                 type: string
-   *                 description: Enter client name
-   *               project_name:
-   *                 type: string
-   *                 description: Enter project name
-   *               description:
-   *                 type: string
-   *                 description: Enter project description
-   *               planned_start_date:
-   *                 type: string
-   *                 format: date
-   *                 description: Enter planned start date
-   *               planned_end_date:
-   *                 type: string
-   *                 format: date
-   *                 description: Enter planned end date
-   *               actual_start_date:
-   *                 type: string
-   *                 format: date
-   *                 description: Enter actual start date
-   *               actual_end_date:
-   *                 type: string
-   *                 format: date
-   *                 description: Enter actual end date
-   *               project_lead:
-   *                 type: string
-   *                 description: Enter project lead user id
-   *               billing_model:
-   *                 type: string
-   *                 description: Enter billing model
-   *               categories:
-   *                  type: array of string
-   *                  description: Enter categories
-   *               project_logo:
-   *                 type: string
-   *                 format: binary
-   *                 description: Upload project logo
-   *               open_for_time_entry:
-   *                 type: string
-   *                 description: Enter time entry status (opened/closed)
-   *               status:
-   *                 type: string
-   *                 description: Enter project status
-   *     responses:
-   *       200:
-   *         description: Success
-   *       400:
-   *         description: Bad Request
-   *       500:
-   *         description: Internal Server Error
-   */
+ * @swagger
+ * /project/add:
+ *   post:
+ *     tags:
+ *       - Project
+ *     summary: Add project
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - client_name
+ *               - project_name
+ *               - description
+ *               - project_lead
+ *               - status
+ *               - open_for_time_entry
+ *             properties:
+ *               client_name:
+ *                 type: string
+ *                 description: Client ID for the project
+ *               project_name:
+ *                 type: string
+ *                 description: Name of the project
+ *               description:
+ *                 type: string
+ *                 description: Detailed description of the project
+ *               planned_start_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Planned start date of the project (optional)
+ *               planned_end_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Planned end date of the project (optional)
+ *               actual_start_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Actual start date of the project (optional)
+ *               actual_end_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Actual end date of the project (optional)
+ *               project_lead:
+ *                 type: string
+ *                 description: User ID of the project lead
+ *               billing_model:
+ *                 type: string
+ *                 description: Billing model for the project
+ *                 enum:
+ *                   - Bill time (time and materials)
+ *                   - Bill milestones / Fixed fee
+ *                   - Retainer
+ *                   - Non billable
+ *               project_logo:
+ *                 type: string
+ *                 format: binary
+ *                 description: Project logo file (optional)
+ *               open_for_time_entry:
+ *                 type: string
+ *                 description: Time entry status for the project
+ *                 enum:
+ *                   - opened
+ *                   - closed
+ *                 default: closed
+ *               status:
+ *                 type: string
+ *                 description: Current status of the project
+ *                 enum:
+ *                   - Not Started
+ *                   - In Progress
+ *                   - Completed
+ *                   - On Hold
+ *                   - Cancelled
+ *               categories:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of category IDs for the project
+ *     responses:
+ *       200:
+ *         description: Success
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
+ */
   async addProject(req, res) {
     try {
       const validatedData = await new AddProjectRequest(req).validate();
@@ -282,73 +304,90 @@ export default class ProjectController {
   }
 
   /**
-   * Update Project
-   *
-   * @swagger
-   * /project/update/{id}:
-   *   post:
-   *     tags:
-   *       - Project
-   *     summary: Update project
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Project ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         multipart/form-data:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               client_name:
-   *                 type: string
-   *                 description: Enter client name
-   *               project_name:
-   *                 type: string
-   *                 description: Enter project name
-   *               description:
-   *                 type: string
-   *                 description: Enter project description
-   *               planned_start_date:
-   *                 type: string
-   *                 format: date
-   *                 description: Enter planned start date
-   *               planned_end_date:
-   *                 type: string
-   *                 format: date
-   *                 description: Enter planned end date
-   *               project_lead:
-   *                 type: string
-   *                 description: Enter project lead user id
-   *               billing_model:
-   *                 type: string
-   *                 description: Enter billing model
-   *               project_logo:
-   *                 type: string
-   *                 format: binary
-   *                 description: Upload project logo
-   *               open_for_time_entry:
-   *                 type: string
-   *                 description: Enter time entry status (opened/closed)
-   *               status:
-   *                 type: string
-   *                 description: Enter project status
-   *     responses:
-   *       200:
-   *         description: Success
-   *       400:
-   *         description: Bad Request
-   *       404:
-   *         description: Not Found
-   *       500:
-   *         description: Internal Server Error
-   */
+ * @swagger
+ * /project/update/{id}:
+ *   post:
+ *     tags:
+ *       - Project
+ *     summary: Update project
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Project ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               client_name:
+ *                 type: string
+ *                 description: Client ID for the project
+ *               project_name:
+ *                 type: string
+ *                 description: Name of the project
+ *               description:
+ *                 type: string
+ *                 description: Detailed description of the project
+ *               planned_start_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Planned start date of the project
+ *               planned_end_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Planned end date of the project
+ *               project_lead:
+ *                 type: string
+ *                 description: User ID of the project lead
+ *               billing_model:
+ *                 type: string
+ *                 description: Billing model for the project
+ *                 enum:
+ *                   - Bill time (time and materials)
+ *                   - Bill milestones / Fixed fee
+ *                   - Retainer
+ *                   - Non billable
+ *               project_logo:
+ *                 type: string
+ *                 format: binary
+ *                 description: Project logo file
+ *               open_for_time_entry:
+ *                 type: string
+ *                 description: Time entry status for the project
+ *                 enum:
+ *                   - opened
+ *                   - closed
+ *               status:
+ *                 type: string
+ *                 description: Current status of the project
+ *                 enum:
+ *                   - Not Started
+ *                   - In Progress
+ *                   - Completed
+ *                   - On Hold
+ *                   - Cancelled
+ *               categories:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of category IDs for the project
+ *     responses:
+ *       200:
+ *         description: Success
+ *       400:
+ *         description: Bad Request
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
+ */
   async updateProject(req, res) {
     try {
       const validatedData = await new UpdateProjectRequest(req).validate();
