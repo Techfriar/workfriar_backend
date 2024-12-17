@@ -27,26 +27,10 @@ export default class UserController{
      */
     async getMyProfile(req, res) {
         try {
-            // Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const UserId = decoded.UserId;
-
-            const UserId = '6744a7c9707ecbeea1efd14c'
+           // Extract UserId from the user session
+			const UserId = req.session.user.id;
+            
             const userData = await userRepo.getUserExpanded( UserId )
-
-            console.log('here', userData)
 
             if (userData) {
                 const userDetails = await UserResponse.format( userData )

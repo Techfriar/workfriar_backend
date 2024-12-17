@@ -2,28 +2,29 @@ import jwt from 'jsonwebtoken'
 import { isTokenBlacklisted } from '../services/blackListToken.js'
 import UserRepository from '../repositories/user-repository.js'
 
-const employeeRepo = new UserRepository()
+const UserRepo = new UserRepository()
 
 /**
  * @DESC Verify JWT from authorization header Middleware
  */
 const authenticateEmployee = async (req, res, next) => {
-    const authHeader = req.headers['authorization']
-    if (!authHeader) {
+    const cookie = req.cookies
+    if(!cookie || !cookie.token) {
         res.status(401).json({ message: 'Unauthorized' })
     } else {
-        const token = authHeader.split(' ')[1]
-
+        const token = cookie.token.split(' ')[1]
         if (token) {
-            if(isTokenBlacklisted(token)) {
-                res.status(401).json({ message: 'Unauthorized' })
-            }
+            // if(isTokenBlacklisted(token)) {
+            //     res.status(401).json({ message: 'Unauthorized' })
+            // }
 
             jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
                 if (decoded) {
                     const { userId } = decoded
-                    const employee = await employeeRepo.getEmployee(userId)
-                    req.session.user = employee
+                    const user = await UserRepo.getUserById(userId)
+
+                    req.session.user = user
+
                     if (err) {
                         res.status(401).json({ message: 'Unauthorized' })
                     }

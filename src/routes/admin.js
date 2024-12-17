@@ -5,7 +5,6 @@ import ForecastController from '../controllers/forecast-controller.js';
 import ProjectTeamController from '../controllers/project-team-controller.js';
 import ClientController from '../controllers/admin/client-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
-import {authenticateAdmin} from '../middlewares/authenticate-admin.js'
 import { checkPermissions } from '../middlewares/check-permission.js';
 import RoleController from "../controllers/admin/role-controller.js";
 import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js'
@@ -85,10 +84,7 @@ adminRouter.route("/getduetimesheet").post(timeSheetSummary.getDueTimeSheetContr
  */
 adminRouter
 .route('/profile-view')
-    .post(
-        // authenticateAdmin,
-        admin.getMyProfile
-    )
+    .post( admin.getMyProfile )
 /*
 * List Employees
 */
@@ -96,35 +92,30 @@ adminRouter
 adminRouter
     .route('/employees-data')
     .post(
-        // authenticateAdmin,
         // checkPermissions('Users', 'view'),
         admin.listAllEmployeesData
     )
 adminRouter
     .route('/list-all-employees')
     .post(
-        // authenticateAdmin,
         // checkPermissions('Users', 'view'),
         admin.listAllEmployees
     )
 adminRouter
     .route('/employee-details')
     .post(
-        // authenticateAdmin,
         // checkPermissions('Users', 'view'),
         admin.getEmployeeDetails
     )
 adminRouter
     .route('/update-employee-role')
     .post(
-        // authenticateAdmin,
         // checkPermissions('Users', 'edit'),
         admin.updateEmployeeRole
     )
 adminRouter
     .route('/delete-employee')
     .post(
-        // authenticateAdmin,.
         // checkPermissions('Users', 'delete'),
         admin.deleteEmployee
     )
