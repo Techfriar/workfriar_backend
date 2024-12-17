@@ -27,13 +27,18 @@ export default class TransactionRepository {
    * @return {Promise} - The updated subscription
    * @throws {Error} If there's an error updating the subscription
    */
-  async updateSubscriptionNextDueDate(subscriptionId, nextDueDate, session = null) {
+  async updateSubscriptionNextDueDate(
+    subscriptionId,
+    nextDueDate,
+    session = null
+  ) {
     try {
-      const subscription = await Subscription.findById(subscriptionId).session(session);
+      const subscription =
+        await Subscription.findById(subscriptionId).session(session);
       if (!subscription) {
         throw new Error(`Subscription with ID ${subscriptionId} not found`);
       }
-  
+
       subscription.next_due_date = nextDueDate;
       return await subscription.save({ session });
     } catch (error) {
@@ -51,7 +56,7 @@ export default class TransactionRepository {
   async addTransaction(transactionData) {
     const session = await mongoose.startSession();
     session.startTransaction();
-  
+
     try {
       if (transactionData.subscription_name) {
         const subscriptionExists = await this.checkSubscriptionExists(
@@ -63,10 +68,10 @@ export default class TransactionRepository {
           );
         }
       }
-  
+
       const transaction = new Transaction(transactionData);
       await transaction.save({ session });
-  
+
       if (transactionData.next_due_date && transactionData.subscription_name) {
         await this.updateSubscriptionNextDueDate(
           transactionData.subscription_name,
@@ -74,7 +79,7 @@ export default class TransactionRepository {
           session
         );
       }
-  
+
       await session.commitTransaction();
       return transaction;
     } catch (error) {
@@ -91,23 +96,26 @@ export default class TransactionRepository {
    * @param {number} limit - Number of items per page
    * @return {Promise<{transactions: Transaction[], total: number}>}
    */
-  async getAllTransactions(page, limit) {
+  async getAllTransactions(page, limit, subscriptionId = null) {
     try {
       const skip = (page - 1) * limit;
+      const query = { is_deleted: false };
+
+      if (subscriptionId) {
+        query.subscription_name = subscriptionId;
+      }
 
       const [transactions, total] = await Promise.all([
         Transaction.find({ is_deleted: false })
           .populate({
             path: "subscription_name",
-            select: "subscription_name",
+            select: "subscription_name -_id",
           })
-          .populate("license_count", "license_count")
-          .populate("payment_method", "payment_method")
-          .populate("next_due_date", "next_due_date")
+          .populate({ path: "license_count", select: "license_count -_id" })
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit),
-        Transaction.countDocuments({ is_deleted: false }),
+        Transaction.countDocuments(query),
       ]);
 
       return { transactions, total };
@@ -122,15 +130,16 @@ export default class TransactionRepository {
    * @param {number} limit - Number of items per page
    * @return {Promise<{transactions: Transaction[], total: number}>}
    */
-  async getAllTransactionsWithDeleted(page, limit) {
+  async getAllTransactionsWithDeleted(page, limit, subscriptionId = null) {
     try {
       const skip = (page - 1) * limit;
+      const query = subscriptionId ? { subscription_name: subscriptionId } : {};
 
       const [transactions, total] = await Promise.all([
         Transaction.find()
           .populate({
             path: "subscription_name",
-            select: "subscription_name",
+            select: "subscription_name -_id",
           })
           .populate("license_count", "license_count")
           .populate("payment_method", "payment_method")
@@ -138,7 +147,7 @@ export default class TransactionRepository {
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit),
-        Transaction.countDocuments(),
+        Transaction.countDocuments(query),
       ]);
 
       return { transactions, total };
@@ -157,7 +166,7 @@ export default class TransactionRepository {
       const transaction = await Transaction.findById(transactionId)
         .populate({
           path: "subscription_name",
-          select: "subscription_name",
+          select: "subscription_name -_id",
         })
         .populate("license_count", "license_count")
         .populate("payment_method", "payment_method")
