@@ -64,7 +64,7 @@ export default class ProjectRepository {
     })
     .populate({
         path: "client_name",
-        select: "name -_id",
+        select: "client_name -_id",
     })
     .lean();
       if (!project) {

@@ -496,4 +496,103 @@ export default class TransactionController {
       });
     }
   }
+
+  /**
+   * Get Transactions for a Specific Subscription
+   *
+   * @swagger
+   * /transaction/list-by-subscription:
+   *   post:
+   *     tags:
+   *       - Transaction
+   *     summary: Get transactions for a specific subscription
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               subscriptionId:
+   *                 type: string
+   *                 description: The ID of the subscription to filter transactions
+   *               include_deleted:
+   *                 type: boolean
+   *                 description: Include soft deleted transactions
+   *             required:
+   *               - subscriptionId
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 1
+   *         description: Page number for pagination
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 10
+   *         description: Number of items per page
+   *     responses:
+   *       200:
+   *         description: Successfully retrieved subscription transactions
+   *       400:
+   *         description: Bad Request
+   *       500:
+   *         description: Internal Server Error
+   */
+  async getTransactionsBySubscription(req, res) {
+    try {
+      const { subscriptionId } = req.body;
+      const includeDeleted = req.body.include_deleted === true;
+
+      // Validate subscriptionId
+      if (!subscriptionId) {
+        return res.status(400).json({
+          status: false,
+          message: "Subscription ID is required.",
+        });
+      }
+
+      const page = parseInt(req.query.page, 10) || 1;
+      const limit = parseInt(req.query.limit, 10) || 10;
+
+      // Modify the repository method to support filtering by subscription
+      const { transactions, total } = includeDeleted
+        ? await transactionRepo.getAllTransactionsWithDeleted(page, limit, subscriptionId)
+        : await transactionRepo.getAllTransactions(page, limit, subscriptionId);
+
+      const formattedTransactions = await Promise.all(
+        transactions.map(
+          async (transaction) => await TransactionResponse.format(transaction)
+        )
+      );
+
+      return res.status(200).json({
+        status: true,
+        message: "Subscription transactions retrieved successfully.",
+        data: {
+          transactions: formattedTransactions,
+          pagination: {
+            total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            perPage: limit,
+          },
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: "Failed to retrieve subscription transactions.",
+        errors: error.message || error,
+      });
+    }
+  }
 }

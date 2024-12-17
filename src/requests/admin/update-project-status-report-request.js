@@ -1,6 +1,6 @@
 import Joi from "joi";
-import ProjectStatusReportRepository from "../../repositories/admin/project-status-report-repository";
-import { CustomValidationError } from "../../exceptions/custom-validation-error";
+import ProjectStatusReportRepository from "../../repositories/admin/project-status-report-repository.js";
+import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 
 export class UpdateProjectStatusReportRequest {
   static reportRepo = new ProjectStatusReportRepository();
