@@ -32,4 +32,8 @@ transactionRouter
   .route("/download-receipts")
   .post(transaction.downloadTransactionReceipts);
 
+transactionRouter
+  .route("/list-by-subscription")
+  .post(transaction.getTransactionsBySubscription);
+  
 export default transactionRouter;

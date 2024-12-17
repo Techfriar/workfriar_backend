@@ -143,10 +143,10 @@ async getAllSubscriptions(page, limit) {
  */
 async getSubscriptionById(subscriptionId) {
   try {
-    const subscription = await Subscription.findById(subscriptionId).populate(
-      "project_names",
-      "project_name"
-    );
+    const subscription = await Subscription.findById(subscriptionId).populate({
+      path: "project_names",
+      select: "project_name -_id",
+  })
 
     if (!subscription) {
       throw new Error(`Subscription with ID ${subscriptionId} not found`);

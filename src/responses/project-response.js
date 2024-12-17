@@ -30,7 +30,7 @@ export default class ProjectResponse {
       actual_end_date: this.formatDate(project.actual_end_date),
       project_lead: project.project_lead,
       billing_model: project.billing_model,
-      project_logo: generateFileUrl(project.project_logo),
+      project_logo: project.project_logo ? generateFileUrl(project.project_logo) : null,
       open_for_time_entry: project.open_for_time_entry,
       status: project.status,
       createdAt: project.createdAt,
@@ -45,6 +45,7 @@ export default class ProjectResponse {
       actual_start_date: this.formatDate(project.actual_start_date),
       actual_end_date: this.formatDate(project.actual_end_date),
       project_lead: project.project_lead.full_name,
+      project_logo: project.project_logo ? generateFileUrl(project.project_logo) : null,
       open_for_time_entry: project.open_for_time_entry,
       status: project.status,
     };
