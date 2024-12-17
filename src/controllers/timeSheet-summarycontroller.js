@@ -2,9 +2,9 @@ import TimeSheetSummary from "../repositories/time-sheet-summary.js";
 import TimeSummaryResponse from "../responses/formatted-summary.js";
 import FormattedDates from "../responses/format-dates.js";
 import generateWeekDateRanges from "../utils/find-week-range.js";
-import findTimezone from "../utils/findTimeZone.js";
 import FindWeekRange from "../utils/findWeekRange.js";
 import RejectionNotesRepository from "../repositories/admin/rejection-notes-repository.js";
+import findTimezone from "../utils/findTimeZone.js";
 import { getDateRangeAroundInput } from "../utils/find-weeks.js";
 
 const timeSheetSummary=new TimeSheetSummary()
@@ -157,7 +157,7 @@ class TimeSheetSummaryController{
         {
             const timezone = await findTimezone(req);
 				let today = getLocalDateStringForTimezone(timezone, new Date());
-
+        
 				if (typeof today === "string") {
 					today = new Date(today);
 				}
@@ -584,6 +584,7 @@ class TimeSheetSummaryController{
                     })
 
             }
+            else
             {
                return res.status(400).json(
                     {
@@ -681,10 +682,10 @@ class TimeSheetSummaryController{
     try
     {
         const {date}=req.body
-        const data=(await generateWeekDateRanges())
+        const data=await generateWeekDateRanges()
         const result=await getDateRangeAroundInput(date,10,data)
         const formattedDates = await formatDates.formattedDateResponse(result);
-        
+
 
      res.status(200).json(
         {
@@ -695,6 +696,7 @@ class TimeSheetSummaryController{
     }
     catch(error)
     {
+       
         res.status(500).json(
             {
                 status:false,

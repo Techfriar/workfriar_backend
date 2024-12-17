@@ -124,12 +124,13 @@ export default class UserRepository {
     }
 
 //adding an  employee to the database
-async addEmployees(name,email,reporting_manager,isAdmin,location,isactive,fileurl) {
+async addEmployees(name,email,reporting_manager,phone_number,isAdmin,location,isactive,fileurl) {
     try {
         const employee = new User({
             full_name: name,
             email,
             reporting_manager,
+            phone_number,
             location,
             status:isactive,
             profile_pic: fileurl,
