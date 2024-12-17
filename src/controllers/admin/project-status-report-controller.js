@@ -1,7 +1,8 @@
 import ProjectStatusReportRepository from "../../repositories/admin/project-status-report-repository.js";
-import { AddProjectStatusReportRequest, UpdateProjectStatusReportRequest } from "../../requests/admin/project-status-report-request.js";
+import { AddProjectStatusReportRequest } from "../../requests/admin/project-status-report-request.js";
 import ProjectStatusReportResponse from "../../responses/project-status-report.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
+import { UpdateProjectStatusReportRequest } from "../../requests/admin/update-project-status-report-request.js";
 const reportRepo = new ProjectStatusReportRepository();
 
 export default class ProjectStatusReportController {

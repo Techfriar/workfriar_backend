@@ -597,7 +597,6 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
-            console.log(error)
            return res.status(500).json(
                 {
                     status:false,
@@ -681,14 +680,17 @@ class TimeSheetSummaryController{
    {
     try
     {
-    const {date}=req.body
-     const data=await generateWeekDateRanges()
-     const dates=await getDateRangeAroundInput(date,10,data)
+        const {date}=req.body
+        const data=(await generateWeekDateRanges())
+        const result=await getDateRangeAroundInput(date,10,data)
+        const formattedDates = await formatDates.formattedDateResponse(result);
+        
+
      res.status(200).json(
         {
         status:true,
         message:"Data Fetched",
-        data:dates,
+        data:formattedDates,
         })
     }
     catch(error)
