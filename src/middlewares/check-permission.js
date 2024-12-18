@@ -12,9 +12,7 @@ const checkPermissions = (requiredCategory, requiredAction) => async (req, res, 
         //temporary true for development
         // return true
 
-        // const user = req.session.user; // Assuming user data is stored in session
-        const user = {email: 'john.doe@example.com'}
-        user._id = '6744a7c9707ecbeea1efd14c'
+        const user = req.session.user; // Assuming user data is stored in session
         if (user) {
             // Find the user and populate roles with permissions
             const userWithRoles = await User.findById(user._id)

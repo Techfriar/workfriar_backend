@@ -103,23 +103,9 @@ export default class AdminController {
      */
     async getMyProfile(req, res) {
         try {
-            // Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+            // Extract UserId from the user session
+			const UserId = req.session.user.id;
 
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const UserId = decoded.UserId;
-
-            const UserId = '6744a7c9707ecbeea1efd14c'
             const adminData = await userRepo.getUserExpanded( UserId )
 
             if (adminData) {
@@ -420,10 +406,15 @@ export default class AdminController {
  *                       example: "7123431323"
  *                     reporting_manager:
  *                       type: string
- *                       example: "Jane Smith"   
+ *                     reporting_manager_id:
+ *                       type: string
+ *                       example: "1as23f31f2332a"   
  *                     role:
  *                       type: string
  *                       example: "Project Manager"
+ *                     role_id:
+ *                       type: string
+ *                       example: "11sdd2123d213"
  *                     department:
  *                       type: string
  *                       example: "Operations"
