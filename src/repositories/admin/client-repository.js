@@ -33,7 +33,8 @@ class ClientRepository {
 
     async allClients() {
         try {
-            return await client.find().populate('client_manager', 'full_name').lean();
+            return await client.find().populate('client_manager', 'full_name').populate('location', 'name').populate('billing_currency', 'code')
+            .lean();
         } catch (error) {
             throw new Error(error); 
         }

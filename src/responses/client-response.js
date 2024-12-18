@@ -16,9 +16,9 @@ class ClientResponse{
         return {
             id: client._id,
             name: client.client_name,
-            location: client.location,
+            location: client.location.name,
             client_manager: client.client_manager.full_name,
-            billing_currency: client.billing_currency,
+            billing_currency: client.billing_currency.code,
             status: client.status
         };
     }
