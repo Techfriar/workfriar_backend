@@ -16,7 +16,7 @@ export default class ProjectResponse {
   static async formatGetByIdProjectResponse(project) {
     return {
       id: project._id,
-      client_name: project.client_name.client_name,
+      client_name: project.client_name,
       project_name: project.project_name,
       description: project.description,
       planned_start_date: this.formatDate(project.planned_start_date),
@@ -28,7 +28,7 @@ export default class ProjectResponse {
           name: category.category,
         }}),
       actual_end_date: this.formatDate(project.actual_end_date),
-      project_lead: project.project_lead.full_name,
+      project_lead: project.project_lead,
       billing_model: project.billing_model,
       project_logo: project.project_logo ? generateFileUrl(project.project_logo) : null,
       open_for_time_entry: project.open_for_time_entry,

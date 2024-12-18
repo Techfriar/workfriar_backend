@@ -5,7 +5,7 @@ export default class TransactionResponse{
 
     static formatDate(date) {
         if (!date) return null;
-        return moment(date).format("DD/MM/YYYY");
+        return moment(date).format("DD/MMM/YYYY");
     }
     /**
      * 
