@@ -213,12 +213,10 @@ export default class RoleRepository{
                 })
                 .skip(skip)
                 .limit(limit)
-                .lean();;
-            
-            return role;
-        } catch (error) {
-            throw error;
-        }
+                .lean();
+            return role.map((role) => role.users).flat();
+        
+        } catch (error) {}
     }
 
 }

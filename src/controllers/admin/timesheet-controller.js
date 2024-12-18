@@ -162,9 +162,8 @@ export default class TimesheetController {
 
 	async updateTimesheet(req, res) {
 		try {
-			// Authentication (uncomment and implement proper token verification in production)
-			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6756c072ddd097b3e4bbadd5'; // Temporary user ID
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
 
 			const timezone = await findTimezone(req);
 
@@ -428,22 +427,9 @@ export default class TimesheetController {
 	 */
 	async getUserTimesheets(req, res) {
 		try {
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
 
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
 			const { page = 1, limit = 10 } = req.body;
 			const pageNumber = parseInt(page);
 			const limitNumber = parseInt(limit);
@@ -578,9 +564,9 @@ export default class TimesheetController {
 	 */
 	async submitTimesheet(req, res) {
 		try {
-			// Extract token and user ID
-			// In production, decode the token to get the user ID
-			const user_id = '6744a7c9707ecbeea1efd14c'; // Replace with decoded user ID in production
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
+
 			const { timesheets } = req.body;
 
 			// Validate request input and timesheet ownership
@@ -692,22 +678,9 @@ export default class TimesheetController {
 	 */
 	async getCurrentDayTimesheet(req, res) {
 		try {
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
 
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const user_id = decoded.UserId;
-			const user_id = '6756c072ddd097b3e4bbadd5';
 			const timezone = await findTimezone(req);
 
 			let startOfDay = getLocalDateStringForTimezone(timezone, new Date());
@@ -882,18 +855,11 @@ export default class TimesheetController {
 
 	async getWeeklyTimesheets(req, res) {
 		try {
-			// const token = req.headers.authorization?.split(' ')[1];
-			// if (!token) {
-			//     return res.status(401).json({ 
-			//         status: false,
-			//         message: 'No token provided',
-			//         data: []
-			//     });
-			// }
-			// const decoded = jwt.decode(token);
-			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
-			const user_location = 'India';
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
+
+			const user_location =  req.session.user.location;
+
 			let { startDate, endDate } = req.body;
 			let actualStartWeek, actualEndWeek;
 
@@ -1095,22 +1061,9 @@ export default class TimesheetController {
 
 	async getDueTimesheets(req, res) {
 		try {
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-	
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-	
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-	
-			// const user_id = decoded.UserId;
-			const user_id = '6756c072ddd097b3e4bbadd5';
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
+
 			let { startDate, endDate } = req.body;
 
 			let actualStartWeek, actualEndWeek;
@@ -1591,23 +1544,9 @@ export default class TimesheetController {
 	 */
 	async getTimesheetSnapshot(req, res) {
 		try {
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
 
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
 			let { year, month } = req.body;
 
 			const validatedValues = await TimesheetRequest.validateYearMonth({ year, month })
@@ -1738,22 +1677,9 @@ export default class TimesheetController {
 	 */
 	async deleteTimesheet(req, res) {
 		try {
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
 
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const user_id = decoded.UserId;
-			const user_id = '6746a473ed7e5979a3a1f891';
 			const { timesheetId } = req.body
 			const validatedValues = await TimesheetRequest.validateTimesheetDelete(timesheetId, user_id)
 			if (validatedValues.error) {
@@ -1879,22 +1805,9 @@ export default class TimesheetController {
 	 */
 	async getStatusCount(req, res) {
 		try {
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-
-			// const user_id = decoded.UserId;
-			const user_id = '6746a474ed7e5979a3a1f896';
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
+			
 			const timezone = await findTimezone(req);
 
 			const today = getLocalDateStringForTimezone(timezone, new Date());

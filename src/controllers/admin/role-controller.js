@@ -803,4 +803,84 @@ export default class RoleController {
         }
     }
 
+/**
+ * Get Team Leads
+ *
+ * @swagger
+ * /admin/get-team-leads:
+ *   post:
+ *     tags:
+ *       - Role
+ *     summary: Retrieve all team leads
+ *     description: Fetches a list of all team leads in the system
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Team leads fetched successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "60d5ecb54d6e3d1234567890"
+ *                       name:
+ *                         type: string
+ *                         example: "John Doe"
+ *                       email:
+ *                         type: string
+ *                         example: "johndoe@example.com"
+ *                       role:
+ *                         type: string
+ *                         example: "Team Lead"
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Error fetching team leads"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ */
+
+    async getTeamLeads(req, res) {
+        try {
+            const teamLeads = await RoleRepository.getTeamLeads();
+            res.status(200).json({
+                status: true,
+                message: 'Team leads fetched successfully',
+                data: teamLeads || []
+            });
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                message: 'Error fetching team leads',
+                data: []
+            });
+        }
+    }
+
 }
