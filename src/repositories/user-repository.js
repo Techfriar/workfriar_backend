@@ -210,6 +210,7 @@ async  updateEmployee(id, updateData) {
         return await User.findOne({ _id: userId })
     }
 
+    
     /**
      * Get user by ID with expanded roles (including department field)
      * @param {String} userId - The ID of the user

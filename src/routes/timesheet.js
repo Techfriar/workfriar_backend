@@ -46,4 +46,8 @@ timesheetRouter
     .route('/get-user-timesheets')
     .post(timesheet.getUserTimesheets)
 
+timesheetRouter
+    .route('/submit-due-timesheets')
+    .post(timesheet.submitDueTimesheets)
+
 export default timesheetRouter
