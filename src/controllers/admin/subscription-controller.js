@@ -242,6 +242,7 @@ export default class SubscriptionController {
       });
     }
   }
+
   /**
    * Update Subscription
    *
@@ -452,7 +453,7 @@ export default class SubscriptionController {
         return {
           items: await Promise.all(
             category.items.map((subscription) =>
-              SubscriptionResponse.formatGetAllSubscriptionResponse(
+              SubscriptionResponse.formatGetSubscriptionManagerResponse(
                 subscription
               )
             )
