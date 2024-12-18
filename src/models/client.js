@@ -6,7 +6,8 @@ const clientSchema = new mongoose.Schema({
         required: true,
     },
     location: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'country',
         required: true,
     },
     client_manager: {
@@ -15,7 +16,8 @@ const clientSchema = new mongoose.Schema({
         required: true,
     },
     billing_currency: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'currency',
         required: true,
     },
     status: {

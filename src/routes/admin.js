@@ -11,6 +11,7 @@ import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroll
 import TimesheetApprovalController from "../controllers/admin/timesheet-approval-controller.js";
 import EmployeeController from "../controllers/admin/employee-controller.js";
 import multer from "multer";
+import PopulateData from "../utils/currency-country-populate.js";
 
 const adminRouter = express.Router();
 const upload=multer()
@@ -25,6 +26,8 @@ const admin = new AdminController();
 const client = new ClientController();
 const role = new RoleController();
 const timesheetapproval=new TimesheetApprovalController()
+
+const populateData = new PopulateData()
 
 // import multer from 'multer'
 // // import {
@@ -127,6 +130,12 @@ adminRouter.route('/all-clients').post(client.allClient)
 adminRouter.route('/edit-client').post(client.editClient)
 
 /*
+Country-Currency-Dropdown
+*/
+adminRouter.route('/populate-country').post(populateData.populateCountry)
+adminRouter.route('/populate-currency').post(populateData.populateCurrency)
+
+/*
 * Role Routes
 */
 adminRouter.route('/add-role').post(role.createRole)
@@ -155,6 +164,8 @@ adminRouter.route('/approvalcenter').post(timesheetapproval.getMembers)
 adminRouter.route('/managetimesheet').post(timesheetapproval.manageTimeSheet)
 
 adminRouter.route('/manage-all-timesheet').post(timesheetapproval.manageAllTimesheet)
+
+
 
 
 export default adminRouter;
