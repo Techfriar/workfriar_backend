@@ -41,7 +41,6 @@ export default class ProjectRepository {
             .limit(limit);
             
       const totalCount = await Project.countDocuments();
-      console.log("Populated Projects:", projects);
       return { projects, totalCount };
     } catch (error) {
       throw new Error(`Failed to get projects: ${error.message}`);
