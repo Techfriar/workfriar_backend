@@ -216,7 +216,21 @@ export default class RoleRepository{
                 .lean();
             return role.map((role) => role.users).flat();
         
-        } catch (error) {}
+        } catch (error) {
+
+        }
     }
 
+    static async getManagers(){
+        try {
+            const role = await Role.find({ department: 'Management' })
+                .populate({
+                    path: 'users',
+                    select: 'full_name _id'
+                })
+                .lean();
+            return role.map((role) => role.users).flat();
+
+        } catch (error) {}
+    }
 }
