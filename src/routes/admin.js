@@ -136,6 +136,7 @@ adminRouter.route('/delete-role').post(role.deleteRole)
 adminRouter.route('/update-role').post(role.updateRole)
 adminRouter.route('/all-roll-permissions').post(role.viewAllPermissionsByRole)
 adminRouter.route('/remove-user-role').post(role.removeUserFromRole)
+adminRouter.route('/get-team-leads').post(role.getTeamLeads)
 
 /*
 Employee Routes
