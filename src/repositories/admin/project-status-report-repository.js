@@ -79,16 +79,4 @@ export default class ProjectStatusReportRepository {
             throw new Error(`Failed to update report: ${error.message}`);
         }
     }
-
-    async deleteReport(reportId) {
-        try {
-            const report = await ProjectStatusReport.findByIdAndDelete(reportId);
-            if (!report) {
-                throw new Error(`Report with ID ${reportId} not found`);
-            }
-            return report;
-        } catch (error) {
-            throw new Error(`Failed to delete report: ${error.message}`);
-        }
-    }
 }

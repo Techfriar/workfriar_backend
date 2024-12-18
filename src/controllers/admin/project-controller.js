@@ -454,64 +454,6 @@ export default class ProjectController {
   }
 
   /**
-   * Delete Project
-   *
-   * @swagger
-   * /project/delete/{id}:
-   *   post:
-   *     tags:
-   *       - Project
-   *     summary: Delete project
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Project ID
-   *     responses:
-   *       200:
-   *         description: Success
-   *       404:
-   *         description: Not Found
-   *       500:
-   *         description: Internal Server Error
-   */
-  async deleteProject(req, res) {
-    try {
-      const project = await projectRepo.getProjectById(req.params.id);
-
-      if (!project) {
-        return res.status(404).json({
-          status: false,
-          message: "Project not found.",
-          data: null,
-        });
-      }
-
-      if (project.project_logo) {
-        await deleteFile(project.project_logo);
-      }
-
-      await projectRepo.deleteProject(req.params.id);
-
-      return res.status(200).json({
-        status: true,
-        message: "Project deleted successfully.",
-        data: null,
-      });
-    } catch (error) {
-      return res.status(500).json({
-        status: false,
-        message: "Failed to delete project.",
-        errors: error,
-      });
-    }
-  }
-
-  /**
    * @swagger
    * /project/changetimeentry:
    *   post:

@@ -111,23 +111,6 @@ export default class ProjectRepository {
   }
 
   /**
-   * Delete project
-   * @param {String} projectId - The project id
-   * @return {Promise<Project>} - The deleted project
-   */
-  async deleteProject(projectId) {
-    try {
-      const project = await Project.findByIdAndDelete(projectId);
-      if (!project) {
-        throw new Error(`Project with ID ${projectId} not found`);
-      }
-      return project;
-    } catch (error) {
-      throw new Error(`Failed to delete project: ${error.message}`);
-    }
-  }
-
-  /**
    * Check if project name exists for the client
    * @param {String} project_name
    * @param {String} client_name
