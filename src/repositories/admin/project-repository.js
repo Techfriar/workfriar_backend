@@ -39,6 +39,7 @@ export default class ProjectRepository {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
+            
       const totalCount = await Project.countDocuments();
       return { projects, totalCount };
     } catch (error) {
@@ -56,15 +57,15 @@ export default class ProjectRepository {
       const project = await Project.findById(projectId)
       .populate({
         path: "project_lead",
-        select: "full_name -_id",
+        select: "full_name",
     })
     .populate({
         path: "categories",
-        select: "category -_id",
+        select: "category",
     })
     .populate({
         path: "client_name",
-        select: "client_name -_id",
+        select: "client_name",
     })
     .lean();
       if (!project) {

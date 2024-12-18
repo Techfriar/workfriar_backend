@@ -230,7 +230,7 @@ export default class ProjectController {
       return res.status(500).json({
         status: false,
         message: "Failed to retrieve projects.",
-        errors: error,
+        errors: error.message,
       });
     }
   }
