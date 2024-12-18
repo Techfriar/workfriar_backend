@@ -333,146 +333,157 @@ export default class TimesheetRepository {
 	//get timesheet report
 	async getTimesheetReport(start, end, projectIds, userIds, page = 1, limit = 10) {
 		try {
-			const startDate = new Date(start);
-			const endDate = new Date(end);
-			const skip = (page - 1) * limit;
-
-			const matchStage = {
-				$match: {
-					endDate: { $gte: startDate, $lte: endDate },
+		  const startDate = new Date(start);
+		  const endDate = new Date(end);
+		  const skip = (page - 1) * limit;
+	  
+		  const matchStage = {
+			$match: {
+			  endDate: { $gte: startDate, $lte: endDate },
+			},
+		  };
+	  
+		  if (projectIds && projectIds.length > 0) {
+			matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
+		  }
+	  
+		  if (userIds && userIds.length > 0) {
+			matchStage.$match.user_id = { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) };
+		  }
+	  
+		  const aggregationPipeline = [
+			matchStage,
+			{
+			  $unwind: { path: "$data_sheet", preserveNullAndEmptyArrays: true },
+			},
+			{
+			  $addFields: {
+				totalHours: {
+				  $add: [
+					{ $toDouble: { $arrayElemAt: [{ $split: ["$data_sheet.hours", ":"] }, 0] } },
+					{ $divide: [{ $toDouble: { $arrayElemAt: [{ $split: ["$data_sheet.hours", ":"] }, 1] } }, 60] },
+				  ],
 				},
-			};
-
-			if (projectIds && projectIds.length > 0) {
-				matchStage.$match.project_id = { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) };
-			}
-
-			if (userIds && userIds.length > 0) {
-				matchStage.$match.user_id = { $in: userIds.map((id) => new mongoose.Types.ObjectId(id)) };
-			}
-
-			const aggregationPipeline = [
-				matchStage,
-				{
-					$unwind: { path: "$data_sheet", preserveNullAndEmptyArrays: true },
+			  },
+			},
+			{
+			  $addFields: {
+				totalHours: { $round: ["$totalHours", 0] }, // Round totalHours to whole numbers
+			  },
+			},
+			{
+			  $group: {
+				_id: { user_id: "$user_id", project_id: "$project_id" },
+				loggedHours: { $sum: "$totalHours" },
+				approvedHours: {
+				  $sum: {
+					$cond: [{ $eq: ["$status", "accepted"] }, "$totalHours", 0],
+				  },
 				},
-				{
-					$group: {
-						_id: { user_id: "$user_id", project_id: "$project_id" },
-						loggedHours: {
-							$sum: { $toDouble: "$data_sheet.hours" },
-						},
-						approvedHours: {
-							$sum: {
-								$cond: [
-									{ $eq: ["$status", "accepted"] },
-									{ $toDouble: "$data_sheet.hours" },
-									0,
-								],
-							},
-						},
-						timesheets: { $push: "$$ROOT" },
-					},
+				timesheets: { $push: "$$ROOT" },
+			  },
+			},
+			{
+			  $addFields: {
+				loggedHours: { $round: ["$loggedHours", 0] }, // Round loggedHours to whole numbers
+				approvedHours: { $round: ["$approvedHours", 0] }, // Round approvedHours to whole numbers
+			  },
+			},
+			{
+			  $lookup: {
+				from: "projects",
+				localField: "_id.project_id",
+				foreignField: "_id",
+				as: "projectDetails",
+			  },
+			},
+			{
+			  $lookup: {
+				from: "categories",
+				localField: "timesheets.task_category_id",
+				foreignField: "_id",
+				as: "taskCategories",
+			  },
+			},
+			{
+			  $lookup: {
+				from: "users",
+				localField: "_id.user_id",
+				foreignField: "_id",
+				as: "userDetails",
+			  },
+			},
+			{
+			  $addFields: {
+				project_name: { $arrayElemAt: ["$projectDetails.project_name", 0] },
+				categories: {
+				  $map: {
+					input: "$taskCategories",
+					as: "category",
+					in: "$$category.category",
+				  },
 				},
-				{
-					$lookup: {
-						from: "projects",
-						localField: "_id.project_id",
-						foreignField: "_id",
-						as: "projectDetails",
-					},
+				userName: { $arrayElemAt: ["$userDetails.full_name", 0] },
+			  },
+			},
+			{
+			  $project: {
+				projectDetails: 0,
+				taskCategories: 0,
+				userDetails: 0,
+				timesheets: 0,
+			  },
+			},
+			{
+			  $group: {
+				_id: "$userName",
+				projects: {
+				  $push: {
+					project_name: "$project_name",
+					project_id: "$_id.project_id",
+					loggedHours: "$loggedHours",
+					approvedHours: "$approvedHours",
+					categories: "$categories",
+				  },
 				},
-				{
-					$lookup: {
-						from: "categories",
-						localField: "timesheets.task_category_id",
-						foreignField: "_id",
-						as: "taskCategories",
-					},
-				},
-				{
-					$lookup: {
-						from: "users",
-						localField: "_id.user_id",
-						foreignField: "_id",
-						as: "userDetails",
-					},
-				},
-				{
-					$addFields: {
-						project_name: {
-							$arrayElemAt: ["$projectDetails.project_name", 0]
-						},
-						categories: {
-							$map: {
-								input: "$taskCategories",
-								as: "category",
-								in: "$$category.category",
-							},
-						},
-						userName: { $arrayElemAt: ["$userDetails.full_name", 0] },
-					},
-				},
-				{
-					$project: {
-						projectDetails: 0,
-						taskCategories: 0,
-						userDetails: 0,
-						timesheets: 0,
-					},
-				},
-				{
-					$group: {
-						_id: "$userName",
-						projects: {
-							$push: {
-								project_name: "$project_name",
-								project_id: "$_id.project_id",
-								loggedHours: "$loggedHours",
-								approvedHours: "$approvedHours",
-								categories: "$categories",
-							},
-						},
-						totalLoggedHours: { $sum: "$loggedHours" },
-						totalApprovedHours: { $sum: "$approvedHours" },
-					},
-				},
-				{
-					$sort: { _id: 1 },
-				},
-			];
-
-			const facetStage = {
-				$facet: {
-					paginatedResults: [
-						{ $skip: skip },
-						{ $limit: limit }
-					],
-					totalCount: [
-						{
-							$count: 'count'
-						}
-					]
-				}
-			};
-
-			aggregationPipeline.push(facetStage);
-
-			const result = await Timesheet.aggregate(aggregationPipeline).exec();
-
-			const paginatedResults = result[0].paginatedResults;
-			const totalCount = result[0].totalCount[0] ? result[0].totalCount[0].count : 0;
-
-			return {
-				report: paginatedResults,
-				totalCount: totalCount
-			};
-
+				totalLoggedHours: { $sum: "$loggedHours" },
+				totalApprovedHours: { $sum: "$approvedHours" },
+			  },
+			},
+			{
+			  $addFields: {
+				totalLoggedHours: { $round: ["$totalLoggedHours", 0] }, // Round totalLoggedHours to whole numbers
+				totalApprovedHours: { $round: ["$totalApprovedHours", 0] }, // Round totalApprovedHours to whole numbers
+			  },
+			},
+			{
+			  $sort: { _id: 1 },
+			},
+		  ];
+	  
+		  const facetStage = {
+			$facet: {
+			  paginatedResults: [{ $skip: skip }, { $limit: limit }],
+			  totalCount: [{ $count: "count" }],
+			},
+		  };
+	  
+		  aggregationPipeline.push(facetStage);
+	  
+		  const result = await Timesheet.aggregate(aggregationPipeline).exec();
+	  
+		  const paginatedResults = result[0].paginatedResults;
+		  const totalCount = result[0].totalCount[0] ? result[0].totalCount[0].count : 0;
+	  
+		  return {
+			report: paginatedResults,
+			totalCount: totalCount,
+		  };
 		} catch (error) {
-			throw new Error(error);
+		  throw new Error(error);
 		}
-	}
-
+	  }
+	  
 	//get timesheet snapshot for a month
 	async getMonthlySnapshot(userId, start, endDate) {
 		try {

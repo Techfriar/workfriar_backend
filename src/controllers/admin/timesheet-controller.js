@@ -7,7 +7,7 @@ import findTimezone from '../../utils/findTimeZone.js';
 import FindS from '../../utils/findSunday.js';
 import getLocalDateStringForTimezone from '../../utils/getLocalDateStringForTimezone.js';
 import HolidayRepository from '../../repositories/admin/holiday-repository.js';
-
+import FormatDate from '../../utils/formatDate.js';
 
 const TimesheetRepo = new TimesheetRepository()
 
@@ -16,6 +16,8 @@ const FindWeekRange_ = new FindWeekRange()
 const timesheetResponse = new TimesheetResponse()
 
 const HolidayRepo = new HolidayRepository()
+
+const FormatDate_ = new FormatDate()
 
 // Admin controller to add a timesheet
 export default class TimesheetController {
@@ -1116,7 +1118,7 @@ export default class TimesheetController {
 					for (let date = new Date(actualStartWeek); date <= actualEndWeek; date.setDate(date.getDate() + 1)) {
 						weekDates.push(new Date(date));
 					}
-	
+
 					let totalHoursPerDate = [];
 		
 					weekDates.forEach(date => {
@@ -1367,7 +1369,9 @@ export default class TimesheetController {
 
 			const { report, totalCount } = await TimesheetRepo.getTimesheetReport(startDate, endDate, projectIds, userIds, pageNumber, limitNumber);
 
-			const range = `${startDate.split('T')[0]} - ${endDate.split('T')[0]}`
+			const formattedStartDate = FormatDate_.formatDate(startDate)
+			const formattedEndDate = FormatDate_.formatDate(endDate)
+			const range = `${formattedStartDate} - ${formattedEndDate}`
 
 			if (report.length > 0) {
 				let data;
