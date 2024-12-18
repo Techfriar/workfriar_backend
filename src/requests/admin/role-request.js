@@ -216,11 +216,16 @@ export default class RoleRequest {
                 }
 
                 const validatedPermissions = await Promise.all(permissions.map(async (perm) => {
+
+                    // Filter keys with true values                    
+                    perm.actions = Object.keys(perm.actions).filter(key => perm.actions[key]);
+
                     if (!perm.category || !perm.actions || !Array.isArray(perm.actions)) {
                         throw new CustomValidationError('Invalid permission format');
                     }
 
                     perm.category = this.toTitleCase(perm.category);
+
                     perm.actions = perm.actions.map(action => action.toLowerCase());
 
                      // Validate each action
