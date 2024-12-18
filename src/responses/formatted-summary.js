@@ -107,31 +107,39 @@ export default class TimeSummaryResponse {
     //Function for formatting a past due
     async formattedPastDue(data) {
         try {
-            let overallDailyHours = {};
+            let overallDailyHours = {}; // Object to store hours grouped by date
+    
+            // Format each item in the input data
             const result = data.map((item) => {
                 const start = moment(item.startDate);
                 const end = moment(item.endDate);
+    
+                // Accumulate daily hours for each entry
                 item.data_sheet.forEach((entry) => {
-                    const entryDate = moment(entry.date).format('YYYY-MM-DD');
+                    const entryDate = moment(entry.date).format("YYYY-MM-DD");
                     if (!overallDailyHours[entryDate]) {
                         overallDailyHours[entryDate] = 0;
                     }
                     overallDailyHours[entryDate] += parseFloat(entry.hours);
                 });
+    
+                // Return the formatted timesheet object
                 return {
-                    id: item._id,
+                    timesheet_id: item._id,
                     project_name: item.project_id.project_name,
-                    category: item.task_category_id.category,
+                    category_name: item.task_category_id.category,
                     task_detail: item.task_detail,
                     username: item.user_id.full_name,
                     startDate: item.startDate,
                     endDate: item.endDate,
                     date: `${start.format("D MMMM")} - ${end.format("D MMMM YYYY")}`,
-                    dataSheet: item.data_sheet,
+                    data_sheet: item.data_sheet,
                     status: item.status,
                     total_time: item.data_sheet.reduce((acc, curr) => acc + parseFloat(curr.hours), 0),
                 };
             });
+    
+            // Sort overallDailyHours by date and return as part of the output
             const sortedDailyHours = Object.entries(overallDailyHours)
                 .sort(([dateA], [dateB]) => moment(dateA).diff(moment(dateB)))
                 .reduce((obj, [key, value]) => {
@@ -139,12 +147,11 @@ export default class TimeSummaryResponse {
                     return obj;
                 }, {});
     
-            return {
-                timesheets: result,
-                daily_hours: sortedDailyHours
-            };
+            // Return the array of timesheets as the output
+            return result; // `result` is the array of formatted timesheets
         } catch (error) {
             throw new Error(error);
         }
-    }    
+    }
+    
 }

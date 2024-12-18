@@ -29,10 +29,5 @@ projectStatusRouter
   .post(
     projectStatusReport.updateReport
   );
-  projectStatusRouter
-  .route("/delete-report/:id")
-  .post(
-    projectStatusReport.deleteReport
-  );
 
 export default projectStatusRouter;

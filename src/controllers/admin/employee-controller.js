@@ -314,6 +314,10 @@ class EmployeeController{
  *                 type: string
  *                 description: Reporting manager's user ID
  *                 example: 607d1f77bcf86cd799439011
+ *               phone_number:
+ *                 type: string
+ *                 description: users phone Number 
+ *                 example: 9087886467
  *               location:
  *                 type: string
  *                 description: Location of the employee
@@ -362,11 +366,12 @@ class EmployeeController{
  */
 
 async editEmployee(req, res) {
-    const { id, name, email, role_id,phone_number,reporting_manager, location, status } = req.body.data;
+
+    const { id, name, email, role_id,phone_number,reporting_manager, location, status } = req.body;
     let fileurl="";
     let isAdmin,isactive,isAdminResult;
     try {
-        const validationResult = await employeeRequest.validateEmployeeEdit(req.body.data);
+        const validationResult = await employeeRequest.validateEmployeeEdit(req.body);
         if (!validationResult.isValid) {
             throw new CustomValidationError(validationResult.errors);
         }
@@ -432,16 +437,16 @@ async editEmployee(req, res) {
 
     } catch (error) {
         if (error instanceof CustomValidationError) {
+
             return res.status(422).json({
                 status: false,
                 message: "Validation Failed",
                 errors: error.errors
             });
         }
-        res.status(500).json({
+       return  res.status(500).json({
             status: false,
             message: "Internal Server Error",
-            errors: error.message
         });
     }
 }

@@ -40,11 +40,11 @@ export default class ProjectStatusReportRepository {
             const report = await ProjectStatusReport.findById(reportId)
             .populate({
                 path: "project_name",
-                select: "project_name -_id",
+                select: "project_name",
             })
             .populate({
                 path: "project_lead",
-                select: "full_name -_id",
+                select: "full_name",
             });
             if (!report) {
                 throw new Error(`Report with ID ${reportId} not found`);
@@ -77,18 +77,6 @@ export default class ProjectStatusReportRepository {
             return report;
         } catch (error) {
             throw new Error(`Failed to update report: ${error.message}`);
-        }
-    }
-
-    async deleteReport(reportId) {
-        try {
-            const report = await ProjectStatusReport.findByIdAndDelete(reportId);
-            if (!report) {
-                throw new Error(`Report with ID ${reportId} not found`);
-            }
-            return report;
-        } catch (error) {
-            throw new Error(`Failed to delete report: ${error.message}`);
         }
     }
 }
