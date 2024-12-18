@@ -10,6 +10,7 @@
     "stage": "node server.js"
   },
   "dependencies": {
+    "@hapi/iron": "^7.0.1",
     "archiver": "7.0.1",
     "axios": "1.7.9",
     "bcryptjs": "2.4.3",

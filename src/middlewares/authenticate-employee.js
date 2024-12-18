@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { isTokenBlacklisted } from '../services/blackListToken.js'
 import UserRepository from '../repositories/user-repository.js'
+import Unseal from '../utils/unSealIronSeal.js'
 
 const UserRepo = new UserRepository()
 
@@ -9,12 +10,16 @@ const UserRepo = new UserRepository()
  */
 const authenticateEmployee = async (req, res, next) => {
     const cookie = req.cookies
-    if(!cookie || !cookie.token) {
+    if(!cookie?.token) {
         res.status(401).json({ message: 'Unauthorized' })
     } else {
+        // const unSealedToken = await Unseal(cookie.token)
+
+        // const token = unSealedToken.token.split(' ')[1]
         const token = cookie.token.split(' ')[1]
+
         if (token) {
-            // if(isTokenBlacklisted(token)) {
+            // if(await isTokenBlacklisted(token)) {
             //     res.status(401).json({ message: 'Unauthorized' })
             // }
 
@@ -26,7 +31,7 @@ const authenticateEmployee = async (req, res, next) => {
                     req.session.user = user
 
                     if (err) {
-                        res.status(401).json({ message: 'Unauthorized' })
+                        return res.status(401).json({ message: 'Unauthorized' })
                     }
                     next()
                 } else {
