@@ -25,46 +25,49 @@ class TimeSheetSummary{
     
 
     //Function for retrieveing past due timesheets
-    async getTimeSheet(userId, weekStartDate,status,skip,limitNumber) {
+    async getTimeSheet(userId, weekStartDate, status, skip, limitNumber) {
         try {
-            const record=await Timesheet.find({
-                user_id: userId,
-                status:status,
-                endDate: { $lt: new Date(weekStartDate) }})
-
-                const dataCount=record.length
-
             const data = await Timesheet.aggregate([
                 {
                     $match: {
                         user_id: new mongoose.Types.ObjectId(userId), 
-                        endDate: { $lt: new Date(weekStartDate) } 
-                    }
+                        status: status,
+                        endDate: { $lt: new Date(weekStartDate) },
+                    },
                 },
                 {
                     $group: {
                         _id: {
-                            startDate: "$startDate", 
-                            endDate: "$endDate"
+                            startDate: "$startDate",
+                            endDate: "$endDate",
                         },
-                        timesheets: { $push: "$$ROOT" } 
-                    }
+                        timesheets: { $push: "$$ROOT" },
+                    },
                 },
                 {
                     $project: {
-                        _id: 0, 
-                        startDate: "$_id.startDate", 
-                        endDate: "$_id.endDate",     
-                        timesheets: 1               
-                    }
-                }
-            ])
-            return {data,dataCount}
+                        _id: 0,
+                        startDate: "$_id.startDate",
+                        endDate: "$_id.endDate",
+                        timesheets: 1,
+                    },
+                },
+                { $skip: skip },
+                { $limit: limitNumber },
+            ]);
+            const dataCount = await Timesheet.countDocuments({
+                user_id: userId,
+                status: status,
+                endDate: { $lt: new Date(weekStartDate) },
+            });
+    
+            return { data, dataCount };
         } catch (error) {
-
-            throw new Error(error);
+            console.error("Error in getTimeSheet:", error.message);
+            throw new Error("Failed to fetch timesheets. Please try again.");
         }
     }
+    
     
 
     //function for retrieveing timesheets in a period of time
@@ -88,13 +91,12 @@ class TimeSheetSummary{
         }
     }
 
-    async getSpecifiedDates(date) {
+    async getSpecifiedDates() {
         try { 
             const timesheetDateRanges = await Timesheet.aggregate([
                 { 
                     $match: { 
                         status: "saved", 
-                        endDate: { $lt: date } 
                     } 
                 }, 
                 {

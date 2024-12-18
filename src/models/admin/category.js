@@ -11,7 +11,7 @@ const categorySchema=new mongoose.Schema({
     },
     time_entry:{
         type:String,
-        enum:['Open Entry','Close Entry'],
+        enum:['opened','closed'],
         required:true
     }
 },{timestamps:true})
