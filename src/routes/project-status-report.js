@@ -31,11 +31,7 @@ projectStatusRouter
   );
 
   projectStatusRouter
-  .route("/dropdown-names")
-  .post(projectStatusReport.getProjectNamesDropdown);
-
-  projectStatusRouter
-  .route("/dropdown-leads")
-  .post(projectStatusReport.getProjectLeadsDropdown);
+  .route("/dropdown/:type")
+  .post(projectStatusReport.getDropdownData);
 
 export default projectStatusRouter;

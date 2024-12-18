@@ -1085,71 +1085,55 @@ export default class ProjectController {
   }
 
   /**
-   * Get Client Names Dropdown
+   * Get Dropdown Data
    *
    * @swagger
-   * /project/dropdown-names:
+   * /project/dropdown/{type}:
    *   post:
    *     tags:
    *       - Project
-   *     summary: Get all client names for dropdown
+   *     summary: Get dropdown data for clients or project leads
+   *     parameters:
+   *       - in: path
+   *         name: type
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [clients, leads]
+   *         description: Type of dropdown data to retrieve
    *     security:
    *       - bearerAuth: []
    *     responses:
    *       200:
-   *         description: Successfully retrieved project names
+   *         description: Successfully retrieved dropdown data
+   *       400:
+   *         description: Invalid type parameter
    *       500:
    *         description: Internal Server Error
    */
+  async getDropdownData(req, res) {
+    const { type } = req.params;
 
-  async getClientNamesDropdown(req, res) {
-    try {
-      const clientNames = await projectRepo.getClientNamesDropdown();
-
-      return res.status(200).json({
-        status: true,
-        message: "Client names retrieved successfully.",
-        data: clientNames,
-      });
-    } catch (error) {
-      return res.status(500).json({
+    if (!["clients", "leads"].includes(type)) {
+      return res.status(400).json({
         status: false,
-        message: "Failed to retrieve client names.",
-        errors: error.message,
+        message: "Invalid dropdown type. Must be 'clients' or 'leads'.",
       });
     }
-  }
 
-  /**
-   * Get Project Leads Dropdown
-   *
-   * @swagger
-   * /project/dropdown-leads:
-   *   post:
-   *     tags:
-   *       - Project
-   *     summary: Get all project leads for dropdown
-   *     security:
-   *       - bearerAuth: []
-   *     responses:
-   *       200:
-   *         description: Successfully retrieved project leads
-   *       500:
-   *         description: Internal Server Error
-   */
-  async getProjectLeadsDropdown(req, res) {
     try {
-      const projectLeads = await projectRepo.getProjectLeadsDropdown();
+      const data = await projectRepo.getDropdownData(type);
+      const entityType = type === "clients" ? "Client names" : "Project leads";
 
       return res.status(200).json({
         status: true,
-        message: "Project leads retrieved successfully.",
-        data: projectLeads,
+        message: `${entityType} retrieved successfully.`,
+        data: data,
       });
     } catch (error) {
       return res.status(500).json({
         status: false,
-        message: "Failed to retrieve project leads.",
+        message: `Failed to retrieve ${type}.`,
         errors: error.message,
       });
     }
