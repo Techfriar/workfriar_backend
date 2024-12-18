@@ -10,6 +10,7 @@ import session from "express-session";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import configureRoutes from "./src/routes/routes.js";
 // import seedUsers from "./src/seeders/UserSeeder.js";
 
@@ -18,7 +19,15 @@ dotenv.config();
 // Create Express app
 const app = express();
 // Use the cors() middleware to enable CORS support
-app.use(cors());
+app.use(
+  cors({
+    origin: "*", // Replace with your frontend's [origin http://localhost:3000]
+    credentials: true, // Allow cookies to be sent and received
+  })
+);
+
+// Use cookie-parser middleware
+app.use(cookieParser());
 
 // Set the port and hostname for the server
 const port = process.env.PORT || 3002;
