@@ -39,7 +39,7 @@ class CreateCategoryRequest {
             .optional(),  
     
         timeentry: Joi.string()
-            .valid('Open Entry', 'Close Entry')  
+            .valid('opened', 'closed')  
             .optional() 
     }).or('category', 'timeentry'); 
     

@@ -118,88 +118,63 @@ class EmployeeRequest {
     
     async validateEmployeeEdit(data) {
         const { profile_pic, ...validationData } = data;
-        const schema = Joi.object({
-            id: Joi.string().required().messages({
-                'string.empty': `"ID" cannot be an empty field`,
-                'any.required': `"ID" is a required field`
-            }),
-            name: Joi.string().min(2).max(100).pattern(/^[A-Za-z\s]+$/, 'letters and spaces').optional().allow('').messages({
-                'string.base': `"Name" should be a type of 'text'`,
-                'string.min': `"Name" should have a minimum length of {#limit}`,
-                'string.max': `"Name" should have a maximum length of {#limit}`
-            }),
-            email: Joi.string().email().optional().allow('').messages({
-                'string.email': `"Email" must be a valid email`,
-                'string.empty': `"Email" cannot be an empty field`
-            }),
-            role_id: Joi.string().optional().allow('').messages({
-                'string.base': `"Role" should be a type of 'text'`,
-                'string.empty': `"Role" cannot be an empty field`
-            }),
-            reporting_manager: Joi.string().allow('').optional().messages({
-                'string.base': `"Reporting Manager" should be a type of 'text'`,
-                'string.empty': `"Reporting Manager" cannot be an empty field`
-            }),
-            phone_number: Joi.string().allow('').pattern(/^[+]?[0-9]{1,4}?[-.\s]?(\(?\d{1,3}?\)?[-.\s]?)?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/, 'phone number').optional().messages({
-                'string.pattern.base': `"Phone Number" fails to match the required format`
-            }),
-            location: Joi.string()
-                .valid('India', 'UAE', 'UK') 
-                .required()
-                .messages({
-                    'string.base': `"Location" should be a type of 'text'`,
-                    'string.empty': `"Location" cannot be an empty field`,
-                    'any.required': `"Location" is a required field`,
-                    'any.only': `"Location" must be one of the following values: India, UAE, UK`
-                }),
-            status: Joi.string().allow('').valid('active', 'inactive').optional().messages({
-                'string.base': `"Status" should be a type of 'text'`,
-                'any.only': `"Status" must be either 'active' or 'inactive'`
-            }),
-        }).min(2).messages({
-            'object.min': `At least one field besides "ID" must be provided for update`
-        });
+        let errors = [];
         try {
-
-            await schema.validateAsync(validationData, { abortEarly: false });
-        
+      
+        const { error } = EmployeeRequest.employeeSchema.validate(data, { abortEarly: false });
+        if (error) {
+            errors.push(
+                ...error.details.map((err) => ({
+                    field: err.context.key === 'phone_number' ? 'Phone Number' : err.context.key, 
+                    message: err.message.replace(/['"]/g, '').replace('phone_number', 'Phone Number'),
+                }))
+            );
+        }
+    
             if (validationData.role_id) {
                 const role = await Role.findOne({ _id: validationData.role_id });
                 if (!role) {
-                    return { isValid: false, message: `Role '${validationData.role_id}' does not exist` };
+                   errors.push({
+                        field: "role_id",
+                        message: `Role '${validationData.role_id}' does not exist`,
+                    });
                 }
             }
-            const existUser=await userrepository.getUserByEmail(data.email)
-            if (existUser) {
+            const exisTingUser = await userrepository.getUserById(data.id);
+            const allUsers = await userrepository.getAllUsers();
+            
+            const currentUserEmail = exisTingUser.email; 
+            const incomingEmail = validationData.email;
+            
+            const emailExists = allUsers.some(user => user.email === incomingEmail && user.email !== currentUserEmail);
+        
+            if (emailExists) {
+        
                 errors.push({
                     field: "email",
-                    message: `Email '${data.email}' already exists`,
+                    message: `Email '${validationData.email}' already exists`,
                 });
-            }
+            } 
+                       
             if (validationData.reporting_manager) {
                 const reportingManager = await User.findById(validationData.reporting_manager);
                 if (!reportingManager) {
-                    return { isValid: false, message: `User with ID '${validationData.reporting_manager}' does not exist as a Reporting Manager` };
+                    errors.push({
+                        field: "reporting_manager",
+                        message: `User with ID '${validationData.reporting_manager}' does not exist as a Reporting Manager`,
+                    });
                 }
             }
-            
+            if (errors.length > 0) {
+                return { isValid: false, errors };
+            }
             return { isValid: true, message: "Employee edit data is valid" };
         } catch (error) {
-            console.log(error);
-           
+      
             return {
                 isValid: false,
                 message: "Validation failed",
-                errors: error.details.map(detail => ({
-                  
-                    field: detail.context.key === 'phone_number' ? 'Phone Number' : 
-                           detail.context.key === 'role_id' ? 'Role' : 
-                           detail.context.key,
-                  
-                    message: detail.message.replace(/['"]/g, '')
-                                           .replace('phone_number', 'Phone Number')
-                                           .replace('role_id', 'Role')
-                }))
+                errors: errors
             };
         }
     }

@@ -4,6 +4,8 @@ import FormattedDates from "../responses/format-dates.js";
 import generateWeekDateRanges from "../utils/find-week-range.js";
 import FindWeekRange from "../utils/findWeekRange.js";
 import RejectionNotesRepository from "../repositories/admin/rejection-notes-repository.js";
+import HolidayRepository from "../repositories/admin/holiday-repository.js";
+import FindSunday from "../utils/findSunday.js";
 import findTimezone from "../utils/findTimeZone.js";
 import { getDateRangeAroundInput } from "../utils/find-weeks.js";
 
@@ -12,6 +14,8 @@ const timesummaryResponse=new TimeSummaryResponse()
 const rejectRepo=new RejectionNotesRepository()
 const findWeekRange=new FindWeekRange()
 const formatDates=new FormattedDates()
+const FindWeekRange_=new FindWeekRange()
+const HolidayRepo = new HolidayRepository()
 /**
  * @swagger
  * /admin/timesummary:
@@ -49,14 +53,6 @@ const formatDates=new FormattedDates()
  *                 type: integer
  *                 example: 10
  *                 description: The number of items per page. Defaults to 10.
- *               prev:
- *                 type: boolean
- *                 description: Whether to fetch the previous week's timesheets.
- *                 example: false
- *               next:
- *                 type: boolean
- *                 description: Whether to fetch the next week's timesheets.
- *                 example: true
  *     responses:
  *       200:
  *         description: Successfully fetched and formatted the time sheet summary.
@@ -142,16 +138,15 @@ class TimeSheetSummaryController{
     {
         try
         {
-        let {startDate,endDate,projectId,page=1,limit=10,prev,next}=req.body
+        let {startDate,endDate,projectId,page=1,limit=10}=req.body
         const pageNumber = parseInt(page,10);
         const limitNumber = parseInt(limit, 10);
         const skip=(pageNumber-1)*limitNumber
 
         if(startDate && endDate)
         {
-        const adjustDates=findWeekRange.adjustWeekRange(startDate,endDate,prev,next)
-        startDate=new Date(adjustDates.startDate)
-        endDate=new Date(adjustDates.endDate)
+        startDate=new Date(startDate)
+        endDate=new Date(endDate)
         }
         else
         {
@@ -363,14 +358,6 @@ class TimeSheetSummaryController{
  *                 format: date
  *                 description: The end date of the range to search for time sheets (in YYYY-MM-DD format).
  *                 example: "2024-12-07"
- *               prev:
- *                 type: boolean
- *                 description: Whether to fetch previous week due timesheets.
- *                 example: false
- *               next:
- *                 type: boolean
- *                 description: Whether to fetch next week due timesheets.
- *                 example: true
  *     responses:
  *       200:
  *         description: Successfully retrieved due time sheets for the user.
@@ -441,12 +428,15 @@ class TimeSheetSummaryController{
 
  async getDueTimeSheetController(req,res) {
     let userId="6746a63bf79ea71d30770de7"
-        let {passedUserid,startDate,endDate,status,prev,next}=req.body
+
+        let {passedUserid,startDate,endDate,status}=req.body
+        try
+        {
+        const user_location = 'India';
         if(startDate && endDate)
             {
-            const adjustDates=findWeekRange.adjustWeekRange(startDate,endDate,prev,next)
-            startDate=new Date(adjustDates.startDate)
-            endDate=new Date(adjustDates.endDate)
+            startDate=new Date(startDate)
+            endDate=new Date(endDate)
             }
             else
             {
@@ -463,17 +453,36 @@ class TimeSheetSummaryController{
             endDate.setUTCHours(0, 0, 0, 0);
             let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
         if(passedUserid) userId = passedUserid
-    try
-    {
-        let notes
+
+
+        let actualStartWeek, actualEndWeek;
+				actualStartWeek = FindSunday.getPreviousSunday(startDate);
+				actualEndWeek = new Date(actualStartWeek);
+				actualEndWeek.setDate(actualStartWeek.getDate() + 6);
+			let allDates = FindWeekRange_.getDatesBetween(actualStartWeek, actualEndWeek);
+
+			const weekDates = await Promise.all(
+				allDates.map(async (date) => {
+					let dateString = date.toISOString().split('T')[0];
+					let holiday = await HolidayRepo.isHoliday(date, user_location);
+					return {
+						date: date,
+						normalized_date: dateString,
+						day_of_week: date.toLocaleDateString('en-US', { weekday: 'short' }),
+						is_holiday: holiday,
+						is_disable: !(dateString >= startDate.toISOString().split('T')[0] && dateString <= endDate.toISOString().split('T')[0]),
+					};
+				})
+			);
+    let notes
         const data=await timeSheetSummary.getDueTimeSheet(userId,startDate,endDate,status)
         if(status==="rejected")
         {
              notes=await rejectRepo.getByWeek(startDate,endDate,userId)
-             console.log(notes)
         }
         const formattedData= await timesummaryResponse.formattedPastDue(data)
 
+        
             if(data)
             {
                 res.status(200).json(
@@ -482,6 +491,7 @@ class TimeSheetSummaryController{
                     message:"Time Sheet Data",
                     data:formattedData,
                     range:range,
+                    weekDates:weekDates,
                     notes:notes
                     })
             }
@@ -491,6 +501,7 @@ class TimeSheetSummaryController{
                     {
                     status:false,
                     message:"No Data",
+                    weekDates:weekDates,
                     data:[]
                     })
             }
@@ -570,9 +581,7 @@ class TimeSheetSummaryController{
    async getDatesController(req,res)
    {
         try{
-            const date=new Date()
-            const weekStartDate=findWeekRange.getWeekStartDate(date)
-            const data=await timeSheetSummary.getSpecifiedDates(weekStartDate)
+            const data=await timeSheetSummary.getSpecifiedDates()
             const formattedDates=await formatDates.formattedDateResponse(data)
             if(data.length>0)
             {
@@ -582,7 +591,6 @@ class TimeSheetSummaryController{
                     message:"Data Fetched",
                     data:formattedDates,
                     })
-
             }
             else
             {
