@@ -581,7 +581,8 @@ class TimeSheetSummaryController{
    async getDatesController(req,res)
    {
         try{
-            const data=await timeSheetSummary.getSpecifiedDates()
+            const userid="6746a63bf79ea71d30770de7"
+            const data=await timeSheetSummary.getSpecifiedDates(userid)
             const formattedDates=await formatDates.formattedDateResponse(data)
             if(data.length>0)
             {

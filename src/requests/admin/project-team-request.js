@@ -114,7 +114,7 @@ static teamDataUpdateSchema = Joi.object({
             return { isValid: true, message: "Project team has no vaidation errror" };
     }
 
-    //Function for validating category while updation
+    //Function for validating project team while updation
     async validateUpdateProjectteam(updateData)
     {
         const {error}=ProjectTeamRequest.teamDataUpdateSchema.validate(updateData)

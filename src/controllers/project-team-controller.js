@@ -358,10 +358,12 @@ class ProjectTeamController{
  *           schema:
  *             type: object
  *             properties:
- *              
- *               project:
+ *               id:
  *                 type: string
  *                 example: "67481220d2193ae713064508"
+ *               project:
+ *                 type: string
+ *                 example: "67481220d2193ae713064508" 
  *               status:
  *                 type: string
  *                 example: "In Progress"
