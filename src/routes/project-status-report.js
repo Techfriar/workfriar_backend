@@ -30,4 +30,12 @@ projectStatusRouter
     projectStatusReport.updateReport
   );
 
+  projectStatusRouter
+  .route("/dropdown-names")
+  .post(projectStatusReport.getProjectNamesDropdown);
+
+  projectStatusRouter
+  .route("/dropdown-leads")
+  .post(projectStatusReport.getProjectLeadsDropdown);
+
 export default projectStatusRouter;

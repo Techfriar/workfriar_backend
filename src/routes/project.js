@@ -59,4 +59,12 @@ projectRouter
     .route('/get-categories')
     .post(project.getCategoriesByProject)
 
+  projectRouter
+    .route('/dropdown-names')
+    .post(project.getClientNamesDropdown);
+
+  projectRouter
+    .route('/dropdown-leads')
+    .post(project.getProjectLeadsDropdown);
+
 export default projectRouter;

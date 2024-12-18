@@ -29,7 +29,11 @@ class UpdateHolidayRequest {
     }),
     holidayId: Joi.string()
       .regex(/^[0-9a-fA-F]{24}$/)
-      .required(),
+      .required()
+      .messages({
+        "string.pattern.base": "Invalid holiday ID format.",
+        "any.required": "Holiday ID is required.",
+      }),
   });
 
   constructor(req) {
@@ -44,6 +48,7 @@ class UpdateHolidayRequest {
   }
 
   async validate() {
+    // Perform schema validation
     const { error, value } = UpdateHolidayRequest.schema.validate(this.data, {
       abortEarly: false,
     });
@@ -58,28 +63,39 @@ class UpdateHolidayRequest {
         this.data.holidayId
       );
 
-    // Check if holiday exists
+    // Check if holiday with given ID exists
     const holidayExists = await UpdateHolidayRequest.holidayRepo.getHolidayById(
       this.data.holidayId
     );
 
-    if (error || checkHolidayExists || !holidayExists) {
-      const validationErrors = {};
-      error
-        ? error.details.forEach((err) => {
-            validationErrors[err.context.key] = err.message;
-          })
-        : [];
+    // Collect validation errors
+    const validationErrors = [];
 
-      if (checkHolidayExists) {
-        validationErrors["holiday_name"] =
-          "Holiday with this name and date already exists.";
-      }
+    if (error) {
+      validationErrors.push(
+        ...error.details.map((err) => ({
+          field: err.context.key,
+          message: err.message,
+        }))
+      );
+    }
 
-      if (!holidayExists) {
-        validationErrors["holiday"] = "Holiday not found.";
-      }
+    if (checkHolidayExists) {
+      validationErrors.push({
+        field: "holiday_name",
+        message: "Holiday with this name and date already exists.",
+      });
+    }
 
+    if (!holidayExists) {
+      validationErrors.push({
+        field: "holiday",
+        message: "Holiday not found.",
+      });
+    }
+
+    // If there are any validation errors, throw a custom error
+    if (validationErrors.length > 0) {
       throw new CustomValidationError(validationErrors);
     }
 

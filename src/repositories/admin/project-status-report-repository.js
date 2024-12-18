@@ -1,4 +1,6 @@
 import ProjectStatusReport from "../../models/admin/project-status-report.js";
+import Project from "../../models/projects.js";
+import User from "../../models/user.js";
 
 export default class ProjectStatusReportRepository {
     async addReport(reportData) {
@@ -77,6 +79,41 @@ export default class ProjectStatusReportRepository {
             return report;
         } catch (error) {
             throw new Error(`Failed to update report: ${error.message}`);
+        }
+    }
+    /**
+     * Get all project names for dropdown
+     * @returns {Promise<Array>} List of project names with id and name
+     */
+    async getProjectNamesDropdown() {
+        try {
+            const projects = await Project.find({}, 'project_name _id')
+                .sort({ project_name: 1 }); // Sort alphabetically
+            
+            return projects.map(project => ({
+                id: project._id,
+                name: project.project_name
+            }));
+        } catch (error) {
+            throw new Error(`Failed to retrieve project names: ${error.message}`);
+        }
+    }
+
+    /**
+     * Get all project leads for dropdown
+     * @returns {Promise<Array>} List of project leads with id and name
+     */
+    async getProjectLeadsDropdown() {
+        try {
+            const leads = await User.find({}, 'full_name _id')
+                .sort({ full_name: 1 }); // Sort alphabetically
+            
+            return leads.map(lead => ({
+                id: lead._id,
+                name: lead.full_name
+            }));
+        } catch (error) {
+            throw new Error(`Failed to retrieve project leads: ${error.message}`);
         }
     }
 }

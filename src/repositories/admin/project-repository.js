@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Project from "../../models/projects.js";
+import client from "../../models/client.js";
 
 export default class ProjectRepository {
   /**
@@ -385,5 +386,35 @@ export default class ProjectRepository {
             throw new Error(error)
         }
     }
-  
+
+    async getClientNamesDropdown() {
+        try {
+            const clients = await client.find({}, 'client_name _id').sort({ client_name: 1 }); // Sort alphabetically
+
+            return clients.map(client => ({
+                id: client._id,
+                name: client.client_name
+            }));
+        } catch (error) {
+            throw new Error(`Failed to get client names: ${error.message}`);
+        }
+    }
+
+    /**
+     * Get all project leads for dropdown
+     * @returns {Promise<Array>} List of project leads with id and name
+     */
+    async getProjectLeadsDropdown() {
+        try {
+            const leads = await User.find({}, 'full_name _id')
+                .sort({ full_name: 1 }); // Sort alphabetically
+            
+            return leads.map(lead => ({
+                id: lead._id,
+                name: lead.full_name
+            }));
+        } catch (error) {
+            throw new Error(`Failed to retrieve project leads: ${error.message}`);
+        }
+    }
 }

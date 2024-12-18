@@ -1,7 +1,9 @@
 import Joi from "joi";
+import mongoose from "mongoose";
 import SubscriptionRepository from "../../repositories/admin/subscription-repository.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 import Project from "../../models/projects.js";
+
 class AddSubscriptionRequest {
   static subscriptionRepo = new SubscriptionRepository();
 
@@ -30,7 +32,11 @@ class AddSubscriptionRequest {
         "Pay As You Go",
         "One Time Payment"
       )
-      .required(),
+      .required()
+      .messages({
+        "any.only": "Invalid billing cycle selected.",
+        "any.required": "Please select a billing cycle.",
+      }),
     currency: Joi.string().required().messages({
       "string.empty": "Please enter the currency.",
       "any.required": "Please enter the currency.",
@@ -39,12 +45,15 @@ class AddSubscriptionRequest {
       "string.empty": "Please enter the payment method.",
       "any.required": "Please enter the payment method.",
     }),
-    status: Joi.string().valid("Active", "Pending", "Expired").required(),
+    status: Joi.string().valid("Active", "Pending", "Expired").required().messages({
+      "any.only": "Invalid status selected.",
+      "any.required": "Please select a subscription status.",
+    }),
     description: Joi.string().optional().allow("").allow(null),
     next_due_date: Joi.date().optional().allow("").allow(null),
     type: Joi.string().valid("Common", "Project Specific").required().messages({
-      "any.only": "Type must be either 'Common' or 'Project Specific'",
-      "any.required": "Please select the subscription type",
+      "any.only": "Type must be either 'Common' or 'Project Specific'.",
+      "any.required": "Please select the subscription type.",
     }),
     project_name: Joi.alternatives().conditional("type", {
       is: "Project Specific",
@@ -58,8 +67,8 @@ class AddSubscriptionRequest {
         .required()
         .messages({
           "any.required":
-            "Project name is required for Project Specific subscriptions",
-          "any.invalid": "Invalid project selected",
+            "Project name is required for Project Specific subscriptions.",
+          "any.invalid": "Invalid project selected.",
         }),
       otherwise: Joi.string().allow(null, ""),
     }),
@@ -88,35 +97,41 @@ class AddSubscriptionRequest {
       abortEarly: false,
     });
 
-    const validationErrors = {};
+    const validationErrors = [];
+
     if (error) {
-      error.details.forEach((err) => {
-        validationErrors[err.context.key] = err.message;
-      });
+      validationErrors.push(
+        ...error.details.map((err) => ({
+          field: err.context.key,
+          message: err.message,
+        }))
+      );
     }
 
     if (value.type === "Project Specific" && value.project_name) {
       const project = await Project.findById(value.project_name);
       if (!project) {
-        validationErrors["project_name"] = "Selected project does not exist";
+        validationErrors.push({
+          field: "project_name",
+          message: "Selected project does not exist.",
+        });
       }
     }
-
 
     if (value.subscription_name) {
       const existingSubscription =
         await AddSubscriptionRequest.subscriptionRepo.checkSubscriptionExists(
           value.subscription_name
         );
-
       if (existingSubscription) {
-        validationErrors["subscription_name"] =
-          "A subscription with this name already exists.";
+        validationErrors.push({
+          field: "subscription_name",
+          message: "A subscription with this name already exists.",
+        });
       }
     }
 
-    // If there are any errors, throw CustomValidationError
-    if (Object.keys(validationErrors).length > 0) {
+    if (validationErrors.length > 0) {
       throw new CustomValidationError(validationErrors);
     }
 

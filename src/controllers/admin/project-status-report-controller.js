@@ -371,4 +371,73 @@ export default class ProjectStatusReportController {
             });
         }
     }
+    /**
+     * Get Project Names Dropdown
+     * 
+     * @swagger
+     * /project-status-report/dropdown-names:
+     *   post:
+     *     tags:
+     *       - Project Status Report
+     *     summary: Get all project names for dropdown
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved project names
+     *       500:
+     *         description: Internal Server Error
+     */
+    async getProjectNamesDropdown(req, res) {
+        try {
+            const projectNames = await reportRepo.getProjectNamesDropdown();
+            
+            return res.status(200).json({
+                status: true,
+                message: "Project names retrieved successfully.",
+                data: projectNames
+            });
+        } catch (error) {
+            return res.status(500).json({
+                status: false,
+                message: "Failed to retrieve project names.",
+                errors: error.message
+            });
+        }
+    }
+
+    /**
+     * Get Project Leads Dropdown
+     * 
+     * @swagger
+     * /project-status-report/dropdown-leads:
+     *   post:
+     *     tags:
+     *       - Project Status Report
+     *     summary: Get all project leads for dropdown
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved project leads
+     *       500:
+     *         description: Internal Server Error
+     */
+    async getProjectLeadsDropdown(req, res) {
+        try {
+            const projectLeads = await reportRepo.getProjectLeadsDropdown();
+            
+            return res.status(200).json({
+                status: true,
+                message: "Project leads retrieved successfully.",
+                data: projectLeads
+            });
+        } catch (error) {
+            return res.status(500).json({
+                status: false,
+                message: "Failed to retrieve project leads.",
+                errors: error.message
+            });
+        }
+    }
 }
