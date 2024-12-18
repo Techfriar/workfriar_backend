@@ -107,40 +107,39 @@ export default class CreateTimesheetRequest {
     }
   }
 
-  static async validateAndProcessDataSheet(data_sheet, timesheet, userLocation) {
-    // Validate that data_sheet is an array
-    if (!Array.isArray(data_sheet)) throw new CustomValidationError('Data sheet should be an array')
-
-    for (const item of data_sheet) {
-      if (!item.date || !item.hours) throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')
-
-      // Parse the string as a float
-      const hours = parseFloat(item.hours);
-
-      // Check if parsing was successful and if the hours are valid
-      if (isNaN(hours) || !/^\d{1,2}\.\d{2}$/.test(item.hours)) {
-        throw new CustomValidationError("Hours must be a valid number in the format 'HH.MM'");
+	static async validateAndProcessDataSheet(data_sheet, timesheet, userLocation) {
+		// Validate that data_sheet is an array
+		if (!Array.isArray(data_sheet)) throw new CustomValidationError('Data sheet should be an array')
+		
+		for (const item of data_sheet) {
+			if (!item.date || !item.hours) {
+        throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')
       }
+      
+      validateAndConvertTimeToFloat(item.hours)
+	
+			if (!IsDateInRange.isDateInRange(item.date, timesheet.startDate, timesheet.endDate)) {
+				throw new CustomValidationError(`Date ${item.date} is outside the timesheet's start and end date range`)
+			}
+	
+			const isHoliday = await this.HolidayRepo.isHoliday(item.date, userLocation);
+			item.isHoliday = isHoliday; // Add isHoliday field directly to the item
+		}
+	
+		return { error: false }; // If all validations pass
+	}
 
-      if (hours < 0) {
-        throw new CustomValidationError("Hours cannot be negative");
-      }
-
-      if (hours > 24) {
-        throw new CustomValidationError("Hours cannot be greater than 24");
-      }
-
-      if (!IsDateInRange.isDateInRange(item.date, timesheet.startDate, timesheet.endDate)) {
-        throw new CustomValidationError(`Date ${item.date} is outside the timesheet's start and end date range`)
-      }
-
-      const isHoliday = await this.HolidayRepo.isHoliday(item.date, userLocation);
-      item.isHoliday = isHoliday; // Add isHoliday field directly to the item
+  static async validateAndConvertTimeToFloat (timeString) {
+    const [hours, minutes] = timeString.split(':').map(Number);
+  
+    // Check if the hours and minutes are valid
+    if (hours < 0 || hours >= 24 || minutes < 0 || minutes >= 60) {
+      throw new CustomValidationError("Invalid time: Hours must be between 0-23 and minutes between 0-59.");
     }
 
-    return { error: false }; // If all validations pass
-  }
-
+    return true;
+  };
+	
   static async validateDateRange(startDate, endDate) {
     const schema = Joi.object({
       startDate: Joi.date().iso().required().messages({
