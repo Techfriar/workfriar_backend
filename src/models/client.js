@@ -10,7 +10,8 @@ const clientSchema = new mongoose.Schema({
         required: true,
     },
     client_manager: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true,
     },
     billing_currency: {
@@ -20,7 +21,7 @@ const clientSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Not started','In progress','On hold','Cancelled']
+        enum: ['Active', 'Inactive']
     }
 })
 

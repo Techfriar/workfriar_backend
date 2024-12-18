@@ -110,7 +110,7 @@ class ClientController {
             if (validationResult.error) {
                 // If there are validation errors, return a error
                 throw new CustomValidationError(validationResult.error)
-                
+
             }
 
             const { client_name, location, client_manager, billing_currency, status } = validationResult.value
@@ -142,6 +142,8 @@ class ClientController {
 
         }
         catch (error) {
+            console.log(error);
+
             if (error instanceof CustomValidationError) {
                 res.status(422).json({
                     success: false,
@@ -149,7 +151,7 @@ class ClientController {
                     errors: error.errors,
                 });
             }
-            else{
+            else {
                 return res.status(500).json({
                     success: false,
                     message: 'An internal server error occurred',
@@ -221,10 +223,16 @@ class ClientController {
             const existingClients = await clientRepository.allClients();
 
             if (existingClients.length > 0) {
+                const data = await Promise.all(
+                    existingClients.map(
+                        async (client) =>
+                            await clientResponse.allClientsResponse(client),
+                    ),
+                )
                 return res.status(200).json({
                     success: true,
                     message: 'Clients fetched successfully',
-                    data: existingClients,
+                    data,
                 });
             } else {
                 return res.status(200).json({
@@ -234,6 +242,8 @@ class ClientController {
                 });
             }
         } catch (error) {
+            console.log(error);
+            
             return res.status(500).json({
                 success: false,
                 message: 'An internal server error occurred.',
@@ -403,7 +413,7 @@ class ClientController {
                     errors: error.errors,
                 });
             }
-            else{
+            else {
                 return res.status(500).json({
                     success: false,
                     message: 'An internal server error occurred',

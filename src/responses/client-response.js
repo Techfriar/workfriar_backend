@@ -11,6 +11,17 @@ class ClientResponse{
             name: client.client_name
         }
     }
+
+    async allClientsResponse(client){
+        return {
+            id: client._id,
+            name: client.client_name,
+            location: client.location,
+            client_manager: client.client_manager.full_name,
+            billing_currency: client.billing_currency,
+            status: client.status
+        };
+    }
     
     async editClientResponse(client){
         return{

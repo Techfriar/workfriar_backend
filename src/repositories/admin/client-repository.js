@@ -33,7 +33,7 @@ class ClientRepository {
 
     async allClients() {
         try {
-            return await client.find();
+            return await client.find().populate('client_manager', 'full_name').lean();
         } catch (error) {
             throw new Error(error); 
         }

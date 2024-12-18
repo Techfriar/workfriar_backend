@@ -40,7 +40,7 @@ class ClientRequest {
                 'any.required': 'Billing currency field is required',
             }),
         status: Joi.string()
-            .valid('Not started','In progress','On hold','Cancelled')
+            .valid('Active', 'Inactive')
             .required()
             .messages({
                 'any.required': 'Status is required',
