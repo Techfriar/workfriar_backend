@@ -40,11 +40,11 @@ export default class ProjectStatusReportRepository {
             const report = await ProjectStatusReport.findById(reportId)
             .populate({
                 path: "project_name",
-                select: "project_name -_id",
+                select: "project_name",
             })
             .populate({
                 path: "project_lead",
-                select: "full_name -_id",
+                select: "full_name",
             });
             if (!report) {
                 throw new Error(`Report with ID ${reportId} not found`);
