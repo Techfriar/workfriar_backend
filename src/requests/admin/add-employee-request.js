@@ -2,7 +2,6 @@ import Joi from "joi";
 import Role from "../../models/role.js"; 
 import User from "../../models/user.js";
 import UserRepository from "../../repositories/user-repository.js";
-import { all } from "axios";
 
 const userrepository=new UserRepository()
 class EmployeeRequest {
