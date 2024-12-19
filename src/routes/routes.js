@@ -15,7 +15,7 @@ import transactionRouter from "./transaction.js";
 const configureRoutes = (app) => {
   // app.get('/',(req, res)=>res.status(200).json("Routes are good ..."))
   app.use("/api/auth", authRouter);
-  app.use("/api/admin", adminRouter); // Admin API routes
+  app.use("/api/admin", authenticateAdmin, adminRouter); // Admin API routes
   app.use("/api/user", authenticateEmployee, userRouter); // Customer API routes
   app.use("/api/project", projectRouter);
   app.use("/api/project-status-report", projectStatusRouter);
