@@ -403,4 +403,15 @@ export default class ProjectRepository {
         }
     }
   
+    async getProjectDates(projectid)
+    {
+        try
+        {
+            const dates=await Project.findById(projectid).select("actual_start_date actual_end_date").lean();
+            return dates;
+        }catch(error)
+        {
+            throw new Error(error)
+        }
+    }
 }

@@ -24,32 +24,48 @@ static teamDataSchema = Joi.object({
             "any.required": "Status is required.",
             "any.only": "Status must be Not Started,On hold,Cancelled,Completed .",
         }),
-    startDate: Joi.date()
-        .required()
-        .messages({
-            "any.required": "Start date is required.",
-            "date.base": "Start date must be a valid date.",
-        }),
-    endDate: Joi.date() 
-        .allow(null)
-        .messages({
-            "date.base": "End date must be a valid date.",
-        }),
-    teamMembers: Joi.array()
+        team_members: Joi.array()
         .items(
-            Joi.string()
-                .required()
-                .regex(/^[0-9a-fA-F]{24}$/) 
-                .messages({
-                    "any.required": "Each team member must be a valid ObjectId.",
-                    "string.pattern.base": "Team member must be a valid ObjectId.",
+          Joi.object({
+            userid: Joi.string()
+              .regex(/^[0-9a-fA-F]{24}$/)
+              .required()
+              .messages({
+                "string.pattern.base": "Each team member's 'userid' must be a valid ObjectId.",
+                "any.required": "Team member 'userid' is required.",
+              }),
+            dates: Joi.array()
+              .items(
+                Joi.object({
+                  start_date: Joi.date().optional().allow("").required().messages({
+                    "date.base": "Start date must be a valid date.",
+                    "any.required": "Start date is required for each date range.",
+                  }),
+                  end_date: Joi.date().optional().allow("").messages({
+                    "date.base": "End date must be a valid date.",
+                    "any.required": "End date is required for each date range.",
+                  }),
                 })
+              )
+              .min(1)
+              .required()
+              .messages({
+                "array.base": "'dates' must be an array of objects.",
+                "array.min": "At least one date range is required for each team member.",
+              }),
+            status: Joi.string()
+              .valid("active", "inactive")
+              .required()
+              .messages({
+                "any.only": "Team member status must be either 'active' or 'inactive'.",
+                "any.required": "Team member status is required.",
+              }),
+          })
         )
-        .min(1) 
-        .required()
+        .min(1)
+        .optional()
         .messages({
-            "any.required": "Team members are required.",
-            "array.min": "Team members must contain at least one user.",
+          "array.min": "Team members must contain at least one valid object.",
         }),
 });
 
@@ -77,25 +93,48 @@ static teamDataUpdateSchema = Joi.object({
         .messages({
             "date.base": "End date must be a valid date.",
         }),
-    teamMembers: Joi.alternatives()
-        .try(
-            Joi.array()
-                .items(
-                    Joi.string()
-                        .regex(/^[0-9a-fA-F]{24}$/)
-                        .messages({
-                            "string.pattern.base": "Each team member must be a valid ObjectId.",
-                        })
-                )
-                .min(1)
-                .messages({
-                    "array.min": "Team members must contain at least one user.",
-                }),
-            Joi.valid(null)
+        team_members: Joi.array()
+        .items(
+          Joi.object({
+            userid: Joi.string()
+              .regex(/^[0-9a-fA-F]{24}$/)
+              .required()
+              .messages({
+                "string.pattern.base": "Each team member's 'userid' must be a valid ObjectId.",
+                "any.required": "Team member 'userid' is required.",
+              }),
+            dates: Joi.array()
+              .items(
+                Joi.object({
+                  start_date: Joi.date().optional().allow("").required().messages({
+                    "date.base": "Start date must be a valid date.",
+                    "any.required": "Start date is required for each date range.",
+                  }),
+                  end_date: Joi.date().optional().allow("").messages({
+                    "date.base": "End date must be a valid date.",
+                    "any.required": "End date is required for each date range.",
+                  }),
+                })
+              )
+              .min(1)
+              .required()
+              .messages({
+                "array.base": "'dates' must be an array of objects.",
+                "array.min": "At least one date range is required for each team member.",
+              }),
+            status: Joi.string()
+              .valid("active", "inactive")
+              .required()
+              .messages({
+                "any.only": "Team member status must be either 'active' or 'inactive'.",
+                "any.required": "Team member status is required.",
+              }),
+          })
         )
+        .min(1)
         .optional()
         .messages({
-            "any.only": "Team members must be a valid array or null.",
+          "array.min": "Team members must contain at least one valid object.",
         }),
 });
 
