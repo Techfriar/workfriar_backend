@@ -1,14 +1,24 @@
 import client from "../../models/client.js";
 
 class ClientRepository {
+
     async createClient(clientDetails) {
         try {
             const newClient = new client(clientDetails);
-            return await newClient.save();
+            await newClient.save();
+
+            const savedClientDetails = await client
+                .findById(newClient._id)
+                .populate('client_manager', 'full_name')
+                .populate('location', 'name')
+                .populate('billing_currency', 'code')
+                .lean();
+            return savedClientDetails;
         } catch (error) {
-            throw new Error(error);
+            throw new Error(error.message);
         }
     }
+    
 
     async findExistingClient({ client_name, location, client_manager, billing_currency }) {
         try {
@@ -33,7 +43,12 @@ class ClientRepository {
 
     async allClients() {
         try {
-            return await client.find();
+            return await client
+            .find()
+            .populate('client_manager', 'full_name')
+            .populate('location', 'name')
+            .populate('billing_currency', 'code')
+            .lean();
         } catch (error) {
             throw new Error(error); 
         }
@@ -42,12 +57,36 @@ class ClientRepository {
 
     async updateClient(id, updatedData) {
         try {
-            const updatedClient = await client.findByIdAndUpdate(id, updatedData, {
+             await client.findByIdAndUpdate(id, updatedData, {
                 new: true,
             });
+            const updatedClient = await client
+            .findById(id)
+            .populate('client_manager', 'full_name')
+            .populate('location', 'name')
+            .populate('billing_currency', 'code')
+            .lean();
             return updatedClient;
         } catch (error) {
             throw new Error(error); 
+        }
+    }
+
+    async changeClientStatus(id, status) {
+        try {
+            await client.findByIdAndUpdate(id, { status }, {
+                new: true,
+            });
+            const updatedClient = await client
+            .findById(id)
+            .populate('client_manager', 'full_name')
+            .populate('location', 'name')
+            .populate('billing_currency', 'code')
+            .lean();
+            return updatedClient;
+
+        } catch (error) {
+            throw new Error(error);
         }
     }
 }

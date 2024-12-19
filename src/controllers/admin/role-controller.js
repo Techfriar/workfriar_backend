@@ -882,4 +882,22 @@ export default class RoleController {
         }
     }
 
+    
+    async getClientManager(req, res) {
+        try {
+            const clientManagers = await RoleRepository.getManagers();
+            res.status(200).json({
+                status: true,
+                message: 'Client Managers fetched successfully',
+                data: clientManagers || []
+            });
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                message: 'Error fetching Client Managers',
+                data: []
+            });
+        }
+    }
+
 }
