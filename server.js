@@ -12,7 +12,8 @@ import morgan from "morgan";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import configureRoutes from "./src/routes/routes.js";
-// import seedUsers from "./src/seeders/UserSeeder.js";
+import seedCountries from "./src/seeders/CountrySeeder.js";
+import seedCurrencies from "./src/seeders/CurrencySeeder.js";
 
 dotenv.config();
 
@@ -92,6 +93,8 @@ app.use(
  * Define application routes
  */
 configureRoutes(app);
+await seedCountries();
+await seedCurrencies();
 
 // Set the folders as the location for serving static files
 app.use("/storage/invoices", express.static("storage/invoices"));

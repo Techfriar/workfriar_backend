@@ -13,97 +13,90 @@ const updateStatus = new UpdateStatusRequest();
 
 export default class ProjectController {
   /**
- * @swagger
- * /project/add:
- *   post:
- *     tags:
- *       - Project
- *     summary: Add project
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - client_name
- *               - project_name
- *               - description
- *               - project_lead
- *               - status
- *               - open_for_time_entry
- *             properties:
- *               client_name:
- *                 type: string
- *                 description: Client ID for the project
- *               project_name:
- *                 type: string
- *                 description: Name of the project
- *               description:
- *                 type: string
- *                 description: Detailed description of the project
- *               planned_start_date:
- *                 type: string
- *                 format: date
- *                 description: Planned start date of the project (optional)
- *               planned_end_date:
- *                 type: string
- *                 format: date
- *                 description: Planned end date of the project (optional)
- *               actual_start_date:
- *                 type: string
- *                 format: date
- *                 description: Actual start date of the project (optional)
- *               actual_end_date:
- *                 type: string
- *                 format: date
- *                 description: Actual end date of the project (optional)
- *               project_lead:
- *                 type: string
- *                 description: User ID of the project lead
- *               billing_model:
- *                 type: string
- *                 description: Billing model for the project
- *                 enum:
- *                   - Bill time (time and materials)
- *                   - Bill milestones / Fixed fee
- *                   - Retainer
- *                   - Non billable
- *               project_logo:
- *                 type: string
- *                 format: binary
- *                 description: Project logo file (optional)
- *               open_for_time_entry:
- *                 type: string
- *                 description: Time entry status for the project
- *                 enum:
- *                   - opened
- *                   - closed
- *                 default: closed
- *               status:
- *                 type: string
- *                 description: Current status of the project
- *                 enum:
- *                   - Not Started
- *                   - In Progress
- *                   - Completed
- *                   - On Hold
- *                   - Cancelled
- *               categories:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Array of category IDs for the project
- *     responses:
- *       200:
- *         description: Success
- *       400:
- *         description: Bad Request
- *       500:
- *         description: Internal Server Error
- */
+   * @swagger
+   * /project/add:
+   *   post:
+   *     tags:
+   *       - Project
+   *     summary: Add project
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               client_name:
+   *                 type: string
+   *                 description: Client ID for the project
+   *               project_name:
+   *                 type: string
+   *                 description: Name of the project
+   *               description:
+   *                 type: string
+   *                 description: Detailed description of the project
+   *               planned_start_date:
+   *                 type: string
+   *                 format: date
+   *                 description: Planned start date of the project (optional)
+   *               planned_end_date:
+   *                 type: string
+   *                 format: date
+   *                 description: Planned end date of the project (optional)
+   *               actual_start_date:
+   *                 type: string
+   *                 format: date
+   *                 description: Actual start date of the project (optional)
+   *               actual_end_date:
+   *                 type: string
+   *                 format: date
+   *                 description: Actual end date of the project (optional)
+   *               project_lead:
+   *                 type: string
+   *                 description: User ID of the project lead
+   *               billing_model:
+   *                 type: string
+   *                 description: Billing model for the project
+   *                 enum:
+   *                   - Bill time (time and materials)
+   *                   - Bill milestones / Fixed fee
+   *                   - Retainer
+   *                   - Non billable
+   *               project_logo:
+   *                 type: string
+   *                 format: binary
+   *                 description: Project logo file (optional)
+   *               open_for_time_entry:
+   *                 type: string
+   *                 description: Time entry status for the project
+   *                 enum:
+   *                   - opened
+   *                   - closed
+   *                 default: closed
+   *               status:
+   *                 type: string
+   *                 description: Current status of the project
+   *                 enum:
+   *                   - Not Started
+   *                   - In Progress
+   *                   - Completed
+   *                   - On Hold
+   *                   - Cancelled
+   *               categories:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 description: Array of category IDs for the project
+   *     responses:
+   *       200:
+   *         description: Success
+   *       400:
+   *         description: Bad Request
+   *       500:
+   *         description: Internal Server Error
+   */
   async addProject(req, res) {
     try {
       const validatedData = await new AddProjectRequest(req).validate();
@@ -125,9 +118,8 @@ export default class ProjectController {
       const projectDetails = await projectRepo.addProject(validatedData);
 
       if (projectDetails) {
-        const projectData = await ProjectResponse.formatGetAllProjectResponse(
-          projectDetails
-        );
+        const projectData =
+          await ProjectResponse.formatGetAllProjectResponse(projectDetails);
 
         return res.status(200).json({
           status: true,
@@ -282,9 +274,8 @@ export default class ProjectController {
         });
       }
 
-      const projectData = await ProjectResponse.formatGetByIdProjectResponse(
-        project
-      );
+      const projectData =
+        await ProjectResponse.formatGetByIdProjectResponse(project);
 
       return res.status(200).json({
         status: true,
@@ -304,90 +295,90 @@ export default class ProjectController {
   }
 
   /**
- * @swagger
- * /project/update/{id}:
- *   post:
- *     tags:
- *       - Project
- *     summary: Update project
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Project ID
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               client_name:
- *                 type: string
- *                 description: Client ID for the project
- *               project_name:
- *                 type: string
- *                 description: Name of the project
- *               description:
- *                 type: string
- *                 description: Detailed description of the project
- *               planned_start_date:
- *                 type: string
- *                 format: date
- *                 description: Planned start date of the project
- *               planned_end_date:
- *                 type: string
- *                 format: date
- *                 description: Planned end date of the project
- *               project_lead:
- *                 type: string
- *                 description: User ID of the project lead
- *               billing_model:
- *                 type: string
- *                 description: Billing model for the project
- *                 enum:
- *                   - Bill time (time and materials)
- *                   - Bill milestones / Fixed fee
- *                   - Retainer
- *                   - Non billable
- *               project_logo:
- *                 type: string
- *                 format: binary
- *                 description: Project logo file
- *               open_for_time_entry:
- *                 type: string
- *                 description: Time entry status for the project
- *                 enum:
- *                   - opened
- *                   - closed
- *               status:
- *                 type: string
- *                 description: Current status of the project
- *                 enum:
- *                   - Not Started
- *                   - In Progress
- *                   - Completed
- *                   - On Hold
- *                   - Cancelled
- *               categories:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Array of category IDs for the project
- *     responses:
- *       200:
- *         description: Success
- *       400:
- *         description: Bad Request
- *       404:
- *         description: Not Found
- *       500:
- *         description: Internal Server Error
- */
+   * @swagger
+   * /project/update/{id}:
+   *   post:
+   *     tags:
+   *       - Project
+   *     summary: Update project
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Project ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               client_name:
+   *                 type: string
+   *                 description: Client ID for the project
+   *               project_name:
+   *                 type: string
+   *                 description: Name of the project
+   *               description:
+   *                 type: string
+   *                 description: Detailed description of the project
+   *               planned_start_date:
+   *                 type: string
+   *                 format: date
+   *                 description: Planned start date of the project
+   *               planned_end_date:
+   *                 type: string
+   *                 format: date
+   *                 description: Planned end date of the project
+   *               project_lead:
+   *                 type: string
+   *                 description: User ID of the project lead
+   *               billing_model:
+   *                 type: string
+   *                 description: Billing model for the project
+   *                 enum:
+   *                   - Bill time (time and materials)
+   *                   - Bill milestones / Fixed fee
+   *                   - Retainer
+   *                   - Non billable
+   *               project_logo:
+   *                 type: string
+   *                 format: binary
+   *                 description: Project logo file
+   *               open_for_time_entry:
+   *                 type: string
+   *                 description: Time entry status for the project
+   *                 enum:
+   *                   - opened
+   *                   - closed
+   *               status:
+   *                 type: string
+   *                 description: Current status of the project
+   *                 enum:
+   *                   - Not Started
+   *                   - In Progress
+   *                   - Completed
+   *                   - On Hold
+   *                   - Cancelled
+   *               categories:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 description: Array of category IDs for the project
+   *     responses:
+   *       200:
+   *         description: Success
+   *       400:
+   *         description: Bad Request
+   *       404:
+   *         description: Not Found
+   *       500:
+   *         description: Internal Server Error
+   */
   async updateProject(req, res) {
     try {
       const validatedData = await new UpdateProjectRequest(req).validate();
@@ -421,9 +412,8 @@ export default class ProjectController {
       );
 
       if (projectDetails) {
-        const projectData = await ProjectResponse.formatGetByIdProjectResponse(
-          projectDetails
-        );
+        const projectData =
+          await ProjectResponse.formatGetByIdProjectResponse(projectDetails);
 
         return res.status(200).json({
           status: true,
@@ -700,215 +690,215 @@ export default class ProjectController {
           message: "Validation Failed",
           errors: error.errors,
         });
-    } else {
-      return res.status(500).json({
-        status:false,
-        message:"Internal Server Error",
-        data:null
-      })
+      } else {
+        return res.status(500).json({
+          status: false,
+          message: "Internal Server Error",
+          data: null,
+        });
+      }
     }
   }
-  }
-/**
- * @swagger
- * /project/list-projects-by-user:
- *   post:
- *     tags:
- *     - Project
- *     summary: Get projects for the authenticated user  where user is a team member or project lead
- *     security:
- *       - bearerAuth: []
- *     description: Retrieves all projects where the authenticated user is a team member or project lead
- *     responses:
- *       200:
- *         description: Projects retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Projects retrieved successfully.
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                       project_name:
- *                         type: string
- *                     
- *       400:
- *         description: Bad request (validation error)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items: {}
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Failed to retrieve projects.
- *                 data:
- *                   type: array
- *                   items: {}
- */
+  /**
+   * @swagger
+   * /project/list-projects-by-user:
+   *   post:
+   *     tags:
+   *     - Project
+   *     summary: Get projects for the authenticated user  where user is a team member or project lead
+   *     security:
+   *       - bearerAuth: []
+   *     description: Retrieves all projects where the authenticated user is a team member or project lead
+   *     responses:
+   *       200:
+   *         description: Projects retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Projects retrieved successfully.
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       _id:
+   *                         type: string
+   *                       project_name:
+   *                         type: string
+   *
+   *       400:
+   *         description: Bad request (validation error)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                 data:
+   *                   type: array
+   *                   items: {}
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: Failed to retrieve projects.
+   *                 data:
+   *                   type: array
+   *                   items: {}
+   */
 
   /**
    * List all open projects where the user is included in the project team
-   * 
+   *
    */
   async listAllOpenProjectsByUser(req, res) {
     try {
       // Authentication (uncomment and implement proper token verification in production)
-			// const user_id = await authenticateAndGetUserId(req);
-			const user_id = '6746a63bf79ea71d30770de7'; // Temporary user ID
+      // const user_id = await authenticateAndGetUserId(req);
+      const user_id = "6746a63bf79ea71d30770de7"; // Temporary user ID
 
       const projects = await projectRepo.getAllOpenProjectsByUser(user_id);
       const projectData = await Promise.all(
         projects.map(async (project) => {
-          return await ProjectResponse.formatGetAllOpenProjectsByUserResponse(project)
+          return await ProjectResponse.formatGetAllOpenProjectsByUserResponse(
+            project
+          );
         })
       );
-      
+
       return res.status(200).json({
         status: true,
         message: "Projects retrieved successfully.",
         data: projectData,
       });
     } catch (error) {
-      if(error instanceof CustomValidationError){
+      if (error instanceof CustomValidationError) {
         return res.status(400).json({
           status: false,
           message: error.message,
-          data: []
-        })
+          data: [],
+        });
       }
       return res.status(500).json({
         status: false,
         message: error.message,
-        data: []
+        data: [],
       });
     }
   }
 
-/**
- * @swagger
- * /project/get-projects-by-user:
- *   post:
- *     tags:
- *       - Project
- *     summary: Get projects for the given userId where user is a team member or project lead
- *     security:
- *       - bearerAuth: []
- *     description: Retrieves all projects where the authenticated user is a team member or project lead
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *                 description: UserId for the user whose projects are needed
- *               page:
- *                 type: integer
- *                 description: Page number (default 1)
- *                 example: 1
- *               limit:
- *                 type: integer
- *                 description: Number of items per page (default 10)
- *                 example: 10 
- *     responses:
- *       200:
- *         description: Projects retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Projects retrieved successfully.
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                       project_name:
- *                         type: string
- *                       client: 
- *                         type: string
- *                       startDate:
- *                         type: string
- *                       endDate:
- *                         type: string
- *                       project_lead:
- *                         type: string
- *                       status:
- *                         type: string           
- *       400:
- *         description: Bad request (validation error)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items: {}
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Failed to retrieve projects.
- *                 data:
- *                   type: array
- *                   items: {}
- */
-
-  
+  /**
+   * @swagger
+   * /project/get-projects-by-user:
+   *   post:
+   *     tags:
+   *       - Project
+   *     summary: Get projects for the given userId where user is a team member or project lead
+   *     security:
+   *       - bearerAuth: []
+   *     description: Retrieves all projects where the authenticated user is a team member or project lead
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               userId:
+   *                 type: string
+   *                 description: UserId for the user whose projects are needed
+   *               page:
+   *                 type: integer
+   *                 description: Page number (default 1)
+   *                 example: 1
+   *               limit:
+   *                 type: integer
+   *                 description: Number of items per page (default 10)
+   *                 example: 10
+   *     responses:
+   *       200:
+   *         description: Projects retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Projects retrieved successfully.
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       _id:
+   *                         type: string
+   *                       project_name:
+   *                         type: string
+   *                       client:
+   *                         type: string
+   *                       startDate:
+   *                         type: string
+   *                       endDate:
+   *                         type: string
+   *                       project_lead:
+   *                         type: string
+   *                       status:
+   *                         type: string
+   *       400:
+   *         description: Bad request (validation error)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                 data:
+   *                   type: array
+   *                   items: {}
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: Failed to retrieve projects.
+   *                 data:
+   *                   type: array
+   *                   items: {}
+   */
 
   /**
    * Get all projects where the user is included in the project team
@@ -917,8 +907,8 @@ export default class ProjectController {
   async getAllProjectsByUser(req, res) {
     try {
       // Authentication (uncomment and implement proper token verification in production)
-			// const user_id = await authenticateAndGetUserId(req);
-			
+      // const user_id = await authenticateAndGetUserId(req);
+
       const user_id = req.body.userId;
 
       const page = parseInt(req.body.page) || 1;
@@ -928,12 +918,18 @@ export default class ProjectController {
       // Fetch total count of Projects by user
       const totalItems = await projectRepo.getProjectCountByUser(user_id);
 
-      const projects = await projectRepo.getAllProjectsByUser(user_id, skip, limit);
+      const projects = await projectRepo.getAllProjectsByUser(
+        user_id,
+        skip,
+        limit
+      );
 
-      if(projects && projects.length > 0) {
+      if (projects && projects.length > 0) {
         const projectData = await Promise.all(
           projects.map(async (project) => {
-            return await ProjectResponse.formatGetAllProjectsByUserResponse(project);
+            return await ProjectResponse.formatGetAllProjectsByUserResponse(
+              project
+            );
           })
         );
 
@@ -948,11 +944,10 @@ export default class ProjectController {
             totalItems,
             currentPage: page,
             pageSize: limit,
-            totalPages
-          }
+            totalPages,
+          },
         });
-      }
-      else {
+      } else {
         return res.status(200).json({
           status: true,
           message: "No projects found.",
@@ -961,132 +956,186 @@ export default class ProjectController {
             totalItems,
             currentPage: page,
             pageSize: limit,
-            totalPages: 0
-          }
+            totalPages: 0,
+          },
         });
-      } 
+      }
     } catch (error) {
-      if(error instanceof CustomValidationError){
+      if (error instanceof CustomValidationError) {
         return res.status(400).json({
           status: false,
           message: error.message,
-          data: []
-        })
+          data: [],
+        });
       }
       return res.status(500).json({
         status: false,
         message: error.message,
-        data: []
+        data: [],
       });
     }
   }
-  
-/**
- * @swagger
- * /project/get-categories:
- *   post:
- *     tags:
- *       - Project
- *     summary: Get categories for a specific project
- *     description: Retrieves all categories associated with the given project ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - projectId
- *             properties:
- *               projectId:
- *                 type: string
- *                 description: The ID of the project to get categories for
- *     responses:
- *       200:
- *         description: Categories retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Categories retrieved successfully.
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       category:
- *                         type: string
- *                         description: The name of the category
- *                       categoryId:
- *                         type: string
- *                         description: The ID of the category
- *       400:
- *         description: Bad request (e.g., missing projectId)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Project ID is required.
- *                 data:
- *                   type: array
- *                   items: {}
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: false
- *                 message:
- *                   type: string
- *                   example: Failed to retrieve categories.
- *                 data:
- *                   type: array
- *                   items: {}
- */
+
+  /**
+   * @swagger
+   * /project/get-categories:
+   *   post:
+   *     tags:
+   *       - Project
+   *     summary: Get categories for a specific project
+   *     description: Retrieves all categories associated with the given project ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - projectId
+   *             properties:
+   *               projectId:
+   *                 type: string
+   *                 description: The ID of the project to get categories for
+   *     responses:
+   *       200:
+   *         description: Categories retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: Categories retrieved successfully.
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       category:
+   *                         type: string
+   *                         description: The name of the category
+   *                       categoryId:
+   *                         type: string
+   *                         description: The ID of the category
+   *       400:
+   *         description: Bad request (e.g., missing projectId)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: Project ID is required.
+   *                 data:
+   *                   type: array
+   *                   items: {}
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   example: false
+   *                 message:
+   *                   type: string
+   *                   example: Failed to retrieve categories.
+   *                 data:
+   *                   type: array
+   *                   items: {}
+   */
   async getCategoriesByProject(req, res) {
     try {
       const projectId = req.body.projectId;
 
-      await CreateTimesheetRequest.validateProjectStatus(projectId)
+      await CreateTimesheetRequest.validateProjectStatus(projectId);
 
       const categories = await projectRepo.getCategoriesByProject(projectId);
 
       return res.status(200).json({
         status: true,
         message: "Categories retrieved successfully.",
-        data: categories
+        data: categories,
       });
     } catch (error) {
-      if(error instanceof CustomValidationError){
+      if (error instanceof CustomValidationError) {
         return res.status(400).json({
           status: false,
           message: error.message,
-          data: []
-        })
+          data: [],
+        });
       }
-      
+
       return res.status(500).json({
         status: false,
         message: error.message,
-        data: []
+        data: [],
       });
     }
   }
-  
+
+  /**
+   * Get Dropdown Data
+   *
+   * @swagger
+   * /project/dropdown/{type}:
+   *   post:
+   *     tags:
+   *       - Project
+   *     summary: Get dropdown data for clients or project leads
+   *     parameters:
+   *       - in: path
+   *         name: type
+   *         required: true
+   *         schema:
+   *           type: string
+   *           enum: [clients, leads]
+   *         description: Type of dropdown data to retrieve
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Successfully retrieved dropdown data
+   *       400:
+   *         description: Invalid type parameter
+   *       500:
+   *         description: Internal Server Error
+   */
+  async getDropdownData(req, res) {
+    const { type } = req.params;
+
+    if (!["clients", "leads"].includes(type)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid dropdown type. Must be 'clients' or 'leads'.",
+      });
+    }
+
+    try {
+      const data = await projectRepo.getDropdownData(type);
+      const entityType = type === "clients" ? "Client names" : "Project leads";
+
+      return res.status(200).json({
+        status: true,
+        message: `${entityType} retrieved successfully.`,
+        data: data,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: `Failed to retrieve ${type}.`,
+        errors: error.message,
+      });
+    }
+  }
 }

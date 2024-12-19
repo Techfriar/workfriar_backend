@@ -6,21 +6,24 @@ const clientSchema = new mongoose.Schema({
         required: true,
     },
     location: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'country',
         required: true,
     },
     client_manager: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true,
     },
     billing_currency: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'currency',
         required: true,
     },
     status: {
         type: String,
         required: true,
-        enum: ['Not started','In progress','On hold','Cancelled']
+        enum: ['Active', 'Inactive']
     }
 })
 

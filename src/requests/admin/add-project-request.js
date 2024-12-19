@@ -1,6 +1,7 @@
 import Joi from "joi";
 import ProjectRepository from "../../repositories/admin/project-repository.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
+
 class AddProjectRequest {
   static projectRepo = new ProjectRepository();
 
@@ -60,28 +61,31 @@ class AddProjectRequest {
       abortEarly: false,
     });
 
-    // Check if project exists
+    const validationErrors = [];
+
+    // Add Joi validation errors to the array
+    if (error) {
+      error.details.forEach((err) => {
+        validationErrors.push({ field: err.context.key, message: err.message });
+      });
+    }
+
+    // Check if the project already exists
     const checkProjectExists =
       await AddProjectRequest.projectRepo.checkProjectExists(
         this.data.project_name,
         this.data.client_name
       );
 
-    if (error || checkProjectExists) {
-      const validationErrors = {};
-      error
-        ? error.details.forEach((err) => {
-            validationErrors[err.context.key] = err.message;
-          })
-        : [];
+    if (checkProjectExists) {
+      validationErrors.push({
+        field: "project_name",
+        message: "Project with this name already exists for the client.",
+      });
+    }
 
-      if (checkProjectExists) {
-        validationErrors["project_name"] =
-          "Project with this name already exists for the client.";
-      }
-
-      
-
+    // Throw validation error if any errors are present
+    if (validationErrors.length > 0) {
       throw new CustomValidationError(validationErrors);
     }
 

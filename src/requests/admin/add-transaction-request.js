@@ -1,10 +1,10 @@
 import Joi from "joi";
-import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
-import TransactionRepository from "../../repositories/admin/transaction-repository.js";
 import mongoose from "mongoose";
+import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
+import SubscriptionRepository from "../../repositories/admin/subscription-repository.js";
 
 class AddTransactionRequest {
-  static transactionRepo = new TransactionRepository();
+  static subscriptionRepo = new SubscriptionRepository();
 
   static schema = Joi.object({
     transaction_date: Joi.date().required().messages({
@@ -25,7 +25,7 @@ class AddTransactionRequest {
         "any.invalid": "Invalid subscription selected.",
       }),
     description: Joi.string().optional().allow("").allow(null),
-    transaction_currency: Joi.string().required().default("USD").messages({
+    transaction_currency: Joi.string().required().messages({
       "string.empty": "Please enter the transaction currency.",
       "any.required": "Please enter the transaction currency.",
     }),
@@ -76,39 +76,6 @@ class AddTransactionRequest {
         }),
       otherwise: Joi.string().optional().allow("").allow(null),
     }),
-    card_expiry: Joi.string().when("payment_method", {
-      is: Joi.string().valid("Credit Card", "Debit Card"),
-      then: Joi.string()
-        .pattern(/^(0[1-9]|1[0-2])\/([0-9]{2})$/)
-        .required()
-        .messages({
-          "string.pattern.base": "Card expiry must be in MM/YY format.",
-          "any.required": "Please enter the card expiry date.",
-        }),
-      otherwise: Joi.string().optional().allow("").allow(null),
-    }),
-    license_count: Joi.string()
-      .custom((value, helpers) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-          return helpers.error("any.invalid");
-        }
-        return value;
-      })
-      .required()
-      .messages({
-        "string.empty": "Please enter the license count.",
-        "any.required": "Please enter the license count.",
-        "any.invalid": "Invalid license count selected.",
-      }),
-    next_due_date: Joi.date().optional().allow("").allow(null),
-    receipts: Joi.array()
-      .items(Joi.string())
-      .optional()
-      .allow(null)
-      .default([])
-      .messages({
-        "array.base": "Receipts must be an array.",
-      }),
   });
 
   constructor(req) {
@@ -122,14 +89,6 @@ class AddTransactionRequest {
       card_provider: req.body.card_provider,
       card_holder_name: req.body.card_holder_name,
       last_four_digits: req.body.last_four_digits,
-      card_expiry: req.body.card_expiry,
-      license_count: req.body.license_count,
-      next_due_date: req.body.next_due_date,
-      receipts: Array.isArray(req.body.receipts)
-      ? req.body.receipts
-      : req.body.receipts
-      ? [req.body.receipts]
-      : [],
     };
   }
 
@@ -138,27 +97,31 @@ class AddTransactionRequest {
       abortEarly: false,
     });
 
-    const validationErrors = {};
+    const validationErrors = [];
+
     if (error) {
-      error.details.forEach((err) => {
-        validationErrors[err.context.key] = err.message;
-      });
+      validationErrors.push(
+        ...error.details.map((err) => ({
+          field: err.context.key,
+          message: err.message,
+        }))
+      );
     }
 
-    // Validate subscription exists
     if (value.subscription_name) {
-      const subscriptionExists =
-        await AddTransactionRequest.transactionRepo.checkSubscriptionExists(
-          value.subscription_name
-        );
-      if (!subscriptionExists) {
-        validationErrors["subscription_name"] =
-          "Selected subscription does not exist.";
+      const subscription = await AddTransactionRequest.subscriptionRepo.getSubscriptionById(
+        value.subscription_name
+      );
+
+      if (!subscription) {
+        validationErrors.push({
+          field: "subscription_name",
+          message: "Selected subscription does not exist.",
+        });
       }
     }
 
-    // If there are any errors, throw CustomValidationError
-    if (Object.keys(validationErrors).length > 0) {
+    if (validationErrors.length > 0) {
       throw new CustomValidationError(validationErrors);
     }
 
