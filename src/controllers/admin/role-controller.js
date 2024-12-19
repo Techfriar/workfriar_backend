@@ -488,10 +488,29 @@ export default class RoleController {
  *                       type: string
  *                       example: "projects"
  *                     actions:
- *                       type: array
- *                       items:
- *                         type: string
- *                       example: ["view", "review", "edit", "delete", "approve"]
+ *                       type: object
+ *                       required:
+ *                         - view
+ *                         - review
+ *                         - edit
+ *                         - delete
+ *                         - approve
+ *                       properties:
+ *                         view: 
+ *                            type: boolean
+ *                            example: true
+ *                         review: 
+ *                             type: boolean
+ *                             example: true
+ *                         edit: 
+ *                            type: boolean
+ *                            example: true
+ *                         delete: 
+ *                             type: boolean
+ *                             example: true  
+ *                         approve : 
+ *                             type: boolean
+ *                             example: true
  *               status:
  *                 type: boolean
  *                 example: true

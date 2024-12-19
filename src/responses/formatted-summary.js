@@ -105,7 +105,7 @@ export default class TimeSummaryResponse {
 
     
     //Function for formatting a past due
-    async formattedPastDue(data) {
+    async formattedPastDue(data, status) {
         try {
             let overallDailyHours = {}; // Object to store hours grouped by date
     
@@ -122,6 +122,11 @@ export default class TimeSummaryResponse {
                     }
                     overallDailyHours[entryDate] += parseFloat(entry.hours);
                 });
+
+                // Filter out timesheets based on the provided status
+                if (status && status !== item.status) {
+                    return null;
+                }
     
                 // Return the formatted timesheet object
                 return {
