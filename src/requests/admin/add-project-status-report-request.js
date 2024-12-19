@@ -72,10 +72,12 @@ export class AddProjectStatusReportRequest {
     );
 
     if (error) {
-      const validationErrors = {};
-      error.details.forEach((err) => {
-        validationErrors[err.context.key] = err.message;
-      });
+      // Collect validation errors as an array of objects
+      const validationErrors = error.details.map((err) => ({
+        field: err.context.key,
+        message: err.message,
+      }));
+
       throw new CustomValidationError(validationErrors);
     }
 

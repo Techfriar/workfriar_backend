@@ -77,9 +77,9 @@ export class UpdateProjectStatusReportRequest {
       );
 
     if (!reportExists) {
-      throw new CustomValidationError({
-        report: "Project status report not found.",
-      });
+      throw new CustomValidationError([
+        { field: "report", message: "Project status report not found." },
+      ]);
     }
 
     // Perform validation
@@ -92,11 +92,10 @@ export class UpdateProjectStatusReportRequest {
 
     // Handle validation errors
     if (error) {
-      const validationErrors = {};
-
-      error.details.forEach((err) => {
-        validationErrors[err.context.key] = err.message;
-      });
+      const validationErrors = error.details.map((err) => ({
+        field: err.context.key,
+        message: err.message,
+      }));
 
       throw new CustomValidationError(validationErrors);
     }

@@ -30,4 +30,8 @@ projectStatusRouter
     projectStatusReport.updateReport
   );
 
+  projectStatusRouter
+  .route("/dropdown/:type")
+  .post(projectStatusReport.getDropdownData);
+
 export default projectStatusRouter;
