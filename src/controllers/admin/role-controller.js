@@ -523,7 +523,6 @@ export default class RoleController {
     async updateRole(req, res) {
         try {
             const validatedData = await RoleRequest.validateUpdateRole(req.body);
-            console.log(validatedData, "validatedData")
             const { roleId, ...updateData } = validatedData;
 
             // Find the existing role
@@ -542,7 +541,7 @@ export default class RoleController {
             // Update permissions if provided
             if (updateData.permissions) {
                 const permissionIds = await Promise.all(
-                    updateData.permissions.map(async (permission) => {
+                    updateData.permissions.map(async (permission) => {                         
                         const existingPermission = await PermissionRepository
                             .findOneAndUpdatePermission(
                                 permission.category,

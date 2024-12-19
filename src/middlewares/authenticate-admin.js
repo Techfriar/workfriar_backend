@@ -9,14 +9,15 @@ const UserRepo = new UserRepository()
  * @DESC Verify JWT from authorization header Middleware
  */
 const authenticateAdmin = async (req, res, next) => {
-    const cookie = req.cookie
-    if(!cookie?.token) {
+    const cookie = req.cookies
+    if(!cookie?.workfriar_intersection) {
         res.status(401).json({ message: 'Unauthorized' })
     } else {
-        // const unSealedToken = await Unseal(cookie.token)
+        const unSealedToken = await Unseal(cookie.workfriar_intersection)
 
-        // const token = unSealedToken.token.split(' ')[1]
-        const token = cookie.token.split(' ')[1]
+        const token = unSealedToken.data.token
+        // const token = unSealedToken.data.token.split(' ')[1]
+
 
         if (token) {
             // if(await isTokenBlacklisted(token)) {

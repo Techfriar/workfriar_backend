@@ -35,11 +35,6 @@ projectRouter
     upload.fields([{ name: "project_logo", maxCount: 1 }]),
     project.updateProject
   );
-  projectRouter
-  .route("/delete/:id")
-  .post(
-    project.deleteProject
-  );
   projectRouter.route("/changetimeentry").post(project.updateTimeEntry)
   projectRouter.route("/updatestatus").post(project.upddatestatus)
 
@@ -63,5 +58,9 @@ projectRouter
   projectRouter
     .route('/get-categories')
     .post(project.getCategoriesByProject)
+
+  projectRouter
+    .route('/dropdown/:type')
+    .post(project.getDropdownData);
 
 export default projectRouter;

@@ -5,7 +5,14 @@ import Iron from '@hapi/iron';
  * @param {string} encodeObject - Encrypted data by hapi/iron
  * @returns {Promise<Object>} Decoded object
  */
-const IntersectionSecret = process.env.IntersectionSecret;
+
+const IntersectionSecret = process.env.INTERSECTION_SECRET;
+
+/**
+ * Decrypt the given data using hapi/iron
+ * @param {string} encodeObject - Encrypted data by hapi/iron
+ * @returns {Promise<Object>} Decoded object
+ */
 export default async function decode(encodeObject) {
     try {
         const decodeObject = await Iron.unseal(
