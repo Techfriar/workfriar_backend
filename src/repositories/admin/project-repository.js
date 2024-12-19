@@ -374,12 +374,13 @@ export default class ProjectRepository {
     {
         try
         {
-            const projectCategories = await Project.findById(projectid).populate({
+            const project = await Project.findById(projectid).populate({
                 path: "categories",
-                select: "_id category",
+                select: "_id category status",
             })
             .lean();
-            return projectCategories.categories;
+
+            return project.categories.filter(category => category.status === 'opened')
         }catch(error)
         {
             throw new Error(error)
