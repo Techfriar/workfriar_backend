@@ -287,7 +287,8 @@ class TimeSheetSummaryController{
 
     async pastDueController(req,res)
     {
-        let userId="6746a63bf79ea71d30770de7"
+        let userId= req.session.user._id
+        
         let {status,passedUserid,page=1,limit=10}=req.body
         const pageNumber = parseInt(page,10);
         const limitNumber = parseInt(limit, 10);
@@ -427,7 +428,7 @@ class TimeSheetSummaryController{
  */
 
  async getDueTimeSheetController(req,res) {
-    let userId="6746a63bf79ea71d30770de7"
+    let userId = req.session.user._id
 
         let {passedUserid,startDate,endDate,status}=req.body
         try
@@ -480,7 +481,7 @@ class TimeSheetSummaryController{
         {
              notes=await rejectRepo.getByWeek(startDate,endDate,userId)
         }
-        const formattedData= await timesummaryResponse.formattedPastDue(data)
+        const formattedData= await timesummaryResponse.formattedPastDue(data, status)
 
         
             if(data)

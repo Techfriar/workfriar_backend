@@ -382,20 +382,24 @@ export default class ProjectRepository {
     }
   }
 
-  async getCategoriesByProject(projectid) {
-    try {
-      const projectCategories = await Project.findById(projectid)
-        .populate({
-          path: "categories",
-          select: "_id category",
-        })
-        .lean();
-      return projectCategories.categories;
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
+    async getCategoriesByProject(projectid)
+    {
+        try
+        {
+            const project = await Project.findById(projectid).populate({
+                path: "categories",
+                select: "_id category status",
+            })
+            .lean();
 
+            return project.categories.filter(category => category.status === 'opened')
+        }catch(error)
+        {
+            throw new Error(error)
+        }
+    }
+  
+  
   /**
    * Get dropdown data for either clients or project leads
    * @param {string} type - Type of dropdown data ('clients' or 'leads')
