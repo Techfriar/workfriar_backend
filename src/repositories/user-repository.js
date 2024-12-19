@@ -42,7 +42,7 @@ export default class UserRepository {
                 {
                     $unwind: {
                         path: '$roles',
-                        preserveNullAndEmptyArrays: false,
+                        preserveNullAndEmptyArrays: true,
                     },
                 },
                 {  

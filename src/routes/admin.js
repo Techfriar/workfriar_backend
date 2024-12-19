@@ -11,6 +11,7 @@ import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroll
 import TimesheetApprovalController from "../controllers/admin/timesheet-approval-controller.js";
 import EmployeeController from "../controllers/admin/employee-controller.js";
 import multer from "multer";
+import PopulateData from "../utils/currency-country-populate.js";
 
 const adminRouter = express.Router();
 const upload=multer()
@@ -25,6 +26,8 @@ const admin = new AdminController();
 const client = new ClientController();
 const role = new RoleController();
 const timesheetapproval=new TimesheetApprovalController()
+
+const populateData = new PopulateData()
 
 // import multer from 'multer'
 // // import {
@@ -134,6 +137,13 @@ adminRouter
 adminRouter.route('/add-client').post(client.addClient)
 adminRouter.route('/all-clients').post(client.allClient)
 adminRouter.route('/edit-client').post(client.editClient)
+adminRouter.route('/change-client-status').post(client.changeClientStatus)
+
+/*
+Country-Currency-Dropdown
+*/
+adminRouter.route('/populate-country').post(populateData.populateCountry)
+adminRouter.route('/populate-currency').post(populateData.populateCurrency)
 
 /*
 * Role Routes
@@ -146,7 +156,7 @@ adminRouter.route('/update-role').post(role.updateRole)
 adminRouter.route('/all-roll-permissions').post(role.viewAllPermissionsByRole)
 adminRouter.route('/remove-user-role').post(role.removeUserFromRole)
 adminRouter.route('/get-team-leads').post(role.getTeamLeads)
-
+adminRouter.route('/get-client-managers').post(role.getClientManager)
 /*
 Employee Routes
 */
@@ -164,6 +174,8 @@ adminRouter.route('/approvalcenter').post(timesheetapproval.getMembers)
 adminRouter.route('/managetimesheet').post(timesheetapproval.manageTimeSheet)
 
 adminRouter.route('/manage-all-timesheet').post(timesheetapproval.manageAllTimesheet)
+
+
 
 
 export default adminRouter;

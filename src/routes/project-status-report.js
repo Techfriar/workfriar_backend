@@ -29,10 +29,9 @@ projectStatusRouter
   .post(
     projectStatusReport.updateReport
   );
+
   projectStatusRouter
-  .route("/delete-report/:id")
-  .post(
-    projectStatusReport.deleteReport
-  );
+  .route("/dropdown/:type")
+  .post(projectStatusReport.getDropdownData);
 
 export default projectStatusRouter;

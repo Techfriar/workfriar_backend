@@ -488,10 +488,29 @@ export default class RoleController {
  *                       type: string
  *                       example: "projects"
  *                     actions:
- *                       type: array
- *                       items:
- *                         type: string
- *                       example: ["view", "review", "edit", "delete", "approve"]
+ *                       type: object
+ *                       required:
+ *                         - view
+ *                         - review
+ *                         - edit
+ *                         - delete
+ *                         - approve
+ *                       properties:
+ *                         view: 
+ *                            type: boolean
+ *                            example: true
+ *                         review: 
+ *                             type: boolean
+ *                             example: true
+ *                         edit: 
+ *                            type: boolean
+ *                            example: true
+ *                         delete: 
+ *                             type: boolean
+ *                             example: true  
+ *                         approve : 
+ *                             type: boolean
+ *                             example: true
  *               status:
  *                 type: boolean
  *                 example: true
@@ -523,7 +542,6 @@ export default class RoleController {
     async updateRole(req, res) {
         try {
             const validatedData = await RoleRequest.validateUpdateRole(req.body);
-            console.log(validatedData, "validatedData")
             const { roleId, ...updateData } = validatedData;
 
             // Find the existing role
@@ -542,7 +560,7 @@ export default class RoleController {
             // Update permissions if provided
             if (updateData.permissions) {
                 const permissionIds = await Promise.all(
-                    updateData.permissions.map(async (permission) => {
+                    updateData.permissions.map(async (permission) => {                         
                         const existingPermission = await PermissionRepository
                             .findOneAndUpdatePermission(
                                 permission.category,
@@ -878,6 +896,24 @@ export default class RoleController {
             res.status(500).json({
                 status: false,
                 message: 'Error fetching team leads',
+                data: []
+            });
+        }
+    }
+
+    
+    async getClientManager(req, res) {
+        try {
+            const clientManagers = await RoleRepository.getManagers();
+            res.status(200).json({
+                status: true,
+                message: 'Client Managers fetched successfully',
+                data: clientManagers || []
+            });
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                message: 'Error fetching Client Managers',
                 data: []
             });
         }

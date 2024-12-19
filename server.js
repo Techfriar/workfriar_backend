@@ -12,7 +12,8 @@ import morgan from "morgan";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import configureRoutes from "./src/routes/routes.js";
-// import seedUsers from "./src/seeders/UserSeeder.js";
+import seedCountries from "./src/seeders/CountrySeeder.js";
+import seedCurrencies from "./src/seeders/CurrencySeeder.js";
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ const app = express();
 // Use the cors() middleware to enable CORS support
 app.use(
   cors({
-    origin: "*", // Replace with your frontend's [origin http://localhost:3000]
+    origin: "http://localhost:3000", // Replace with your frontend's [origin http://localhost:3000]
     credentials: true, // Allow cookies to be sent and received
   })
 );
@@ -92,6 +93,8 @@ app.use(
  * Define application routes
  */
 configureRoutes(app);
+await seedCountries();
+await seedCurrencies();
 
 // Set the folders as the location for serving static files
 app.use("/storage/invoices", express.static("storage/invoices"));

@@ -7,14 +7,25 @@ class ClientResponse{
      */
     async addClientResponse(client){
         return{
-            id: client._id,
+            _id: client._id,
             name: client.client_name
         }
+    }
+
+    async allClientsResponse(client){
+        return {
+            _id: client._id,
+            client_name: client.client_name,
+            location: client.location.name,
+            client_manager: client.client_manager.full_name,
+            billing_currency: client.billing_currency.code,
+            status: client.status
+        };
     }
     
     async editClientResponse(client){
         return{
-            id: client._id,
+            _id: client._id,
             name: client.client_name,
             status: client.status
         }

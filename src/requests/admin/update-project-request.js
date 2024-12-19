@@ -1,127 +1,156 @@
-import Joi from 'joi'
-import ProjectRepository from '../../repositories/admin/project-repository.js'
-import { CustomValidationError } from '../../exceptions/custom-validation-error.js'
+import Joi from 'joi';
+import ProjectRepository from '../../repositories/admin/project-repository.js';
+import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
 
 class UpdateProjectRequest {
-    static projectRepo = new ProjectRepository()
+  static projectRepo = new ProjectRepository();
 
-    static schema = Joi.object({
-        client_name: Joi.string().optional().messages({
-            'string.empty': 'Please enter the client name.',
-            'any.optional': 'Please enter the client name.'
-        }),
-        project_name: Joi.string().optional().messages({
-            'string.empty': 'Please enter the project name.',
-            'any.optional': 'Please enter the project name.'
-        }),
-        description: Joi.string().optional().messages({
-            'string.empty': 'Please enter the project description.',
-            'any.optional': 'Please enter the project description.'
-        }),
-        planned_start_date: Joi.date().optional().messages({
-            'date.base': 'Please enter a valid planned start date.',
-            'any.optional': 'Please enter the planned start date.'
-        }),
-        project_lead: Joi.string().optional().messages({
-            'string.empty': 'Please enter the project lead.',
-            'any.optional': 'Please enter the project lead.'
-        }),
-        planned_end_date: Joi.date().optional().allow('').allow(null),
-        actual_start_date: Joi.date().optional().allow('').allow(null),
-        actual_end_date: Joi.date().optional().allow('').allow(null),
-        billing_model: Joi.string().optional().allow('').allow(null),
-        project_logo: Joi.object().optional().allow('').allow(null),
-        open_for_time_entry: Joi.string().valid('opened', 'closed').optional(),
-        status: Joi.string()
-            .valid('Not Started', 'In Progress', 'Completed', 'On Hold', 'Cancelled')
-            .optional(),
-        projectId: Joi.string()
-            .regex(/^[0-9a-fA-F]{24}$/)
-            .optional()
-    })
+  static schema = Joi.object({
+    client_name: Joi.string().optional().messages({
+      'string.empty': 'Please enter the client name.',
+      'any.optional': 'Please enter the client name.',
+    }),
+    project_name: Joi.string().optional().messages({
+      'string.empty': 'Please enter the project name.',
+      'any.optional': 'Please enter the project name.',
+    }),
+    description: Joi.string().optional().messages({
+      'string.empty': 'Please enter the project description.',
+      'any.optional': 'Please enter the project description.',
+    }),
+    planned_start_date: Joi.date().optional().messages({
+      'date.base': 'Please enter a valid planned start date.',
+      'any.optional': 'Please enter the planned start date.',
+    }),
+    project_lead: Joi.string().optional().messages({
+      'string.empty': 'Please enter the project lead.',
+      'any.optional': 'Please enter the project lead.',
+    }),
+    planned_end_date: Joi.date().optional().allow('').allow(null),
+    actual_start_date: Joi.date().optional().allow('').allow(null),
+    actual_end_date: Joi.date().optional().allow('').allow(null),
+    billing_model: Joi.string().optional().allow('').allow(null),
+    project_logo: Joi.alternatives()
+      .try(
+        Joi.object(), // For file objects
+        Joi.string().allow('').allow(null) // For string/null/empty values
+      )
+      .optional(),
+    open_for_time_entry: Joi.string().valid('opened', 'closed').optional(),
+    status: Joi.string()
+      .valid('Not Started', 'In Progress', 'Completed', 'On Hold', 'Cancelled')
+      .optional(),
+    categories: Joi.array().items(Joi.string()).optional().allow(null).messages({
+      'array.base': 'Categories must be an array.',
+    }),
+    projectId: Joi.string()
+      .regex(/^[0-9a-fA-F]{24}$/)
+      .optional(),
+  });
 
-    constructor(req) {
-        const file = req.files && req.files['project_logo'] ? req.files['project_logo'][0] : null
-
-        this.data = {
-            client_name: req.body.client_name,
-            project_name: req.body.project_name,
-            description: req.body.description,
-            planned_start_date: req.body.planned_start_date,
-            planned_end_date: req.body.planned_end_date,
-            actual_start_date: req.body.actual_start_date,
-            actual_end_date: req.body.actual_end_date,
-            project_lead: req.body.project_lead,
-            billing_model: req.body.billing_model,
-            project_logo: file,
-            open_for_time_entry: req.body.open_for_time_entry,
-            status: req.body.status,
-            projectId: req.params.id
+  constructor(req) {
+    // Safely handle project_logo in various formats
+    let projectLogo = null;
+    if (req.files) {
+      if (req.files.project_logo) {
+        // Handle array of files
+        if (Array.isArray(req.files.project_logo)) {
+          projectLogo = req.files.project_logo[0];
         }
+        // Handle single file
+        else {
+          projectLogo = req.files.project_logo;
+        }
+      }
     }
 
-    async validate() {
-        // Remove undefined values from the data
-        const filteredData = Object.fromEntries(
-            Object.entries(this.data).filter(([_, v]) => v !== undefined)
-        );
+    this.data = {
+      client_name: req.body.client_name,
+      project_name: req.body.project_name,
+      description: req.body.description,
+      planned_start_date: req.body.planned_start_date,
+      planned_end_date: req.body.planned_end_date,
+      actual_start_date: req.body.actual_start_date,
+      actual_end_date: req.body.actual_end_date,
+      project_lead: req.body.project_lead,
+      billing_model: req.body.billing_model,
+      project_logo: projectLogo, // Use the safely handled project_logo
+      open_for_time_entry: req.body.open_for_time_entry,
+      status: req.body.status,
+      categories: req.body.categories 
+        ? Array.isArray(req.body.categories)
+          ? req.body.categories
+          : [req.body.categories]
+        : null,
+      projectId: req.params.id,
+    };
+  }
 
-        // Validate only the fields that are present
-        const fieldsToValidate = {};
-        Object.keys(filteredData).forEach(key => {
-            if (filteredData[key] !== undefined) {
-                fieldsToValidate[key] = filteredData[key];
-            }
-        });
+  async validate() {
+    // Remove undefined values from the data
+    const filteredData = Object.fromEntries(
+      Object.entries(this.data).filter(([_, v]) => v !== undefined)
+    );
 
-        // Check if project exists
-        const projectExists = await UpdateProjectRequest.projectRepo.getProjectById(
-            this.data.projectId
-        );
+    // Validate only the fields that are present
+    const fieldsToValidate = {};
+    Object.keys(filteredData).forEach((key) => {
+      if (filteredData[key] !== undefined) {
+        fieldsToValidate[key] = filteredData[key];
+      }
+    });
 
-        if (!projectExists) {
-            throw new CustomValidationError({ project: 'Project not found.' });
-        }
+    // Check if the project exists
+    const projectExists = await UpdateProjectRequest.projectRepo.getProjectById(
+      this.data.projectId
+    );
 
-        // Check if project name already exists (if project_name is being updated)
-        let checkProjectExists = null;
-        if (filteredData.project_name || filteredData.client_name) {
-            checkProjectExists = await UpdateProjectRequest.projectRepo.checkProjectExists(
-                filteredData.project_name || this.data.project_name,
-                filteredData.client_name || this.data.client_name,
-                this.data.projectId
-            );
-        }
-
-        // Perform validation
-        const { error, value } = UpdateProjectRequest.schema.fork(
-            Object.keys(fieldsToValidate), 
-            (schema) => schema.required()
-        ).validate(fieldsToValidate, {
-            abortEarly: false,
-            allowUnknown: true
-        });
-
-        // Handle validation errors
-        if (error || checkProjectExists) {
-            const validationErrors = {};
-            
-            if (error) {
-                error.details.forEach((err) => {
-                    validationErrors[err.context.key] = err.message;
-                });
-            }
-
-            if (checkProjectExists) {
-                validationErrors['project_name'] = 
-                    'Project with this name already exists for the client.';
-            }
-
-            throw new CustomValidationError(validationErrors);
-        }
-
-        return filteredData;
+    if (!projectExists) {
+      throw new CustomValidationError([{ field: 'project', message: 'Project not found.' }]);
     }
+
+    // Check if project name already exists (if project_name is being updated)
+    let checkProjectExists = null;
+    if (filteredData.project_name || filteredData.client_name) {
+      checkProjectExists = await UpdateProjectRequest.projectRepo.checkProjectExists(
+        filteredData.project_name || projectExists.project_name,
+        filteredData.client_name || projectExists.client_name,
+        this.data.projectId
+      );
+    }
+
+    // Perform validation
+    const { error, value } = UpdateProjectRequest.schema.fork(
+      Object.keys(fieldsToValidate),
+      (schema) => schema.required()
+    ).validate(fieldsToValidate, {
+      abortEarly: false,
+      allowUnknown: true,
+    });
+
+    // Handle validation errors
+    const validationErrors = [];
+
+    if (error) {
+      error.details.forEach((err) => {
+        validationErrors.push({ field: err.context.key, message: err.message });
+      });
+    }
+
+    if (checkProjectExists) {
+      validationErrors.push({
+        field: 'project_name',
+        message: 'Project with this name already exists for the client.',
+      });
+    }
+
+    // Throw validation error if any errors exist
+    if (validationErrors.length > 0) {
+      throw new CustomValidationError(validationErrors);
+    }
+
+    return filteredData;
+  }
 }
 
 export default UpdateProjectRequest;

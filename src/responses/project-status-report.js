@@ -8,8 +8,8 @@ export default class ProjectStatusReportResponse {
   static async formatGetByIdReportResponse(report) {
     return {
       id: report._id,
-      project_name: report.project_name.project_name,
-      project_lead: report.project_lead.full_name,
+      project_name: report.project_name,
+      project_lead: report.project_lead,
       planned_start_date: this.formatDate(report.planned_start_date),
       planned_end_date: this.formatDate(report.planned_end_date),
       actual_start_date: this.formatDate(report.actual_start_date),
