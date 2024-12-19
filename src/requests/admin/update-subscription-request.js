@@ -5,7 +5,6 @@ import { CustomValidationError } from "../../exceptions/custom-validation-error.
 class UpdateSubscriptionRequest {
   static subscriptionRepo = new SubscriptionRepository();
 
-  // Define the validation schema
   static schema = Joi.object({
     subscription_name: Joi.string().optional().allow("").allow(null),
     provider: Joi.string().optional().allow("").allow(null),
@@ -22,44 +21,44 @@ class UpdateSubscriptionRequest {
   }
 
   async validate() {
-    // Ensure the subscription exists first
     const existingSubscription = await UpdateSubscriptionRequest.subscriptionRepo.getSubscriptionById(
       this.subscriptionId
     );
 
-    // Validate only the fields that are present in the request
+    if (!existingSubscription) {
+      throw new CustomValidationError([
+        { field: "subscriptionId", message: "Subscription not found." },
+      ]);
+    }
+
     const fieldsToValidate = {};
-    Object.keys(this.data).forEach(key => {
+    Object.keys(this.data).forEach((key) => {
       if (this.data[key] !== undefined) {
         fieldsToValidate[key] = this.data[key];
       }
     });
 
-    // Perform validation only on the fields present in the request
     const { error, value } = UpdateSubscriptionRequest.schema.fork(
-      Object.keys(fieldsToValidate), 
+      Object.keys(fieldsToValidate),
       (schema) => schema.required()
-    ).validate(fieldsToValidate, {
-      abortEarly: false,
-      allowUnknown: true
-    });
+    ).validate(fieldsToValidate, { abortEarly: false });
 
-    // Handle validation errors
+    const validationErrors = [];
+
     if (error) {
-      const validationErrors = {};
-      error.details.forEach((err) => {
-        validationErrors[err.context.key] = err.message;
-      });
+      validationErrors.push(
+        ...error.details.map((err) => ({
+          field: err.context.key,
+          message: err.message,
+        }))
+      );
+    }
 
+    if (validationErrors.length > 0) {
       throw new CustomValidationError(validationErrors);
     }
 
-    // Remove any undefined values to prevent overwriting existing data
-    const sanitizedData = Object.fromEntries(
-      Object.entries(this.data).filter(([_, v]) => v !== undefined)
-    );
-
-    return sanitizedData;
+    return value;
   }
 }
 

@@ -1,110 +1,241 @@
 import Joi from 'joi';
+import mongoose from 'mongoose';
+import PopulateData from '../../utils/currency-country-populate.js';
+import UserRepository from '../../repositories/user-repository.js';
 import ClientRepository from '../../repositories/admin/client-repository.js';
+import { CustomValidationError } from '../../exceptions/custom-validation-error.js';
 
-class ClientRequest {
-    static clientRepo = new ClientRepository();
-
-    // Add validation checks for request
-    static schema = Joi.object({
-        _id: Joi.string()
-        .optional()
-        .messages({
-            'string.base': '_id must be a string',
-        }),
-        client_name: Joi.string()
-            .min(1)
-            .required()
-            .messages({
-                'string.empty': 'Client name is required',
-                'any.required': 'Client name field is required',
+const UserRepo = new UserRepository();
+const PopulateField = new PopulateData();
+const ClientRepo = new ClientRepository()
+ 
+export default class ClientRequest {
+    /**
+     * Validate client data and check references in the database
+     * @param {Object} clientData - Data to validate
+     * @throws {CustomValidationError} If validation fails or references do not exist
+     * @returns {Object} - Validated data
+     */
+    async validateClientData(clientData) {
+        // Define Joi schema
+        const schema = Joi.object({
+            client_name: Joi.string().required().messages({
+                'string.base': '"client_name" must be a string',
+                'any.required': '"client_name" is required',
             }),
-        location: Joi.string()
-            .min(1)
-            .required()
-            .messages({
-                'string.empty': 'Location is required',
-                'any.required': 'Location field is required',
-            }),
-        client_manager: Joi.string()
-            .min(1)
-            .required()
-            .messages({
-                'string.empty': 'Client manager is required',
-                'any.required': 'Client manager field is required',
-            }),
-        billing_currency: Joi.string()
-            .min(1)
-            .required()
-            .messages({
-                'string.empty': 'Billing currency is required',
-                'any.required': 'Billing currency field is required',
-            }),
-        status: Joi.string()
-            .valid('Not started','In progress','On hold','Cancelled')
-            .required()
-            .messages({
-                'any.required': 'Status is required',
-                'any.only': 'Status must be either of these values Not started, In progress, On hold, Cancelled',
-            }),
-    });
-
-    constructor(data) {
-        this.data = data;
-    }
-
-    async validate() {
-        const { error, value } = ClientRequest.schema.validate(this.data, {
-            abortEarly: false,
+            location: Joi.string()
+                .custom((value, helpers) => {
+                    if (!mongoose.Types.ObjectId.isValid(value)) {
+                        return helpers.message('Invalid ObjectId for location');
+                    }
+                    return value;
+                })
+                .required()
+                .messages({
+                    'any.required': '"location" is required',
+                }),
+            client_manager: Joi.string()
+                .custom((value, helpers) => {
+                    if (!mongoose.Types.ObjectId.isValid(value)) {
+                        return helpers.message('Invalid ObjectId for client_manager');
+                    }
+                    return value;
+                })
+                .required()
+                .messages({
+                    'any.required': '"client_manager" is required',
+                }),
+            billing_currency: Joi.string()
+                .custom((value, helpers) => {
+                    if (!mongoose.Types.ObjectId.isValid(value)) {
+                        return helpers.message('Invalid ObjectId for billing_currency');
+                    }
+                    return value;
+                })
+                .required()
+                .messages({
+                    'any.required': '"billing_currency" is required',
+                }),
+            status: Joi.string()
+                .valid('Active', 'Inactive')
+                .required()
+                .messages({
+                    'any.only': '"status" must be either "Active" or "Inactive"',
+                    'any.required': '"status" is required',
+                }),
         });
 
+        // Perform Joi validation
+        const { error, value } = schema.validate(clientData);
         if (error) {
-            const validationErrors = {};
-            error.details.forEach((err) => {
-                validationErrors[err.context.key] = err.message;
-            });
-            return { error: validationErrors, value: null };
+            throw new CustomValidationError(error.details[0].message);
         }
 
-        // Check if the client already exists
-        const existingClient = await ClientRequest.clientRepo.findExistingClient(this.data);
+        // Check database references
+        const errors = [];
 
-        if (existingClient) {
-            return {
-                error: { client: 'Client with these details already exists' },
-                value: null,
-            };
+        const locationExists = await PopulateField.findCountry(value.location);
+        if (!locationExists) {
+            errors.push('Invalid location: Not found in countries collection');
         }
 
-        return { error: null, value };
+        const clientManagerExists = await UserRepo.getUserById(value.client_manager);
+        if (!clientManagerExists) {
+            errors.push('Invalid client_manager: Not found in users collection');
+        }
+
+        const billingCurrencyExists = await PopulateField.findCurrency(value.billing_currency);
+        if (!billingCurrencyExists) {
+            errors.push('Invalid billing_currency: Not found in currencies collection');
+        }
+
+        if (errors.length > 0) {
+            throw new CustomValidationError(errors.join('; '));
+        }
+
+        return value; // Validated data
     }
 
-    async validateForEdit() {
-        // Validate request body using the existing schema
-        const { error, value } = ClientRequest.schema.validate(this.data, {
-            abortEarly: false,
+
+    
+    async validateEditClientData(clientData) {
+        // Define Joi schema
+        const schema = Joi.object({
+            _id: Joi.string()
+            .custom((value, helpers) => {
+                if (!mongoose.Types.ObjectId.isValid(value)) {
+                    return helpers.message('Invalid ObjectId for _id');
+                }
+                return value;
+            })
+            .required()
+            .messages({
+                'any.required': '"_id" is required',
+                'string.base': '"_id" must be a string',
+            }),
+            client_name: Joi.string().required().messages({
+                'string.base': '"client_name" must be a string',
+                'any.required': '"client_name" is required',
+            }),
+            location: Joi.string()
+                .custom((value, helpers) => {
+                    if (!mongoose.Types.ObjectId.isValid(value)) {
+                        return helpers.message('Invalid ObjectId for location');
+                    }
+                    return value;
+                })
+                .required()
+                .messages({
+                    'any.required': '"location" is required',
+                }),
+            client_manager: Joi.string()
+                .custom((value, helpers) => {
+                    if (!mongoose.Types.ObjectId.isValid(value)) {
+                        return helpers.message('Invalid ObjectId for client_manager');
+                    }
+                    return value;
+                })
+                .required()
+                .messages({
+                    'any.required': '"client_manager" is required',
+                }),
+            billing_currency: Joi.string()
+                .custom((value, helpers) => {
+                    if (!mongoose.Types.ObjectId.isValid(value)) {
+                        return helpers.message('Invalid ObjectId for billing_currency');
+                    }
+                    return value;
+                })
+                .required()
+                .messages({
+                    'any.required': '"billing_currency" is required',
+                }),
+            status: Joi.string()
+                .valid('Active', 'Inactive')
+                .required()
+                .messages({
+                    'any.only': '"status" must be either "Active" or "Inactive"',
+                    'any.required': '"status" is required',
+                }),
         });
-    
+
+        // Perform Joi validation
+        const { error, value } = schema.validate(clientData);
         if (error) {
-            const validationErrors = {};
-            error.details.forEach((err) => {
-                validationErrors[err.context.key] = err.message;
-            });
-            return { error: validationErrors, value: null };
+            throw new CustomValidationError(error.details[0].message);
         }
-    
-        // Check if the client exists for the given ID
-        const existingClient = await ClientRequest.clientRepo.findById(this.data._id);
-    
-        if (!existingClient) {
-            return {
-                error: { client: 'Client not found in the database' },
-                value: null,
-            };
+
+        // Check database references
+        const errors = [];
+
+        const clientExists = await ClientRepo.findById(value._id);
+        if (!clientExists) {
+            errors.push('Invalid client: Not found in client collection');
         }
-    
-        return { error: null, value };
+
+        const locationExists = await PopulateField.findCountry(value.location);
+        if (!locationExists) {
+            errors.push('Invalid location: Not found in countries collection');
+        }
+
+        const clientManagerExists = await UserRepo.getUserById(value.client_manager);
+        if (!clientManagerExists) {
+            errors.push('Invalid client_manager: Not found in users collection');
+        }
+
+        const billingCurrencyExists = await PopulateField.findCurrency(value.billing_currency);
+        if (!billingCurrencyExists) {
+            errors.push('Invalid billing_currency: Not found in currencies collection');
+        }
+
+        if (errors.length > 0) {
+            throw new CustomValidationError(errors.join('; '));
+        }
+
+        return value; // Validated data
     }
-    
+
+    async validateClientStatus(client){
+        const schema = Joi.object({
+            _id: Joi.string()
+                .custom((value, helpers) => {
+                    if (!mongoose.Types.ObjectId.isValid(value)) {
+                        return helpers.message('Invalid ObjectId for _id');
+                    }
+                    return value;
+                })
+                .required()
+                .messages({
+                    'any.required': '"_id" is required',
+                    'string.base': '"_id" must be a string',
+                }),
+            status: Joi.string()
+                .valid('Active', 'Inactive')
+                .required()
+                .messages({
+                    'any.only': '"status" must be either "Active" or "Inactive"',
+                    'any.required': '"status" is required',
+                }),
+        });
+
+        // Perform Joi validation
+        const { error, value } = schema.validate(client);
+        if (error) {
+            throw new CustomValidationError(error.details[0].message);
+        }
+
+        const errors = [];
+
+        const clientExists = await ClientRepo.findById(client._id);
+        if (!clientExists) {
+            errors.push('Invalid client: Not found in client collection');
+        }
+
+        
+        if (errors.length > 0) {
+            throw new CustomValidationError(errors.join('; '));
+        }
+
+        return value; 
+    }
 }
-
-export default ClientRequest;

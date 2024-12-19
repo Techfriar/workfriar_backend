@@ -1814,7 +1814,10 @@ export default class TimesheetController {
 			
 			const timezone = await findTimezone(req);
 
-			const today = getLocalDateStringForTimezone(timezone, new Date());
+			let today = getLocalDateStringForTimezone(timezone, new Date());
+			if (typeof today === "string") {
+				today = new Date(today);
+			}
 
 			const weekStartDate = FindS.getPreviousSunday(today)
 			const weekEndDate = new Date(weekStartDate);
