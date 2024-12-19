@@ -408,17 +408,19 @@ export default class ProjectRepository {
           model: client,
           fields: "client_name _id",
           nameField: "client_name",
+          filter: {status: "Active"},
         },
         leads: {
           model: User,
           fields: "full_name _id",
           nameField: "full_name",
+          filter: {},
         },
       };
 
-      const { model, fields, nameField } = config[type];
+      const { model, fields, nameField, filter } = config[type];
 
-      const items = await model.find({}, fields).sort({ [nameField]: 1 }); // Sort alphabetically
+      const items = await model.find(filter, fields).sort({ [nameField]: 1 }); // Sort alphabetically
 
       return items.map((item) => ({
         id: item._id,
