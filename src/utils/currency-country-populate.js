@@ -66,4 +66,32 @@ export default class PopulateData{
             })
         }
     }
+
+    async findCountry(id){
+        try{
+            const countryData = await country.findById({ _id: id})
+            if(countryData){
+                return countryData
+            }
+            else{
+                return null
+            }
+        }catch(error){
+            throw new error
+        }
+    }
+
+    async findCurrency(id){
+        try{
+            const currencyData = await currency.findById({ _id: id})
+            if(currencyData){
+                return currencyData
+            }
+            else{
+                return null
+            }
+        }catch(error){
+            throw new error
+        }
+    }
 }

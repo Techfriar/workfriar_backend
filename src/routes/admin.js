@@ -128,6 +128,7 @@ adminRouter
 adminRouter.route('/add-client').post(client.addClient)
 adminRouter.route('/all-clients').post(client.allClient)
 adminRouter.route('/edit-client').post(client.editClient)
+adminRouter.route('/change-client-status').post(client.changeClientStatus)
 
 /*
 Country-Currency-Dropdown

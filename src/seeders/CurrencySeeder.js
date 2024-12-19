@@ -1,5 +1,5 @@
 import currency from "../models/admin/currency.js";
-import mongoose from "mongoose";
+
 
 const currencyData = [
     {
@@ -732,8 +732,9 @@ const currencyData = [
 
 async function seedCurrencies() {
     try {
+
         for (const curr of currencyData) {
-            const existingCurrency = await currency.findOne({ code: curr.code });
+            const existingCurrency = await currency.findOne({ country: curr.country });
             if (!existingCurrency) {
               await currency.create(curr);
             } else {
