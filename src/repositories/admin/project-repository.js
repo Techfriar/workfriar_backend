@@ -399,39 +399,15 @@ export default class ProjectRepository {
         }
     }
   
-  
-  /**
-   * Get dropdown data for either clients or project leads
-   * @param {string} type - Type of dropdown data ('clients' or 'leads')
-   * @returns {Promise<Array>} List of items with id and name
-   */
-  async getDropdownData(type) {
-    try {
-      const config = {
-        clients: {
-          model: client,
-          fields: "client_name _id",
-          nameField: "client_name",
-          filter: {status: "Active"},
-        },
-        leads: {
-          model: User,
-          fields: "full_name _id",
-          nameField: "full_name",
-          filter: {},
-        },
-      };
-
-      const { model, fields, nameField, filter } = config[type];
-
-      const items = await model.find(filter, fields).sort({ [nameField]: 1 }); // Sort alphabetically
-
-      return items.map((item) => ({
-        id: item._id,
-        name: item[nameField],
-      }));
-    } catch (error) {
-      throw new Error(`Failed to retrieve ${type}: ${error.message}`);
+    async getProjectDates(projectid)
+    {
+        try
+        {
+            const dates=await Project.findById(projectid).select("actual_start_date actual_end_date").lean();
+            return dates;
+        }catch(error)
+        {
+            throw new Error(error)
+        }
     }
-  }
 }

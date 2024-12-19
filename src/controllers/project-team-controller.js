@@ -2,14 +2,16 @@ import ProjectTeamRepository from "../repositories/admin/project-team-repository
 import ProjectTeamResponse from "../responses/projectteam-response.js";
 import ProjectTeamRequest from "../requests/admin/project-team-request.js";
 import { CustomValidationError } from "../exceptions/custom-validation-error.js";
+import ProjectRepository from "../repositories/admin/project-repository.js";
 
 const projectTeamRepo=new ProjectTeamRepository()
 const projectTeamResponse=new ProjectTeamResponse()
 const projectTeamRequest=new ProjectTeamRequest()
+const projectRepo=new ProjectRepository()
 
 class ProjectTeamController{
 
-    /**
+  /**
  * @swagger
  * /admin/addprojectteam:
  *   post:
@@ -24,23 +26,54 @@ class ProjectTeamController{
  *             properties:
  *               project:
  *                 type: string
+ *                 description: ID of the project to which the team belongs
  *                 example: "647a9b6c1234567890abcdef"
  *               status:
  *                 type: string
+ *                 description: Status of the project team
+ *                 enum: [Not Started, On hold, Cancelled, Completed]
  *                 example: "On hold"
  *               startDate:
  *                 type: string
  *                 format: date
+ *                 description: Start date of the project
  *                 example: "2024-01-01"
  *               endDate:
  *                 type: string
  *                 format: date
+ *                 description: End date of the project
  *                 example: "2024-12-31"
- *               teamMembers:
+ *               team_members:
  *                 type: array
+ *                 description: Array of team members with their details
  *                 items:
- *                   type: string
- *                   example: "teamMemberId"
+ *                   type: object
+ *                   properties:
+ *                     userid:
+ *                       type: string
+ *                       description: User ID of the team member
+ *                       example: "6476a63bf79ea71d30770de7"
+ *                     dates:
+ *                       type: array
+ *                       description: Availability dates for the team member
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           start_date:
+ *                             type: string
+ *                             format: date
+ *                             description: Start date for the team member's availability
+ *                             example: "2024-01-01"
+ *                           end_date:
+ *                             type: string
+ *                             format: date
+ *                             description: End date for the team member's availability
+ *                             example: ""
+ *                     status:
+ *                       type: string
+ *                       description: Status of the team member
+ *                       enum: [active, inactive]
+ *                       example: "active"
  *     responses:
  *       200:
  *         description: Project team created successfully
@@ -63,70 +96,306 @@ class ProjectTeamController{
  *                       example: "647a9b6c1234567890abcdef"
  *                     project:
  *                       type: string
- *                       example: "Project Alpha"
+ *                       example: "647a9b6c1234567890abcdef"
  *                     status:
  *                       type: string
  *                       example: "On hold"
  *                     start_date:
  *                       type: string
+ *                       format: date
  *                       example: "2024-01-01"
  *                     end_date:
  *                       type: string
+ *                       format: date
  *                       example: "2024-12-31"
  *                     team_members:
  *                       type: array
  *                       items:
- *                         type: string
- *                         example: "teamMemberId"
+ *                         type: object
+ *                         properties:
+ *                           userid:
+ *                             type: string
+ *                             example: "6476a63bf79ea71d30770de7"
+ *                           dates:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 start_date:
+ *                                   type: string
+ *                                   format: date
+ *                                   example: "2024-01-01"
+ *                                 end_date:
+ *                                   type: string
+ *                                   format: date
+ *                                   example: ""
+ *                           status:
+ *                             type: string
+ *                             example: "active"
  *       422:
- *         description: Failed to add project team
+ *         description: Validation failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation Failed"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     example: "Field 'startDate' is required"
  *       500:
  *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ *                 errors:
+ *                   type: string
+ *                   example: "Unexpected error occurred"
  */
-    async addProjectTeam(req,res)
-    {
+
+    async addProjectTeam(req, res) {
         try {
+    const{project}=req.body
             const validationResult = await projectTeamRequest.validateProjectTeam(req.body);
             if (!validationResult.isValid) {
                 throw new CustomValidationError(validationResult.message);
-            } 
-            const newTeam = await projectTeamRepo.createTeam(req.body);
-            if(newTeam.status)
-            {
-                const  data=await projectTeamResponse.formattedResponse(newTeam.data)
-                res.status(200).json(
-                    {
-                        status:true,
-                        message:"Project Team Created",
-                        data:data,
-                    })
             }
-            else
-            {
-                res.status(422).json(
-                    {
-                        status:false,
-                        message:"Failed to Add Project Team",
-                        data:[],
-                    })
+    
+            const projectDates=await projectRepo.getProjectDates(project)
+     
+       
+            const updatedTeamMembers = req.body.team_members.map((member) => {
+                return {
+                    userid: member.userid,
+                    dates: [
+                        {
+                            start_date: projectDates. planned_start_date, 
+                            end_date: "" 
+                        }
+                    ],
+                    status: member.status 
+                };
+            });
+    
+            
+            const projectTeamData = {
+                project: req.body.project,
+                status: req.body.status,
+                team_members: updatedTeamMembers
+            };
+    
+     
+            const newTeam = await projectTeamRepo.createTeam(projectTeamData);
+    
+        
+            if (newTeam.status) {
+                const data = await projectTeamResponse.formattedResponse(newTeam.data);
+                res.status(200).json({
+                    status: true,
+                    message: "Project Team Created",
+                    data: data
+                });
+            } else {
+                res.status(422).json({
+                    status: false,
+                    message: "Failed to Add Project Team",
+                    data: []
+                });
             }
         } catch (error) {
-            
-                if (error instanceof CustomValidationError) {
-                    return res.status(422).json({
-                        status: false,
-                        message: "Validation Failed",
-                        errors: error.errors, 
-                    });
-                } else {
-                    return res.status(500).json({
-                        status: false,
-                        message: "Internal Server Error",
-                        errors: error.message || error,
-                    });
+        
+            if (error instanceof CustomValidationError) {
+                return res.status(422).json({
+                    status: false,
+                    message: "Validation Failed",
+                    errors: error.errors
+                });
+            } else {
+                return res.status(500).json({
+                    status: false,
+                    message: "Internal Server Error",
+                    errors: error.message || error
+                });
             }
         }
     }
+    
+    /**
+ * @swagger
+ * /admin/setenddate:
+ *   post:
+ *     summary: Update the `end_date` for a team member's date entry in a project team
+ *     description: Updates the `end_date` for a specific team member in the nested `dates` array where `end_date` is currently `null`.
+ *     tags:
+ *       - Project Teams
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The ObjectId of the user (team member) whose `end_date` needs to be updated.
+ *                 example: "6746a63bf79ea71d30770de9"
+ *               projectTeamId:
+ *                 type: string
+ *                 description: The ObjectId of the project team where the user is part of the team.
+ *                 example: "6763cd121df93faf8709cccc"
+ *               end_date:
+ *                 type: string
+ *                 format: date
+ *                 description: The end date to be updated in the `dates` array of the team member.
+ *                 example: "2024-12-30"
+ *     responses:
+ *       200:
+ *         description: Successfully updated the `end_date`.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "End Date Set"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       description: The ObjectId of the project team.
+ *                       example: "6763cd121df93faf8709cccc"
+ *                     project:
+ *                       type: string
+ *                       description: The ObjectId of the associated project.
+ *                       example: "674fd06e61ab1b7e3be98686"
+ *                     status:
+ *                       type: string
+ *                       description: Status of the project team.
+ *                       example: "On hold"
+ *                     team_members:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           userid:
+ *                             type: string
+ *                             description: The ObjectId of the user (team member).
+ *                             example: "6746a63bf79ea71d30770de9"
+ *                           dates:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 start_date:
+ *                                   type: string
+ *                                   format: date
+ *                                   description: Start date of the date entry.
+ *                                   example: "2024-12-11T00:00:00.000Z"
+ *                                 end_date:
+ *                                   type: string
+ *                                   format: date
+ *                                   description: End date of the date entry.
+ *                                   example: "2024-12-30T00:00:00.000Z"
+ *                           status:
+ *                             type: string
+ *                             description: Status of the team member in the project.
+ *                             example: "active"
+ *       400:
+ *         description: Invalid input data (e.g., missing required fields or invalid formats).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid input data."
+ *       404:
+ *         description: Project team or team member not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Team Member not found."
+ *       500:
+ *         description: Server error while processing the request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+    async setEndDateController(req,res)
+    {
+        const{projectTeamId,userId,end_date}=req.body
+        try
+        {
+            const data=await projectTeamRepo.setEndDateForTeammember(projectTeamId,userId,end_date)
+            if(data.status)
+            {
+                res.status(200).json({
+                    status:true,
+                    message:"End Date Set",
+                    data:data.data,
+                })
+            }
+            else
+            {
+                res.status(422).json({
+                    status:false,
+                    message:"Failed to Set End Date",
+                    data:[],
+                })
+            }
+        }
+        catch(error)
+        {
+         
+            res.status(500).json(
+                {
+                    status:false,
+                    message:"Internal Server Error",
+                    data:[],
+                })
+        }
+    }
+
 
     /**
  * @swagger
@@ -179,15 +448,16 @@ class ProjectTeamController{
             if (data.length === 0) {
                 res.status(422).json({
                     status:false,
-                    message:"No Category Found",
+                    message:"No Project Team Found",
                     data:[],
                 })
                 return
             }
             else
             {
+             
                 const formattedData = await Promise.all(
-                    data.map(async (item) => {
+                    data.data.map(async (item) => {
                         return projectTeamResponse.formatProjectTeamSet(item); 
                     })
                 );
@@ -200,6 +470,7 @@ class ProjectTeamController{
         }
         catch(error)
         {
+        
             res.status(500).json(
                 {
                     status:false,
@@ -322,11 +593,14 @@ class ProjectTeamController{
                     message:"No Category Found",
                     data:[],
                 })
+              
                 return
             }
+         
             else
             {
-                const formattedData = await projectTeamResponse.formatProjectTeamSet(data)
+           
+                const formattedData = await projectTeamResponse.formatTeamMembers(data)
                 res.status(200).json({
                     status:true,
                     message:"Project Team data",
@@ -336,6 +610,148 @@ class ProjectTeamController{
         }
         catch(error)
         {
+            res.status(500).json(
+                {
+                    status:false,
+                    message:"Internal Server Error",
+                    data:[],
+                })
+        }
+    }
+
+    /** 
+ * @swagger
+ * /admin/getprojectsbyemployee:
+ *   post:
+ *     summary: Get Projects by Employee ID
+ *     description: Retrieve the projects where the specified employee is part of the team and return the project details.
+ *     tags:
+ *       - Project Team
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               employeeid:
+ *                 type: string
+ *                 description: The unique ID of the employee whose projects are to be fetched.
+ *                 example: "6746a63bf79ea71d30770de9"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the employee's projects.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Project Team data"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       project:
+ *                         type: object
+ *                         properties:
+ *                           project_name:
+ *                             type: string
+ *                             example: "Project Alpha"
+ *                           project_lead:
+ *                             type: object
+ *                             properties:
+ *                               full_name:
+ *                                 type: string
+ *                                 example: "John Doe"
+ *                           client_name:
+ *                             type: object
+ *                             properties:
+ *                               client_name:
+ *                                 type: string
+ *                                 example: "ACME Corp"
+ *                       team_members:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             userid:
+ *                               type: string
+ *                               example: "6746a63bf79ea71d30770de9"
+ *                             status:
+ *                               type: string
+ *                               example: "active"
+ *       422:
+ *         description: No projects found for the specified employee.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "No Project Found"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ */
+
+    async getEmployeeProjects(req,res)
+    {
+        const{employeeid}=req.body
+        try
+        {
+            const data=await projectTeamRepo.getProjectsByEmployeeId(employeeid)
+            if(data.length===0)
+            {
+                res.status(422).json({
+                    status:false,
+                    message:"No Project Found",
+                    data:[],
+                })
+                return
+            }
+            else
+            {
+                const formattedData=await Promise.all(
+                    data.map(async(item)=>{
+                        return projectTeamResponse.formatAllEmployeeProjects(item)
+                    })
+                )
+                res.status(200).json({
+                    status:true,
+                    message:"Project Team data",
+                    data:formattedData,
+                })
+            }
+        }
+        catch(error)
+        {
+           
             res.status(500).json(
                 {
                     status:false,
@@ -358,10 +774,12 @@ class ProjectTeamController{
  *           schema:
  *             type: object
  *             properties:
- *              
- *               project:
+ *               id:
  *                 type: string
  *                 example: "67481220d2193ae713064508"
+ *               project:
+ *                 type: string
+ *                 example: "67481220d2193ae713064508" 
  *               status:
  *                 type: string
  *                 example: "In Progress"
