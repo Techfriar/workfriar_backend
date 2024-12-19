@@ -35,10 +35,19 @@ class AddProjectRequest {
     status: Joi.string()
       .valid("Not Started", "In Progress", "Completed", "On Hold", "Cancelled")
       .required(),
+    categories: Joi.array()
+      .items(Joi.string())
+      .optional()
+      .allow(null)
+      .messages({
+        "array.base": "Categories must be an array.",
+      }),
   });
 
   constructor(req) {
-    const file = req.files["project_logo"] ? req.files["project_logo"][0] : null;
+    const file = req.files["project_logo"]
+      ? req.files["project_logo"][0]
+      : null;
 
     this.data = {
       client_name: req.body.client_name,
@@ -53,6 +62,11 @@ class AddProjectRequest {
       project_logo: file,
       open_for_time_entry: req.body.open_for_time_entry,
       status: req.body.status,
+      categories: req.body.categories
+        ? Array.isArray(req.body.categories)
+          ? req.body.categories
+          : [req.body.categories]
+        : null,
     };
   }
 

@@ -35,6 +35,9 @@ class UpdateProjectRequest {
     status: Joi.string()
       .valid('Not Started', 'In Progress', 'Completed', 'On Hold', 'Cancelled')
       .optional(),
+    categories: Joi.array().items(Joi.string()).optional().allow(null).messages({
+      'array.base': 'Categories must be an array.',
+    }),
     projectId: Joi.string()
       .regex(/^[0-9a-fA-F]{24}$/)
       .optional(),
@@ -56,6 +59,9 @@ class UpdateProjectRequest {
       project_logo: file,
       open_for_time_entry: req.body.open_for_time_entry,
       status: req.body.status,
+      categories: req.body.categories ? (Array.isArray(req.body.categories) 
+        ? req.body.categories 
+        : [req.body.categories]) : null,
       projectId: req.params.id,
     };
   }
