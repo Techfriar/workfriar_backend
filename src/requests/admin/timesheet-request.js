@@ -30,11 +30,26 @@ export default class CreateTimesheetRequest {
       const user = await this.UserRepo.getUserById(user_id)
       if (!user) throw new CustomValidationError('User not found');
 
-      // Convert `ObjectId` instances to strings for comparison
-      const teamMemberIds = team.team_members.map(member => member.toString());
-      const userId = user._id.toString();
+      const teamMemberIds = team.team_members
+        .filter((member) => {
+          // Check if the member has a matching user ID and valid date range
+          return (
+            member.userid.toString() === user_id.toString() && // Match the specific userId
+            member.dates.some((date) => {
+              const today = new Date();
+              const startDate = new Date(date.start_date);
+              const endDate = date.end_date ? new Date(date.end_date) : null;
+      
+              return (
+                today >= startDate && // Today's date is greater than or equal to the start date
+                (!endDate || today <= endDate) // End date is either null or today is less than or equal to it
+              );
+            })
+          );
+        })
+        .map((member) => member.userid); // Extract user IDs of valid team members
 
-      if (!teamMemberIds.includes(userId)) {
+      if (teamMemberIds.length == 0) {
         throw new CustomValidationError('User is not part of the project team');
       }
 
@@ -85,9 +100,9 @@ export default class CreateTimesheetRequest {
         throw new CustomValidationError('Associated project not found');
       }
 
-      if (!["In Progress"].includes(project.status)) {
-        throw new CustomValidationError('Time entry is not enabled for the associated project');
-      }
+      // if (!["In Progress"].includes(project.status)) {
+      //   throw new CustomValidationError('Time entry is not enabled for the associated project');
+      // }
 
       // Verify the project's "Time Entry" field
       if (project.open_for_time_entry == 'closed') {
@@ -116,7 +131,7 @@ export default class CreateTimesheetRequest {
         throw new CustomValidationError('Each data_sheet item must include "date" and "hours"')
       }
       
-      validateAndConvertTimeToFloat(item.hours)
+      this.validateAndConvertTimeToFloat(item.hours)
 	
 			if (!IsDateInRange.isDateInRange(item.date, timesheet.startDate, timesheet.endDate)) {
 				throw new CustomValidationError(`Date ${item.date} is outside the timesheet's start and end date range`)
@@ -131,9 +146,9 @@ export default class CreateTimesheetRequest {
 
   static async validateAndConvertTimeToFloat (timeString) {
     const [hours, minutes] = timeString.split(':').map(Number);
-  
+    
     // Check if the hours and minutes are valid
-    if (hours < 0 || hours >= 24 || minutes < 0 || minutes >= 60) {
+    if (parseInt(hours) < 0 || parseInt(hours) >= 24 || parseInt(minutes) < 0 || parseInt(minutes) >= 60) {
       throw new CustomValidationError("Invalid time: Hours must be between 0-23 and minutes between 0-59.");
     }
 

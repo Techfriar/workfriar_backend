@@ -49,6 +49,7 @@ export default class UserResponse {
         return {
             id: user._id,
             name: capitalizeWords(user.full_name),
+            roles: user?.roles?.role,
         }
     }
 
