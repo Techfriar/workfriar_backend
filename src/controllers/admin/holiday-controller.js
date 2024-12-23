@@ -41,8 +41,10 @@ export default class HolidayController {
    *                 format: date
    *                 description: Enter end date
    *               location:
-   *                 type: string
-   *                 enum: ["India", "Dubai"]
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                   enum: ["India", "Dubai"]
    *                 description: Enter holiday location
    *     responses:
    *       200:
@@ -110,8 +112,10 @@ export default class HolidayController {
    *                 type: string
    *                 enum: ["National Holiday", "Public Holiday", "Restricted Holiday", "Office Shutdown"]
    *               location:
-   *                 type: string
-   *                 enum: ["India", "Dubai"]
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                   enum: ["India", "Dubai"]
    *               year:
    *                 type: integer
    *                 description: Filter by year
@@ -190,8 +194,10 @@ export default class HolidayController {
    *                 format: date
    *                 description: Enter end date
    *               location:
-   *                 type: string
-   *                 enum: ["India", "Dubai"]
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                   enum: ["India", "Dubai"]
    *                 description: Enter holiday location
    *     responses:
    *       200:
@@ -301,8 +307,10 @@ export default class HolidayController {
  *                         format: date
  *                         description: End date of the holiday
  *                       location:
- *                         type: string
- *                         enum: ["India", "Dubai"]
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                           enum: ["India", "Dubai"]
  *                         description: Location where the holiday is applicable
  *       500:
  *         description: Internal Server Error

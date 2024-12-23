@@ -37,7 +37,7 @@ class EmployeeController{
  *                 type: string
  *                 description: Role of the employee
  *                 example: Manager
- *               reporting_manager:
+ *               reporting_manager_id:
  *                 type: string
  *                 description: Reporting manager's user ID
  *                 example: 607d1f77bcf86cd799439011
@@ -98,8 +98,8 @@ class EmployeeController{
     {
         try
         {
-        const {name,email,role_id,reporting_manager,phone_number,location,status}=req.body.data
-        const validationResult = await employeeRequest.validateEmployee(req.body.data);
+        const {name,email,role_id,reporting_manager_id,phone_number,location,status}=req.body
+        const validationResult = await employeeRequest.validateEmployee(req.body);
         if (!validationResult.isValid) {
             throw new CustomValidationError(validationResult.errors);
         }
@@ -117,7 +117,7 @@ class EmployeeController{
          const isAdmin=isAdminResult.status
          const isactive=status==="active"
      
-        const data=await userRepo.addEmployees(name,email,reporting_manager,phone_number,isAdmin,location,isactive,fileurl)
+        const data=await userRepo.addEmployees(name,email,reporting_manager_id,phone_number,isAdmin,location,isactive,fileurl)
 
 
         if(data.status)
@@ -310,7 +310,7 @@ class EmployeeController{
  *                 type: string
  *                 description: Role of the employee
  *                 example: Manager
- *               reporting_manager:
+ *               reporting_manager_id:
  *                 type: string
  *                 description: Reporting manager's user ID
  *                 example: 607d1f77bcf86cd799439011
@@ -367,7 +367,7 @@ class EmployeeController{
 
 async editEmployee(req, res) {
 
-    const { id, name, email, role_id,phone_number,reporting_manager, location, status } = req.body;
+    const { id, name, email, role_id,phone_number,reporting_manager_id, location, status } = req.body;
     let fileurl="";
     let isAdmin,isactive,isAdminResult;
     try {
@@ -397,7 +397,7 @@ async editEmployee(req, res) {
         const updateData = {};
         if (name) updateData.full_name = name;
         if (email) updateData.email = email;
-        if (reporting_manager) updateData.reporting_manager = reporting_manager;
+        if (reporting_manager_id) updateData.reporting_manager = reporting_manager_id;
         if (phone_number) updateData.phone_number = phone_number;
         if (location) updateData.location = location;
         if (status) updateData.status = status;

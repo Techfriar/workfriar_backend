@@ -1,19 +1,20 @@
 import Role from "../../models/role.js";
-export default class RoleRepository{
-    /**
-     * Create a new role
-     * @param {Object} role - The role object to create
-     * @returns {Promise<Role>} - The created role
-     */
+export default class RoleRepository {
+  /**
+   * Create a new role
+   * @param {Object} role - The role object to create
+   * @returns {Promise<Role>} - The created role
+   */
 
-    static async createRole(role){
-        try{
-            const newRole = new Role(role);
-            const savedRole = await newRole.save();
-            return savedRole;
-        }catch(error){
-        }
+  static async createRole(role) {
+    try {
+      const newRole = new Role(role);
+      const savedRole = await newRole.save();
+      return savedRole;
+    } catch (error) {
+      throw error;
     }
+  }
 
     /**
      * Get a role by ID
@@ -97,25 +98,47 @@ export default class RoleRepository{
         }
     }
 
-    /**
-     * Add permissions to a role
-     * @param {String} roleId - The ID of the role to add permissions to
-     * @param {String[]} permissionIds - The IDs of the permissions to add
-     * @returns {Promise<Role>} - The updated role
-     */
-    static async addPermissionsToRole(roleId, permissionIds) {
-        try {
-            const updatedRole = await Role.findByIdAndUpdate(
-                roleId,
-                { $addToSet: { permissions: { $each: permissionIds } } },
-                { new: true, runValidators: true }
-            );
+  /**
+   * Add permissions to a role
+   * @param {String} roleId - The ID of the role to add permissions to
+   * @param {String[]} permissionIds - The IDs of the permissions to add
+   * @returns {Promise<Role>} - The updated role
+   */
+  static async addPermissionsToRole(roleId, permissionIds) {
+    try {
+      const updatedRole = await Role.findByIdAndUpdate(
+        roleId,
+        { $addToSet: { permissions: { $each: permissionIds } } },
+        { new: true, runValidators: true }
+      );
 
-            if (!updatedRole) {
-                throw new Error('Role not found');
-            }
+      if (!updatedRole) {
+        throw new Error("Role not found");
+      }
 
             return updatedRole;
+        } catch (error) {
+        }
+    }
+
+    /**
+   * Add users to a role
+   * @param {String} roleId - The ID of the role to add users to
+   * @param {String[]} userIds - The IDs of the users to add
+   * @returns {Promise<Role>} - The updated role
+   */
+  static async addUsersToRole(roleId, userIds) {
+    try {
+      const updatedRole = await Role.findByIdAndUpdate(
+        roleId,
+        { $addToSet: { users: { $each: userIds } } },
+        { new: true, runValidators: true }
+      );
+      if (!updatedRole) {
+        throw new Error("Role not found");
+      }
+
+            return {status:true,data:updatedRole};
         } catch (error) {
         }
     }
@@ -166,26 +189,23 @@ export default class RoleRepository{
         }
     }
 
-    /**
-     * Get Team Leads
-     * @returns {Promise<Role>} - The retrieved roles
-     */
-    static async getTeamLeads(skip, limit) {
-        try {
-            const role = await Role.find({ role: 'Team Lead' })
-                .populate({
-                    path: 'users',
-                    select: 'full_name _id'
-                })
-                .skip(skip)
-                .limit(limit)
-                .lean();
-            return role.map((role) => role.users).flat();
-        
-        } catch (error) {
-
-        }
-    }
+  /**
+   * Get Team Leads
+   * @returns {Promise<Role>} - The retrieved roles
+   */
+  static async getTeamLeads(skip, limit) {
+    try {
+      const role = await Role.find({ role: "Team Lead" })
+        .populate({
+          path: "users",
+          select: "full_name _id",
+        })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+      return role.map((role) => role.users).flat();
+    } catch (error) {}
+  }
 
     static async getManagers(){
         try {
