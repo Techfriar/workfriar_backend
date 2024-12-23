@@ -100,7 +100,7 @@ export default class ProjectController {
   async addProject(req, res) {
     try {
       const validatedData = await new AddProjectRequest(req).validate();
-
+      
       if (req.files && req.files.project_logo) {
         const fileArray = Array.isArray(req.files.project_logo)
           ? req.files.project_logo

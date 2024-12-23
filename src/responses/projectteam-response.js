@@ -100,4 +100,12 @@ export default class ProjectTeamResponse{
             throw new Error(error)
         }
     }
+    async formatTeamMembersWithTimesheet(data) {
+        return data.map(member => ({
+            id: member._id,
+            full_name: member.full_name,
+            email: member.email,
+            profile_pic: member.profile_pic,
+        }));
+    }
 }
