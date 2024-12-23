@@ -23,9 +23,14 @@ class UpdateHolidayRequest {
       "date.min": "End date must be on or after start date.",
       "any.required": "Please enter the holiday end date.",
     }),
-    location: Joi.string().required().messages({
-      "string.empty": "Please enter the location.",
-      "any.required": "Please enter the location.",
+    location: Joi.array().items(
+      Joi.string().valid("India", "Dubai")
+    ).min(1).required().messages({
+      "array.base": "Location must be an array.",
+      "array.min": "At least one location must be selected.",
+      "any.required": "Please select at least one location.",
+      "string.base": "Location must be a string.",
+      "any.only": "Invalid location. Please select valid locations.",
     }),
     holidayId: Joi.string()
       .regex(/^[0-9a-fA-F]{24}$/)

@@ -96,7 +96,7 @@ export default class ProjectRepository {
         })
         .populate({
           path: "categories",
-          select: "category -_id",
+          select: "category",
         })
         .populate({
           path: "client_name",
