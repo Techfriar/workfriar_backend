@@ -12,7 +12,6 @@ export default class RoleRepository{
             const savedRole = await newRole.save();
             return savedRole;
         }catch(error){
-            throw error;
         }
     }
 
@@ -26,7 +25,6 @@ export default class RoleRepository{
             const role = await Role.findById(id);
             return role;
         }catch(error){
-            throw error;
         }
     }
      
@@ -39,7 +37,6 @@ export default class RoleRepository{
             const roles = await Role.find();
             return roles;
         }catch(error){
-            throw error;
         }
     }
 
@@ -57,7 +54,6 @@ export default class RoleRepository{
             });
             return role;
         }catch(error){
-            throw error;
         }
     }
 
@@ -71,7 +67,6 @@ export default class RoleRepository{
             const role = await Role.findOne({ role: roleName });
             return role;
         }catch(error){
-            throw error;
         }
     }
 
@@ -86,7 +81,6 @@ export default class RoleRepository{
             const updatedRole = await Role.findByIdAndUpdate(id, role, { new: true });
             return updatedRole;
         }catch(error){
-            throw error;
         }
     }
     /**
@@ -100,7 +94,6 @@ export default class RoleRepository{
             console.log(id)
             return deletedRole;
         }catch(error){
-            throw error;
         }
     }
 
@@ -124,7 +117,6 @@ export default class RoleRepository{
 
             return updatedRole;
         } catch (error) {
-            throw error;
         }
     }
 
@@ -134,11 +126,11 @@ export default class RoleRepository{
      * @param {String[]} userIds - The IDs of the users to add
      * @returns {Promise<Role>} - The updated role
      */
-    static async addUsersToRole(roleId, userIds) {
+    static async updateAllUsersInRole(roleId, userIds) {
         try {
             const updatedRole = await Role.findByIdAndUpdate(
                 roleId,
-                { $addToSet: { users: { $each: userIds } } },
+                { $set: { users: userIds } },
                 { new: true, runValidators: true }
             );
             if (!updatedRole) {
@@ -147,7 +139,6 @@ export default class RoleRepository{
 
             return updatedRole;
         } catch (error) {
-            throw error;
         }
     }
 
@@ -165,7 +156,6 @@ export default class RoleRepository{
                 { new: true }
             );
         } catch (error) {
-            throw error;
         }
     }
 
@@ -182,7 +172,6 @@ export default class RoleRepository{
             );
             return updatedRoles;
         } catch (error) {
-            throw error;
         }
     }
 
@@ -196,7 +185,6 @@ export default class RoleRepository{
             const role = await Role.findOne({ users: userId });
             return role;
         } catch (error) {
-            throw error;
         }
     }
 
