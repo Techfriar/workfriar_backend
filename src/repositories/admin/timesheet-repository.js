@@ -50,7 +50,7 @@ export default class TimesheetRepository {
 	}
 
 	// Update data_sheet for a specific timesheet
-	async updateTimesheetData(timesheetId, { data_sheet, status }) {
+	async updateTimesheetData(timesheetId, { data_sheet, status, task_detail }) {
 		try {
 			// Find the timesheet by ID
 			const timesheet = await Timesheet.findById(timesheetId);
@@ -81,6 +81,10 @@ export default class TimesheetRepository {
 
 			// Set the new status for the timesheet
 			timesheet.status = status;
+
+			if(task_detail) {
+				timesheet.task_detail = task_detail;
+			}
 
 			// Save the updated timesheet
 			await timesheet.save();

@@ -264,11 +264,43 @@ export default class ProjectRepository {
           },
         },
         {
+          $unwind: {
+            path: "$team.team_members",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: "$team.team_members.dates",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
           $match: {
             $and: [
               {
                 $or: [
-                  { "team.team_members": new mongoose.Types.ObjectId(userId) },
+                  { 
+                    $and: [
+                      {"team.team_members.userid": new mongoose.Types.ObjectId(userId)},
+                      {
+                        $expr: {
+                          $and: [
+                            {
+                              $gte: [new Date(), "$team.team_members.dates.start_date"], // Validate start_date
+                            },
+                            {
+                              $or: [
+                                { $eq: ["$team.team_members.dates.end_date", null] }, // If end_date is null
+                                { $gte: ["$team.team_members.dates.end_date", new Date()] }, // Validate end_date
+                              ],
+                            },
+                          ],
+                        },
+                      },
+
+                    ]
+                   },
                   { project_lead: new mongoose.Types.ObjectId(userId) },
                 ],
               },
@@ -388,11 +420,10 @@ export default class ProjectRepository {
         {
             const project = await Project.findById(projectid).populate({
                 path: "categories",
-                select: "_id category status",
+                select: "_id category time_entry",
             })
             .lean();
-
-            return project.categories.filter(category => category.status === 'opened')
+            return project.categories.filter(category => category.time_entry === 'opened')
         }catch(error)
         {
             throw new Error(error)
