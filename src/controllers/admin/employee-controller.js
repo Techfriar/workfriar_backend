@@ -37,7 +37,7 @@ class EmployeeController{
  *                 type: string
  *                 description: Role of the employee
  *                 example: Manager
- *               reporting_managerreporting_manager:
+ *               reporting_manager_id:
  *                 type: string
  *                 description: Reporting manager's user ID
  *                 example: 607d1f77bcf86cd799439011
