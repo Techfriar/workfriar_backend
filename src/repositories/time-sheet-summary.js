@@ -91,44 +91,43 @@ class TimeSheetSummary{
         }
     }
 
-    async getSpecifiedDates() {
-        try { 
+    async  getSpecifiedDates(userid) {
+        try {
             const timesheetDateRanges = await Timesheet.aggregate([
-                { 
-                    $match: { 
-                        status: "saved", 
-                    } 
-                }, 
+                {
+                    $match: {
+                        status: "saved",
+                        user_id: new mongoose.Types.ObjectId(userid) 
+                    }
+                },
                 {
                     $group: {
                         _id: null,
-                        uniqueRanges: { 
+                        uniqueRanges: {
                             $addToSet: { startDate: "$startDate", endDate: "$endDate" } 
                         }
                     }
                 },
-                { 
+                {
                     $unwind: "$uniqueRanges" 
-                }, 
+                },
                 {
                     $project: {
-                        _id: 0,
+                        _id: 0, 
                         startDate: "$uniqueRanges.startDate",
                         endDate: "$uniqueRanges.endDate"
                     }
                 },
-                { 
+                {
                     $sort: { startDate: -1 } 
                 }
             ]);
     
             return timesheetDateRanges;
-        } 
-        catch (error) {
-            throw new Error(error);
+        } catch (error) {
+            throw new Error(`Error fetching specified dates: ${error.message}`);
         }
     }
-    
 
     
 }

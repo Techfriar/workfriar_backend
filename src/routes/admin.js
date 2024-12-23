@@ -63,10 +63,19 @@ adminRouter.route("/updateforecast").post(forecastController.updateForecast)
 
 //Route for creating new project team
 adminRouter.route("/addprojectteam").post(projectTeamController.addProjectTeam);
+
+//Route for setting an end date for a project team member
+adminRouter.route("/setenddate").post(projectTeamController.setEndDateController);
 //Route for getting the project team
 adminRouter
   .route("/getallprojectteam")
   .post(projectTeamController.getProjectTeam);
+
+//get projects of  an employee
+adminRouter
+  .route("/getprojectsbyemployee")
+  .post(projectTeamController.getEmployeeProjects);
+
 //Route for getting a team associated with a project
 adminRouter
   .route("/getprojectteam")
