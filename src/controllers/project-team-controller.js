@@ -7,6 +7,7 @@ import findTimeZone from "../utils/findTimeZone.js";
 import getLocalDateStringForTimezone from "../utils/getLocalDateStringForTimezone.js"
 
 
+
 const projectTeamRepo=new ProjectTeamRepository()
 const projectTeamResponse=new ProjectTeamResponse()
 const projectTeamRequest=new ProjectTeamRequest()
@@ -995,6 +996,59 @@ class ProjectTeamController{
                     });
             }
         }
-    }    
+    }
+
+     /**
+     * @swagger
+     * /admin/teammemberswithtimesheet:
+     *   post:
+     *     summary: Get team members under a team lead with timesheets
+     *     tags: [TimeSheet]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               teamLeadId:
+     *                 type: string
+     *                 description: ID of the team lead
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved team members
+     *       422:
+     *         description: No team members found
+     *       500:
+     *         description: Internal server error
+     */
+     async getTeamMembersWithTimesheetController(req, res) {
+        const { teamLeadId } = req.body;
+        try {
+            const data = await projectTeamRepo.getTeamMembersWithTimesheet(teamLeadId);
+
+            if (data.data.length === 0) {
+                return res.status(422).json({
+                    status: false,
+                    message: "No team members with timesheets found",
+                    data: [],
+                });
+            }
+
+            const formattedData = await projectTeamResponse.formatTeamMembersWithTimesheet(data.data);
+
+            return res.status(200).json({
+                status: true,
+                message: "Team members with timesheet data retrieved successfully",
+                data: formattedData,
+            });
+        } catch (error) {
+            return res.status(500).json({
+                status: false,
+                message: "Internal Server Error",
+                error: error.message,
+            });
+        }
+    }
 }
 export default ProjectTeamController
