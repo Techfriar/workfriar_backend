@@ -31,9 +31,14 @@ class AddHolidayRequest {
       "date.min": "End date must be on or after start date.",
       "any.required": "Please enter the end date.",
     }),
-    location: Joi.string().valid("India", "Dubai").required().messages({
-      "any.only": "Invalid location. Please select a valid location.",
-      "any.required": "Please select the location.",
+    location: Joi.array().items(
+      Joi.string().valid("India", "Dubai")
+    ).min(1).required().messages({
+      "array.base": "Location must be an array.",
+      "array.min": "At least one location must be selected.",
+      "any.required": "Please select at least one location.",
+      "string.base": "Location must be a string.",
+      "any.only": "Invalid location. Please select valid locations.",
     }),
   });
 
