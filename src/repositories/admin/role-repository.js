@@ -16,93 +16,87 @@ export default class RoleRepository {
     }
   }
 
-  /**
-   * Get a role by ID
-   * @param {String} id - The ID of the role to retrieve
-   * @returns {Promise<Role>} - The retrieved role
-   */
-  static async getRoleById(id) {
-    try {
-      const role = await Role.findById(id);
-      return role;
-    } catch (error) {
-      throw error;
+    /**
+     * Get a role by ID
+     * @param {String} id - The ID of the role to retrieve
+     * @returns {Promise<Role>} - The retrieved role
+     */
+    static async getRoleById(id){
+        try{
+            const role = await Role.findById(id);
+            return role;
+        }catch(error){
+        }
     }
-  }
+     
+    /**
+     * Get all roles
+     * @returns {Promise<Role[]>} - The retrieved roles
+     */
+    static async getAllRoles(){
+        try{
+            const roles = await Role.find();
+            return roles;
+        }catch(error){
+        }
+    }
 
-  /**
-   * Get all roles
-   * @returns {Promise<Role[]>} - The retrieved roles
-   */
-  static async getAllRoles() {
-    try {
-      const roles = await Role.find();
-      return roles;
-    } catch (error) {
-      throw error;
+    /**
+     * Get a role by name and department
+     * @param {String} roleName - The name of the role to retrieve
+     * @param {String} department - The department of the role to retrieve
+     * @returns {Promise<Role>} - The retrieved role
+     */
+    static async getRoleByNameAndDepartment(roleName, department){
+        try{
+            const role = await Role.findOne({ 
+                role: { $regex: new RegExp(`^${roleName}$`, 'i') },
+                department: { $regex: new RegExp(`^${department}$`, 'i') }
+            });
+            return role;
+        }catch(error){
+        }
     }
-  }
 
-  /**
-   * Get a role by name and department
-   * @param {String} roleName - The name of the role to retrieve
-   * @param {String} department - The department of the role to retrieve
-   * @returns {Promise<Role>} - The retrieved role
-   */
-  static async getRoleByNameAndDepartment(roleName, department) {
-    try {
-      const role = await Role.findOne({
-        role: { $regex: new RegExp(`^${roleName}$`, "i") },
-        department: { $regex: new RegExp(`^${department}$`, "i") },
-      });
-      return role;
-    } catch (error) {
-      throw error;
+    /**
+     * Get a role by name
+     * @param {String} roleName - The name of the role to retrieve
+     * @returns {Promise<Role>} - The retrieved role
+     */
+    static async getRoleByName(roleName){
+        try{
+            const role = await Role.findOne({ role: roleName });
+            return role;
+        }catch(error){
+        }
     }
-  }
 
-  /**
-   * Get a role by name
-   * @param {String} roleName - The name of the role to retrieve
-   * @returns {Promise<Role>} - The retrieved role
-   */
-  static async getRoleByName(roleName) {
-    try {
-      const role = await Role.findOne({ role: roleName });
-      return role;
-    } catch (error) {
-      throw error;
+    /**
+     * Update a role by ID
+     * @param {String} id - The ID of the role to update
+     * @param {Object} role - The updated role object
+     * @returns {Promise<Role>} - The updated role
+     */
+    static async updateRole(id, role){
+        try{
+            const updatedRole = await Role.findByIdAndUpdate(id, role, { new: true });
+            return updatedRole;
+        }catch(error){
+        }
     }
-  }
-
-  /**
-   * Update a role by ID
-   * @param {String} id - The ID of the role to update
-   * @param {Object} role - The updated role object
-   * @returns {Promise<Role>} - The updated role
-   */
-  static async updateRole(id, role) {
-    try {
-      const updatedRole = await Role.findByIdAndUpdate(id, role, { new: true });
-      return updatedRole;
-    } catch (error) {
-      throw error;
+    /**
+     * Delete a role by ID
+     * @param {String} id - The ID of the role to delete
+     * @returns {Promise<Role>} - The deleted role
+     */
+    static async deleteRole(id){
+        try{
+            const deletedRole = await Role.findByIdAndDelete(id);
+            console.log(id)
+            return deletedRole;
+        }catch(error){
+        }
     }
-  }
-  /**
-   * Delete a role by ID
-   * @param {String} id - The ID of the role to delete
-   * @returns {Promise<Role>} - The deleted role
-   */
-  static async deleteRole(id) {
-    try {
-      const deletedRole = await Role.findByIdAndDelete(id);
-      console.log(id);
-      return deletedRole;
-    } catch (error) {
-      throw error;
-    }
-  }
 
   /**
    * Add permissions to a role
@@ -122,13 +116,12 @@ export default class RoleRepository {
         throw new Error("Role not found");
       }
 
-      return updatedRole;
-    } catch (error) {
-      throw error;
+            return updatedRole;
+        } catch (error) {
+        }
     }
-  }
 
-  /**
+    /**
    * Add users to a role
    * @param {String} roleId - The ID of the role to add users to
    * @param {String[]} userIds - The IDs of the users to add
@@ -150,55 +143,53 @@ export default class RoleRepository {
       throw error;
     }
   }
+  
 
-  /**
-   * Remove User from a role
-   * @param {String} roleId - The ID of the role to remove the user from
-   * @param {String} userId - The ID of the user to remove
-   * @returns {Promise<Role>} - The updated role
-   */
-  static async removeUserFromRole(roleId, userId) {
-    try {
-      return await Role.findByIdAndUpdate(
-        roleId,
-        { $pull: { users: userId } },
-        { new: true }
-      );
-    } catch (error) {
-      throw error;
+    /**
+     * Remove User from a role
+     * @param {String} roleId - The ID of the role to remove the user from
+     * @param {String} userId - The ID of the user to remove
+     * @returns {Promise<Role>} - The updated role
+     */
+    static async removeUserFromRole(roleId, userId) {
+        try {
+            return await Role.findByIdAndUpdate(
+                roleId,
+                { $pull: { users: userId } },
+                { new: true }
+            );
+        } catch (error) {
+        }
     }
-  }
 
-  /**
-   * Remove User From all roles
-   * @param {String} userId - The ID of the user to remove from all roles
-   * @returns {Promise<Role>} - The updated roles
-   */
-  static async removeUserFromAllRoles(userId) {
-    try {
-      const updatedRoles = await Role.updateMany(
-        { users: userId },
-        { $pull: { users: userId } }
-      );
-      return updatedRoles;
-    } catch (error) {
-      throw error;
+    /**
+     * Remove User From all roles
+     * @param {String} userId - The ID of the user to remove from all roles
+     * @returns {Promise<Role>} - The updated roles
+     */
+    static async removeUserFromAllRoles(userId) {
+        try {
+            const updatedRoles = await Role.updateMany(
+                { users: userId },
+                { $pull: { users: userId } }
+            );
+            return updatedRoles;
+        } catch (error) {
+        }
     }
-  }
 
-  /**
-   * Get role by userId
-   * @param {String} userId - The ID of the user to retrieve the role for
-   * @returns {Promise<Role>} - The retrieved role
-   */
-  static async getRoleByUserId(userId) {
-    try {
-      const role = await Role.findOne({ users: userId });
-      return role;
-    } catch (error) {
-      throw error;
+    /**
+     * Get role by userId
+     * @param {String} userId - The ID of the user to retrieve the role for
+     * @returns {Promise<Role>} - The retrieved role    
+     */
+    static async getRoleByUserId(userId) {
+        try {
+            const role = await Role.findOne({ users: userId });
+            return role;
+        } catch (error) {
+        }
     }
-  }
 
   /**
    * Get Team Leads
@@ -229,4 +220,25 @@ export default class RoleRepository {
       return role.map((role) => role.users).flat();
     } catch (error) {}
   }
+  /**
+   * Add users to a role
+   * @param {String} roleId - The ID of the role to add users to
+   * @param {String[]} userIds - The IDs of the users to add
+   * @returns {Promise<Role>} - The updated role
+   */
+  static async updateAllUsersInRole(roleId, userIds) {
+    try {
+      const updatedRole = await Role.findByIdAndUpdate(
+        roleId,
+        { $set: { users: userIds } },
+        { new: true, runValidators: true }
+      );
+      if (!updatedRole) {
+        throw new Error("Role not found");
+      }
+
+            return updatedRole;
+        } catch (error) {
+        }
+    }
 }

@@ -539,7 +539,7 @@ export default class AdminController {
         try {
             const UserData = await FetchEmployeeRequest.validateUserId( userId )
 
-            if(UserData && UserData.roles) {
+            if(UserData?.roles) {
                 await RoleRepository.removeUserFromRole(UserData.roles[0]._id, userId)
             }
             const { roleId: validatedRoleId, userIds } = await RoleRequest.validateMapUsersToRole({ roleId, userIds: [userId] });

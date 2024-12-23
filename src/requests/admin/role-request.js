@@ -115,6 +115,7 @@ export default class RoleRequest {
 
             const userResults = await Promise.all(userIds.map(async userId => {
                 const user = await this.UserRepo.getUserById(userId);
+                if (user) await this.RoleRepo.removeUserFromAllRoles(userId);
                 return { userId, user };
             }));
 

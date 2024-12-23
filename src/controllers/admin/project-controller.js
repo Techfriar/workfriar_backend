@@ -772,9 +772,8 @@ export default class ProjectController {
    */
   async listAllOpenProjectsByUser(req, res) {
     try {
-      // Authentication (uncomment and implement proper token verification in production)
-      // const user_id = await authenticateAndGetUserId(req);
-      const user_id = "6746a63bf79ea71d30770de7"; // Temporary user ID
+      
+      const user_id = req.session.user.id; 
 
       const projects = await projectRepo.getAllOpenProjectsByUser(user_id);
       const projectData = await Promise.all(
@@ -1065,7 +1064,7 @@ export default class ProjectController {
       return res.status(200).json({
         status: true,
         message: "Categories retrieved successfully.",
-        data: categories,
+        data: categories || [],
       });
     } catch (error) {
       if (error instanceof CustomValidationError) {

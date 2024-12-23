@@ -246,7 +246,7 @@ export default class RoleController {
         try {
             const { roleId, userIds } = await RoleRequest.validateMapUsersToRole(req.body);
 
-            const updatedRole = await RoleRepository.addUsersToRole(roleId, userIds);
+            const updatedRole = await RoleRepository.updateAllUsersInRole(roleId, userIds);
            
             res.status(200).json({
                 status: true,
