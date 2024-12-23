@@ -14,7 +14,6 @@ export default class ProjectTeamResponse{
     };   
 
     async formatProjectTeamSet(teams) {
-       
         try {
         return{
                 id: teams.id,
@@ -23,14 +22,73 @@ export default class ProjectTeamResponse{
                 status: teams.status,
                 date: `${moment(teams.start_date).format('MM/DD/YYYY')} - ${moment(teams.close_date).format('MM/DD/YYYY')}`,
                 teamsMembers: teams.team_members.map(member => ({
-                    id: member._id,
-                    name: member.full_name,
-                    profilepic: member.profile_pic,
-                    email:member.email
+                    id: member.userid._id,
+                    name: member.userid.full_name,
+                    email: member.userid.profile_pic
                 }))
             };
         } catch (error) {
                 throw new Error(error)
         }
-    }    
+    }   
+    
+    async formatTeamMembers(data)
+    {
+        
+        try {
+            return{
+                    id: data.id,
+                    project_id: data.project._id,
+                    projectname: data.project.project_name,
+                    status: data.status,
+                    date: `${moment(data.start_date).format('MM/DD/YYYY')} - ${moment(data.close_date).format('MM/DD/YYYY')}`,
+                    teamsMembers: data.team_members.map(member => ({
+                        id: member.userid._id,
+                        name: member.userid.full_name,
+                        email: member.userid.profile_pic,
+                        dates:member.dates.map((date)=>
+                        {
+                            return{
+                                start_date:date.start_date,
+                                end_date:date.end_date,
+                                period: `${moment(data.start_date).format('MM/DD/YYYY')} - ${moment(data.close_date).format('MM/DD/YYYY')}`,
+                            }
+                        })
+                    }))
+                };
+            } catch (error) {
+                    throw new Error(error)
+            }
+    }
+    async formatAllEmployeeProjects(teams)
+    {
+        try
+        {
+            const length=teams.team_members[0].dates.length
+            const date=new Date()
+            let status=""
+             if(teams.team_members[0].dates[length-1].end_date<date)
+             {
+                 status="inactive"
+             }
+             else
+             {
+                status="active"
+             }
+          
+            return{
+                id:teams._id,
+                project_id:teams.project._id,
+                projectname:teams.project.project_name,
+                projectlead:teams.project.project_lead.full_name,
+                clientname:teams.project.client_name.client_name,
+                dates:teams.team_members[0].dates,
+                status:status
+            }
+        }
+        catch(error)
+        {
+            throw new Error(error)
+        }
+    }
 }

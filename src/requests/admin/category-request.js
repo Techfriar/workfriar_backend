@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import CategoryRepository from '../../repositories/admin/category-repository.js';
 
+
 const categoryRepo = new CategoryRepository();
 
 class CreateCategoryRequest {
@@ -71,13 +72,15 @@ class CreateCategoryRequest {
             return { isValid: false, message: error.details.map(err => err.message) };
         }
         try {
-            const existingCategories = await categoryRepo.getAllCategories();
-            
-            const existingCategoryNames = existingCategories.map(cat => cat.category.toLowerCase());
-            if (existingCategoryNames.includes(updateData?.category?.toLowerCase())) {
-                return { isValid: false, message: "Category already exists" };
-            }
-            return { isValid: true, message: "Category is valid and unique" };
+            const existingCategoryNames = (await categoryRepo.getAllCategories())
+            .filter(cat => cat.id !== updateData.id) 
+            .map(cat => cat.category.toLowerCase()); 
+        if (existingCategoryNames.includes(updateData.category.toLowerCase())) {
+            return { isValid: false, message: "Category already exists" };
+        }
+    
+        // If valid, return a success response
+        return { isValid: true, message: "Category is valid" };
         } catch (err) {
             return { isValid: false, message: "Error occurred while validating the category" };
         }

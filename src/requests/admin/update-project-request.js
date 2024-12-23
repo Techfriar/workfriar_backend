@@ -30,18 +30,39 @@ class UpdateProjectRequest {
     actual_start_date: Joi.date().optional().allow('').allow(null),
     actual_end_date: Joi.date().optional().allow('').allow(null),
     billing_model: Joi.string().optional().allow('').allow(null),
-    project_logo: Joi.object().optional().allow('').allow(null),
+    project_logo: Joi.alternatives()
+      .try(
+        Joi.object(), // For file objects
+        Joi.string().allow('').allow(null) // For string/null/empty values
+      )
+      .optional(),
     open_for_time_entry: Joi.string().valid('opened', 'closed').optional(),
     status: Joi.string()
       .valid('Not Started', 'In Progress', 'Completed', 'On Hold', 'Cancelled')
       .optional(),
+    categories: Joi.array().items(Joi.string()).optional().allow(null).messages({
+      'array.base': 'Categories must be an array.',
+    }),
     projectId: Joi.string()
       .regex(/^[0-9a-fA-F]{24}$/)
       .optional(),
   });
 
   constructor(req) {
-    const file = req.files && req.files['project_logo'] ? req.files['project_logo'][0] : null;
+    // Safely handle project_logo in various formats
+    let projectLogo = null;
+    if (req.files) {
+      if (req.files.project_logo) {
+        // Handle array of files
+        if (Array.isArray(req.files.project_logo)) {
+          projectLogo = req.files.project_logo[0];
+        }
+        // Handle single file
+        else {
+          projectLogo = req.files.project_logo;
+        }
+      }
+    }
 
     this.data = {
       client_name: req.body.client_name,
@@ -53,9 +74,14 @@ class UpdateProjectRequest {
       actual_end_date: req.body.actual_end_date,
       project_lead: req.body.project_lead,
       billing_model: req.body.billing_model,
-      project_logo: file,
+      project_logo: projectLogo, // Use the safely handled project_logo
       open_for_time_entry: req.body.open_for_time_entry,
       status: req.body.status,
+      categories: req.body.categories 
+        ? Array.isArray(req.body.categories)
+          ? req.body.categories
+          : [req.body.categories]
+        : null,
       projectId: req.params.id,
     };
   }
@@ -87,8 +113,8 @@ class UpdateProjectRequest {
     let checkProjectExists = null;
     if (filteredData.project_name || filteredData.client_name) {
       checkProjectExists = await UpdateProjectRequest.projectRepo.checkProjectExists(
-        filteredData.project_name || this.data.project_name,
-        filteredData.client_name || this.data.client_name,
+        filteredData.project_name || projectExists.project_name,
+        filteredData.client_name || projectExists.client_name,
         this.data.projectId
       );
     }

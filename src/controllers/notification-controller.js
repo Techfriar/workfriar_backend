@@ -80,18 +80,9 @@ class NotificationController {
      */
     async getNotifications(req, res) {
         try {
-            // const token = req.headers.authorization?.split(' ')[1];
-            // if (!token) {
-            //     return res.status(401).json({ 
-            //         status: false,
-            //         message: 'No token provided',
-            //         data: []
-            //     });
-            // }
-            // const decoded = jwt.decode(token);
-            // const user_id = decoded.UserId;
 
-            const user_id = '6756c072ddd097b3e4bbadd5'
+            const user_id = req.session.user.id;
+
             if (!user_id) {
                 throw new CustomValidationError('UserId is a required field');
             }
@@ -186,17 +177,8 @@ class NotificationController {
 
     async getAllNotification(req, res) {
         try {
-            // const token = req.headers.authorization?.split(' ')[1];
-            // if (!token) {
-            //     return res.status(401).json({ 
-            //         status: false,
-            //         message: 'No token provided',
-            //         data: []
-            //     });
-            // }
-            // const decoded = jwt.decode(token);
-            // const user_id = decoded.UserId;
-            const user_id = '6756c072ddd097b3e4bbadd5'
+            const user_id = req.session.user.id;
+            
             if (!user_id) {
                 throw new CustomValidationError('UserId is a required field');
             }

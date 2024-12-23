@@ -206,7 +206,7 @@ export default class TimesheetController {
 				project_id,
 				task_category_id,
 				task_detail,
-				status = 'in_progress',
+				status = 'saved',
 				passedDate = undefined
 			} = timesheetData;
 
@@ -236,7 +236,8 @@ export default class TimesheetController {
 
 			return {
 				timesheetId: resolvedTimesheetId,
-				data_sheet
+				data_sheet,
+				task_detail
 			};
 		}));
 	}
@@ -305,10 +306,11 @@ export default class TimesheetController {
 	 * @returns {Promise<Array>} Updated timesheets
 	 */
 	async updateTimesheetRecords(processedTimesheets) {
-		return Promise.all(processedTimesheets.map(async ({ timesheetId, data_sheet }) => {
+		return Promise.all(processedTimesheets.map(async ({ timesheetId, data_sheet, task_detail }) => {
 			return await TimesheetRepo.updateTimesheetData(timesheetId, {
 				data_sheet,
-				status: 'saved'
+				status: 'saved',
+				task_detail
 			});
 		}));
 	}
@@ -1917,22 +1919,8 @@ export default class TimesheetController {
 
 	async submitDueTimesheets(req,res){
 		try{
-			// Extract token from Authorization header
-			// const token = req.headers.authorization?.split(' ')[1];  // 'Bearer <token>'
-	
-			// if (!token) {
-			// 	return res.status(401).json({ 
-			// 		status:false,
-			// 		message: 'No token provided',
-			// 		data: []
-			// 	});
-			// }
-	
-			// // Decode the token without verifying it (get the payload)
-			// const decoded = jwt.decode(token);  // Decode without verification
-	
-			// const user_id = decoded.UserId;
-			const user_id = '6756c072ddd097b3e4bbadd5';
+			// Extract UserId from the user session
+			const user_id = req.session.user.id;
 			let { startDate, endDate } = req.body;
 			const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
 			if (validatedDates.error) {
