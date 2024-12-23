@@ -62,8 +62,8 @@ export default class CategoryController {
 
     async addCategory(req, res) {
         try {
-            const {id,category, timeentry } = req.body
-            const validationResult = await createCategoryRequest.validateCategory(id,category,timeentry);
+            const {category, timeentry } = req.body
+            const validationResult = await createCategoryRequest.validateCategory(category,timeentry);
             if (!validationResult.isValid) {
                 throw new CustomValidationError(validationResult.message);
             }

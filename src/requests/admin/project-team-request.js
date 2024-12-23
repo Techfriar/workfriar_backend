@@ -17,13 +17,6 @@ static teamDataSchema = Joi.object({
             "any.required": "Project is required.",
             "string.pattern.base": "Project must be a valid ObjectId.",
         }),
-    status: Joi.string()
-        .required()
-        .valid("Not Started","On hold","Cancelled","Completed") 
-        .messages({
-            "any.required": "Status is required.",
-            "any.only": "Status must be Not Started,On hold,Cancelled,Completed .",
-        }),
         team_members: Joi.array()
         .items(
           Joi.object({
@@ -52,13 +45,6 @@ static teamDataSchema = Joi.object({
               .messages({
                 "array.base": "'dates' must be an array of objects.",
                 "array.min": "At least one date range is required for each team member.",
-              }),
-            status: Joi.string()
-              .valid("active", "inactive")
-              .required()
-              .messages({
-                "any.only": "Team member status must be either 'active' or 'inactive'.",
-                "any.required": "Team member status is required.",
               }),
           })
         )
@@ -77,22 +63,6 @@ static teamDataUpdateSchema = Joi.object({
         .messages({
             "string.pattern.base": "Project must be a valid ObjectId.",
         }),
-    status: Joi.string()
-        .optional()
-        .valid("Not Started", "On hold", "Cancelled", "Completed")
-        .messages({
-            "any.only": "Status must be one of: Not Started, On hold, Cancelled, Completed.",
-        }),
-    startDate: Joi.date()
-        .optional()
-        .messages({
-            "date.base": "Start date must be a valid date.",
-        }),
-    endDate: Joi.date()
-        .allow(null)
-        .messages({
-            "date.base": "End date must be a valid date.",
-        }),
         team_members: Joi.array()
         .items(
           Joi.object({
@@ -121,13 +91,6 @@ static teamDataUpdateSchema = Joi.object({
               .messages({
                 "array.base": "'dates' must be an array of objects.",
                 "array.min": "At least one date range is required for each team member.",
-              }),
-            status: Joi.string()
-              .valid("active", "inactive")
-              .required()
-              .messages({
-                "any.only": "Team member status must be either 'active' or 'inactive'.",
-                "any.required": "Team member status is required.",
               }),
           })
         )
