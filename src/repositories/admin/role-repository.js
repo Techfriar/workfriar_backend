@@ -121,28 +121,6 @@ export default class RoleRepository{
     }
 
     /**
-     * Add users to a role
-     * @param {String} roleId - The ID of the role to add users to
-     * @param {String[]} userIds - The IDs of the users to add
-     * @returns {Promise<Role>} - The updated role
-     */
-    static async addUsersToRole(roleId, userIds) {
-        try {
-            const updatedRole = await Role.findByIdAndUpdate(
-                roleId,
-                { $set: { users: userIds } },
-                { new: true, runValidators: true }
-            );
-            if (!updatedRole) {
-                throw new Error('Role not found');
-            }
-
-            return updatedRole;
-        } catch (error) {
-        }
-    }
-
-    /**
      * Remove User from a role
      * @param {String} roleId - The ID of the role to remove the user from
      * @param {String} userId - The ID of the user to remove
@@ -220,5 +198,27 @@ export default class RoleRepository{
             return role.map((role) => role.users).flat();
 
         } catch (error) {}
+    }
+
+     /**
+     * Add users to a role
+     * @param {String} roleId - The ID of the role to add users to
+     * @param {String[]} userIds - The IDs of the users to add
+     * @returns {Promise<Role>} - The updated role
+     */
+     static async updateAllUsersInRole(roleId, userIds) {
+        try {
+            const updatedRole = await Role.findByIdAndUpdate(
+                roleId,
+                { $set: { users: userIds } },
+                { new: true, runValidators: true }
+            );
+            if (!updatedRole) {
+                throw new Error('Role not found');
+            }
+
+            return updatedRole;
+        } catch (error) {
+        }
     }
 }
