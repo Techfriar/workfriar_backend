@@ -287,7 +287,7 @@ export default class CreateTimesheetRequest {
       }
 
       // Check if the timesheet is already submitted
-      if (['submitted', 'accepted', 'rejected'].includes(timesheet.status)) {
+      if (['submitted', 'accepted'].includes(timesheet.status)) {
         throw new Error('Timesheet cannot be deleted as it is already submitted');
       }
 
