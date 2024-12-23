@@ -138,12 +138,10 @@ export default class RoleRepository {
         throw new Error("Role not found");
       }
 
-      return { status: true, data: updatedRole };
-    } catch (error) {
-      throw error;
+            return {status:true,data:updatedRole};
+        } catch (error) {
+        }
     }
-  }
-  
 
     /**
      * Remove User from a role

@@ -3,6 +3,9 @@ import ProjectTeamResponse from "../responses/projectteam-response.js";
 import ProjectTeamRequest from "../requests/admin/project-team-request.js";
 import { CustomValidationError } from "../exceptions/custom-validation-error.js";
 import ProjectRepository from "../repositories/admin/project-repository.js";
+import findTimeZone from "../utils/findTimeZone.js";
+import getLocalDateStringForTimezone from "../utils/getLocalDateStringForTimezone.js"
+
 
 const projectTeamRepo=new ProjectTeamRepository()
 const projectTeamResponse=new ProjectTeamResponse()
@@ -28,21 +31,6 @@ class ProjectTeamController{
  *                 type: string
  *                 description: ID of the project to which the team belongs
  *                 example: "647a9b6c1234567890abcdef"
- *               status:
- *                 type: string
- *                 description: Status of the project team
- *                 enum: [Not Started, On hold, Cancelled, Completed]
- *                 example: "On hold"
- *               startDate:
- *                 type: string
- *                 format: date
- *                 description: Start date of the project
- *                 example: "2024-01-01"
- *               endDate:
- *                 type: string
- *                 format: date
- *                 description: End date of the project
- *                 example: "2024-12-31"
  *               team_members:
  *                 type: array
  *                 description: Array of team members with their details
@@ -69,11 +57,6 @@ class ProjectTeamController{
  *                             format: date
  *                             description: End date for the team member's availability
  *                             example: ""
- *                     status:
- *                       type: string
- *                       description: Status of the team member
- *                       enum: [active, inactive]
- *                       example: "active"
  *     responses:
  *       200:
  *         description: Project team created successfully
@@ -184,18 +167,16 @@ class ProjectTeamController{
                     userid: member.userid,
                     dates: [
                         {
-                            start_date: projectDates. planned_start_date, 
+                            start_date: projectDates.actual_start_date,
                             end_date: "" 
                         }
-                    ],
-                    status: member.status 
+                    ]
                 };
             });
     
             
             const projectTeamData = {
                 project: req.body.project,
-                status: req.body.status,
                 team_members: updatedTeamMembers
             };
     
@@ -241,8 +222,7 @@ class ProjectTeamController{
  *   post:
  *     summary: Update the `end_date` for a team member's date entry in a project team
  *     description: Updates the `end_date` for a specific team member in the nested `dates` array where `end_date` is currently `null`.
- *     tags:
- *       - Project Teams
+ *     tags: [ProjectTeams]
  *     requestBody:
  *       required: true
  *       content:
@@ -363,10 +343,15 @@ class ProjectTeamController{
 
     async setEndDateController(req,res)
     {
+
         const{projectTeamId,userId,end_date}=req.body
         try
         {
-            const data=await projectTeamRepo.setEndDateForTeammember(projectTeamId,userId,end_date)
+            const newDate=new Date(end_date)
+            const timezone = await findTimeZone(req)
+            let endDate = getLocalDateStringForTimezone(timezone, new Date(newDate))
+            endDate=new Date(endDate)
+            const data=await projectTeamRepo.setEndDateForTeammember(projectTeamId,userId,endDate)
             if(data.status)
             {
                 res.status(200).json({
@@ -455,7 +440,6 @@ class ProjectTeamController{
             }
             else
             {
-             
                 const formattedData = await Promise.all(
                     data.data.map(async (item) => {
                         return projectTeamResponse.formatProjectTeamSet(item); 
@@ -471,6 +455,7 @@ class ProjectTeamController{
         catch(error)
         {
         
+            console.log(error)
             res.status(500).json(
                 {
                     status:false,
@@ -584,13 +569,15 @@ class ProjectTeamController{
     async getProjectTeambyidController(req,res)
     {
         const {id}=req.body
+     
         try
         {
             const data = await projectTeamRepo. getProjectTeambyId(id)
+       
             if (data.length === 0) {
                 res.status(422).json({
                     status:false,
-                    message:"No Category Found",
+                    message:"No Project Team  Found",
                     data:[],
                 })
               
@@ -600,7 +587,7 @@ class ProjectTeamController{
             else
             {
            
-                const formattedData = await projectTeamResponse.formatTeamMembers(data)
+                const formattedData = await projectTeamResponse.formatTeamMembers(data[0])
                 res.status(200).json({
                     status:true,
                     message:"Project Team data",
@@ -610,6 +597,7 @@ class ProjectTeamController{
         }
         catch(error)
         {
+           
             res.status(500).json(
                 {
                     status:false,
@@ -625,8 +613,7 @@ class ProjectTeamController{
  *   post:
  *     summary: Get Projects by Employee ID
  *     description: Retrieve the projects where the specified employee is part of the team and return the project details.
- *     tags:
- *       - Project Team
+ *     tags: [ProjectTeams]
  *     requestBody:
  *       required: true
  *       content:
@@ -752,6 +739,131 @@ class ProjectTeamController{
         catch(error)
         {
            
+            res.status(500).json(
+                {
+                    status:false,
+                    message:"Internal Server Error",
+                    data:[],
+                })
+        }
+    }
+
+    /**
+ * @swagger
+ * /admin/activateuser:
+ *   post:
+ *     summary: Activate a user in the project team
+ *     description: Activates a team member by adding a new entry in the `dates` array and setting the start date. Optionally, a start date can be provided; otherwise, the current date will be used.
+ *     tags: [ProjectTeams]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - projectTeamId
+ *               - userId
+ *             properties:
+ *               projectTeamId:
+ *                 type: string
+ *                 description: The ID of the project team.
+ *                 example: 6763cd121df93faf8709cccc
+ *               userId:
+ *                 type: string
+ *                 description: The ID of the user to be activated.
+ *                 example: 6746a63bf79ea71d30770de9
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: The start date for activation. If not provided, the current date will be used.
+ *                 example: 2024-12-25T00:00:00.000Z
+ *     responses:
+ *       200:
+ *         description: User activated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: User Activated
+ *                 data:
+ *                   type: object
+ *                   description: The updated project team data.
+ *       422:
+ *         description: Failed to activate the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Failed to Activate User
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Internal Server Error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal Server Error
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ */
+
+    async activateUserController(req,res)
+    {
+        let{projectTeamId,userId,start_date}=req.body
+        try
+        {
+            if(!start_date)
+            {
+                start_date=new Date()
+            }
+            const newDate=new Date(start_date)
+            const timezone = await findTimeZone(req)
+            let startDate = getLocalDateStringForTimezone(timezone, new Date(newDate))
+            startDate=new Date(startDate)
+            const data=await projectTeamRepo.activateTeammember(projectTeamId,userId,startDate)
+            if(data.status)
+            {
+                res.status(200).json({
+                    status:true,
+                    message:"User Activated",
+                    data:data.data,
+                })
+            }
+            else
+            {
+                res.status(422).json({
+                    status:false,
+                    message:"Failed to Activate User",
+                    data:[],
+                })
+            }
+        }
+        catch(error)
+        {
             res.status(500).json(
                 {
                     status:false,

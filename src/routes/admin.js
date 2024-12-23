@@ -83,6 +83,9 @@ adminRouter
 //Route for editing the project team
 adminRouter.route("/editprojectteam").post(projectTeamController.editProjectTeamController)
 
+//Route for making a user active in a project
+adminRouter.route("/activateuser").post(projectTeamController.activateUserController);
+
 //Route for displaying time summary
 adminRouter.route("/timesummary").post(timeSheetSummary.TimeSummaryController)
 

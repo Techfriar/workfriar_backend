@@ -14,17 +14,23 @@ export default class ProjectTeamResponse{
     };   
 
     async formatProjectTeamSet(teams) {
+        const startDate=new Date(teams.project?.actual_start_date)
+        const endDate=new Date(teams.project?.actual_end_date)
         try {
         return{
-                id: teams.id,
+                id: teams._id,
                 project_id: teams.project._id,
                 projectname: teams.project.project_name,
-                status: teams.status,
-                date: `${moment(teams.start_date).format('MM/DD/YYYY')} - ${moment(teams.close_date).format('MM/DD/YYYY')}`,
+                projectlogo:teams.project.project_logo,
+                status: teams.project.status,
+                start_date:startDate,
+                end_date:endDate,
+                date: `${moment(startDate).format('MM/DD/YYYY')} - ${moment(endDate).format('MM/DD/YYYY')}`,
                 teamsMembers: teams.team_members.map(member => ({
                     id: member.userid._id,
                     name: member.userid.full_name,
-                    email: member.userid.profile_pic
+                    profile_pic: member.userid.profile_pic,
+                    email: member.userid.email
                 }))
             };
         } catch (error) {
@@ -37,7 +43,7 @@ export default class ProjectTeamResponse{
         
         try {
             return{
-                    id: data.id,
+                    id: data._id,
                     project_id: data.project._id,
                     projectname: data.project.project_name,
                     status: data.status,
@@ -45,7 +51,9 @@ export default class ProjectTeamResponse{
                     teamsMembers: data.team_members.map(member => ({
                         id: member.userid._id,
                         name: member.userid.full_name,
-                        email: member.userid.profile_pic,
+                        email: member.userid.email,
+                        profile_pic: member.userid.profile_pic,
+                        status:member.status,
                         dates:member.dates.map((date)=>
                         {
                             return{
@@ -54,6 +62,7 @@ export default class ProjectTeamResponse{
                                 period: `${moment(data.start_date).format('MM/DD/YYYY')} - ${moment(data.close_date).format('MM/DD/YYYY')}`,
                             }
                         })
+
                     }))
                 };
             } catch (error) {

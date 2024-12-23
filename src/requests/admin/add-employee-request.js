@@ -6,6 +6,7 @@ import UserRepository from "../../repositories/user-repository.js";
 const userrepository=new UserRepository()
 class EmployeeRequest {
     static employeeSchema = Joi.object({
+        id:Joi.optional().allow(""),
         name: Joi.string()
             .pattern(/^[A-Za-z\s]+$/, 'letters and spaces')
             .required()
@@ -39,7 +40,7 @@ class EmployeeRequest {
                 'any.required': `"Phone Number" is a required field`
             }),
     
-        reporting_manager: Joi.string().required().messages({
+        reporting_manager_id: Joi.string().required().messages({
             'string.base': `"Reporting Manager" should be a type of 'text'`,
             'string.empty': `"Reporting Manager" cannot be an empty field`,
             'any.required': `"Reporting Manager" is a required field`
@@ -93,7 +94,7 @@ class EmployeeRequest {
                 });
             }
     
-            const reportingManager = await User.findById(data.reporting_manager);
+            const reportingManager = await User.findById(data.reporting_manager_id);
             if (!reportingManager) {
                 errors.push({
                     field: "reporting_manager",
