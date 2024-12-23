@@ -167,7 +167,7 @@ class ClientController {
                 res.status(422).json({
                     status: false,
                     message: 'Validation error',
-                    errors: error.errors,
+                    errors: error.errors
                 });
             }
             else {

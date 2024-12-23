@@ -16,6 +16,7 @@ export default class ClientRequest {
      * @throws {CustomValidationError} If validation fails or references do not exist
      * @returns {Object} - Validated data
      */
+
     async validateClientData(clientData) {
         // Define Joi schema
         const schema = Joi.object({
@@ -63,56 +64,68 @@ export default class ClientRequest {
                     'any.only': '"status" must be either "Active" or "Inactive"',
                     'any.required': '"status" is required',
                 }),
-        });
+        });    
 
-        // Perform Joi validation
         const { error, value } = schema.validate(clientData);
-        if (error) {
-            throw new CustomValidationError(error.details[0].message);
-        }
-
-        // Check database references
         const errors = [];
-
-        const locationExists = await PopulateField.findCountry(value.location);
-        if (!locationExists) {
-            errors.push('Invalid location: Not found in countries collection');
-        }
-
-        const clientManagerExists = await UserRepo.getUserById(value.client_manager);
-        if (!clientManagerExists) {
-            errors.push('Invalid client_manager: Not found in users collection');
-        }
-
-        const billingCurrencyExists = await PopulateField.findCurrency(value.billing_currency);
-        if (!billingCurrencyExists) {
-            errors.push('Invalid billing_currency: Not found in currencies collection');
+        
+        if (error) {
+            errors.push(...error.details.map((err) => ({
+                field: err.context.key,
+                message: err.message,
+            })));
         }
 
         if (errors.length > 0) {
-            throw new CustomValidationError(errors.join('; '));
+            throw new CustomValidationError(errors);
         }
 
-        return value; // Validated data
-    }
+        const locationExists = await PopulateField.findCountry(value.location);
+        if (!locationExists) {
+            errors.push({
+                field: 'location',
+                message: 'Invalid location: Not found in countries collection',
+            });
+        }
+    
+        const clientManagerExists = await UserRepo.getUserById(value.client_manager);
+        if (!clientManagerExists) {
+            errors.push({
+                field: 'client_manager',
+                message: 'Invalid client_manager: Not found in users collection',
+            });
+        }
+    
+        const billingCurrencyExists = await PopulateField.findCurrency(value.billing_currency);
+        if (!billingCurrencyExists) {
+            errors.push({
+                field: 'billing_currency',
+                message: 'Invalid billing_currency: Not found in currencies collection',
+            });
+        }
+    
+        if (errors.length > 0) {
+            throw new CustomValidationError(errors);
+        }
 
-
+        return value; 
+    }   
     
     async validateEditClientData(clientData) {
         // Define Joi schema
         const schema = Joi.object({
             _id: Joi.string()
-            .custom((value, helpers) => {
-                if (!mongoose.Types.ObjectId.isValid(value)) {
-                    return helpers.message('Invalid ObjectId for _id');
-                }
-                return value;
-            })
-            .required()
-            .messages({
-                'any.required': '"_id" is required',
-                'string.base': '"_id" must be a string',
-            }),
+                .custom((value, helpers) => {
+                    if (!mongoose.Types.ObjectId.isValid(value)) {
+                        return helpers.message('Invalid ObjectId for _id');
+                    }
+                    return value;
+                })
+                .required()
+                .messages({
+                    'any.required': '"_id" is required',
+                    'string.base': '"_id" must be a string',
+                }),
             client_name: Joi.string().required().messages({
                 'string.base': '"client_name" must be a string',
                 'any.required': '"client_name" is required',
@@ -158,44 +171,62 @@ export default class ClientRequest {
                     'any.required': '"status" is required',
                 }),
         });
-
-        // Perform Joi validation
+    
         const { error, value } = schema.validate(clientData);
-        if (error) {
-            throw new CustomValidationError(error.details[0].message);
-        }
-
-        // Check database references
         const errors = [];
 
-        const clientExists = await ClientRepo.findById(value._id);
-        if (!clientExists) {
-            errors.push('Invalid client: Not found in client collection');
-        }
-
-        const locationExists = await PopulateField.findCountry(value.location);
-        if (!locationExists) {
-            errors.push('Invalid location: Not found in countries collection');
-        }
-
-        const clientManagerExists = await UserRepo.getUserById(value.client_manager);
-        if (!clientManagerExists) {
-            errors.push('Invalid client_manager: Not found in users collection');
-        }
-
-        const billingCurrencyExists = await PopulateField.findCurrency(value.billing_currency);
-        if (!billingCurrencyExists) {
-            errors.push('Invalid billing_currency: Not found in currencies collection');
+        if (error) {
+            errors.push(...error.details.map((err) => ({
+                field: err.context.key,
+                message: err.message,
+            })));
         }
 
         if (errors.length > 0) {
-            throw new CustomValidationError(errors.join('; '));
+            throw new CustomValidationError(errors);
         }
 
-        return value; // Validated data
+        const clientExists = await ClientRepo.findById(value._id);
+        if (!clientExists) {
+            errors.push({
+                field: '_id',
+                message: 'Invalid client: Not found in client collection',
+            });
+        }
+    
+        const locationExists = await PopulateField.findCountry(value.location);
+        if (!locationExists) {
+            errors.push({
+                field: 'location',
+                message: 'Invalid location: Not found in countries collection',
+            });
+        }
+    
+        const clientManagerExists = await UserRepo.getUserById(value.client_manager);
+        if (!clientManagerExists) {
+            errors.push({
+                field: 'client_manager',
+                message: 'Invalid client_manager: Not found in users collection',
+            });
+        }
+    
+        const billingCurrencyExists = await PopulateField.findCurrency(value.billing_currency);
+        if (!billingCurrencyExists) {
+            errors.push({
+                field: 'billing_currency',
+                message: 'Invalid billing_currency: Not found in currencies collection',
+            });
+        }
+    
+        if (errors.length > 0) {
+            throw new CustomValidationError(errors);
+        }
+    
+        return value; 
     }
+    
 
-    async validateClientStatus(client){
+    async validateClientStatus(client) {
         const schema = Joi.object({
             _id: Joi.string()
                 .custom((value, helpers) => {
@@ -217,25 +248,32 @@ export default class ClientRequest {
                     'any.required': '"status" is required',
                 }),
         });
-
-        // Perform Joi validation
+    
         const { error, value } = schema.validate(client);
-        if (error) {
-            throw new CustomValidationError(error.details[0].message);
-        }
-
         const errors = [];
-
-        const clientExists = await ClientRepo.findById(client._id);
-        if (!clientExists) {
-            errors.push('Invalid client: Not found in client collection');
+    
+        if (error) {
+            errors.push(...error.details.map((err) => ({
+                field: err.context.key,
+                message: err.message,
+            })));
         }
-
-        
+    
+        if (errors.length === 0) {
+            const clientExists = await ClientRepo.findById(client._id);
+            if (!clientExists) {
+                errors.push({
+                    field: '_id',
+                    message: 'Invalid client: Not found in client collection',
+                });
+            }
+        }
+    
         if (errors.length > 0) {
-            throw new CustomValidationError(errors.join('; '));
+            throw new CustomValidationError(errors);
         }
-
-        return value; 
+    
+        return value;
     }
+    
 }
