@@ -5,14 +5,7 @@ class ClientResponse{
      * @param {Object} client - The client object to transform.
      * @return {Object} - An object containing selected properties from the client.
      */
-    async addClientResponse(client){
-        return{
-            _id: client._id,
-            name: client.client_name
-        }
-    }
-
-    async allClientsResponse(client){
+    async clientResponse(client){
         return {
             _id: client._id,
             client_name: client.client_name,
@@ -26,13 +19,6 @@ class ClientResponse{
         };
     }
     
-    async editClientResponse(client){
-        return{
-            _id: client._id,
-            name: client.client_name,
-            status: client.status
-        }
-    }
 }
 
 export default ClientResponse;
