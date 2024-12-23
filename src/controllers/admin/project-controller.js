@@ -1064,7 +1064,7 @@ export default class ProjectController {
       return res.status(200).json({
         status: true,
         message: "Categories retrieved successfully.",
-        data: categories,
+        data: categories || [],
       });
     } catch (error) {
       if (error instanceof CustomValidationError) {

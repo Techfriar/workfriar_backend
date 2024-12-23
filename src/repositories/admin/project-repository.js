@@ -251,7 +251,7 @@ export default class ProjectRepository {
       const projects = await Project.aggregate([
         {
           $lookup: {
-            from: "project teams", // Assuming the collection name is 'projectteams'
+            from: "project teams",
             localField: "_id",
             foreignField: "project",
             as: "team",
@@ -260,7 +260,7 @@ export default class ProjectRepository {
         {
           $unwind: {
             path: "$team",
-            preserveNullAndEmptyArrays: true, // Keep projects without teams
+            preserveNullAndEmptyArrays: true,
           },
         },
         {
@@ -282,25 +282,16 @@ export default class ProjectRepository {
                 $or: [
                   { 
                     $and: [
-                      {"team.team_members.userid": new mongoose.Types.ObjectId(userId)},
+                      { "team.team_members.userid": new mongoose.Types.ObjectId(userId) },
+                      { "team.team_members.dates.start_date": { $lte: new Date() } },
                       {
-                        $expr: {
-                          $and: [
-                            {
-                              $gte: [new Date(), "$team.team_members.dates.start_date"], // Validate start_date
-                            },
-                            {
-                              $or: [
-                                { $eq: ["$team.team_members.dates.end_date", null] }, // If end_date is null
-                                { $gte: ["$team.team_members.dates.end_date", new Date()] }, // Validate end_date
-                              ],
-                            },
-                          ],
-                        },
-                      },
-
+                        $or: [
+                          { "team.team_members.dates.end_date": null },
+                          { "team.team_members.dates.end_date": { $gte: new Date() } }
+                        ]
+                      }
                     ]
-                   },
+                  },
                   { project_lead: new mongoose.Types.ObjectId(userId) },
                 ],
               },
@@ -325,7 +316,6 @@ export default class ProjectRepository {
           },
         },
       ]);
-
       return projects;
     } catch (error) {
       throw new Error(`Failed to get projects: ${error.message}`);
@@ -423,7 +413,7 @@ export default class ProjectRepository {
                 select: "_id category time_entry",
             })
             .lean();
-            return project.categories.filter(category => category.time_entry === 'opened')
+            return project.categories?.filter(category => category.time_entry === 'opened')
         }catch(error)
         {
             throw new Error(error)
