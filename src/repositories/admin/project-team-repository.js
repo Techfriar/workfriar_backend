@@ -1,17 +1,16 @@
 import projectTeam from "../../models/project-team.js";
 
+
 class ProjectTeamRepository
 {
     //Function for creating new project team
     async createTeam(teamData)
     { 
-      
         try
         {
-        const{project,status,team_members}=teamData
+        const{project,team_members}=teamData
         const data=await projectTeam.create({
           project,
-          status,
           team_members:team_members
         })
         return ({status:true,data:data})
@@ -73,6 +72,36 @@ class ProjectTeamRepository
     }
     
     
+    //Function for setting new startDate for an employee
+    async activateTeammember(projectTeamId, userId, start_date) {
+        try {
+            start_date = new Date(start_date);
+            const data = await projectTeam.findOneAndUpdate(
+                {
+                    _id: projectTeamId, 
+                    "team_members.userid": userId 
+                },
+                {
+                    $push: { 
+                        "team_members.$.dates": { 
+                            start_date: start_date, 
+                            end_date: null 
+                        }
+                    },
+                    $set: { "team_members.$.status": "active" } 
+                },
+                { new: true } 
+            );
+            if (!data) {
+                throw new Error("Project Team or User not found.");
+            }
+    
+            return { status: true, data: data };
+        } catch (error) {
+            throw new Error(error.message || "Failed to activate team member.");
+        }
+    }
+    
     
     
     
@@ -82,7 +111,7 @@ class ProjectTeamRepository
             const teamData = await projectTeam.find()
                 .populate({
                     path: 'project',
-                    select: 'project_name _id status actual_start_date actual_end_date' 
+                    select: 'project_name _id status actual_start_date actual_end_date project_logo' 
                 })
                 .populate({
                     path: 'team_members.userid',
@@ -107,10 +136,10 @@ class ProjectTeamRepository
                 })
                 .populate({
                     path: 'team_members.userid',
-                    select: 'full_name email',
+                    select: 'full_name email profile_pic',
                 })
                 .lean(); 
-            return data[0];
+            return data;
         } catch (error) {
            throw new Error(error)
             
