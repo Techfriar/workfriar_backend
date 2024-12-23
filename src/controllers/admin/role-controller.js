@@ -5,6 +5,7 @@ import Role from "../../models/role.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 import RoleResponse from "../../responses/role-responses.js";
 import PermissionRepository from "../../repositories/admin/permission-repository.js";
+import UserResponse from "../../responses/user-response.js";
 
 export default class RoleController {
     
@@ -138,7 +139,7 @@ export default class RoleController {
             res.status(201).json({
                 status: true,
                 message: 'Role created successfully',
-                date: [newRole],
+                data: [newRole],
             });
         } catch (error) {
 
@@ -420,8 +421,7 @@ export default class RoleController {
         try {
             const roleId  = await RoleRequest.validateRoleId(req.body);
 
-            const ds = await RoleRepository.deleteRole(roleId);
-            console.log(ds, "ds")
+            await RoleRepository.deleteRole(roleId);
 
             res.status(200).json({
                 status: true,
@@ -902,6 +902,8 @@ export default class RoleController {
     }
 
     
+
+    
     async getClientManager(req, res) {
         try {
             const clientManagers = await RoleRepository.getManagers();
@@ -914,6 +916,99 @@ export default class RoleController {
             res.status(500).json({
                 status: false,
                 message: 'Error fetching Client Managers',
+                data: []
+            });
+        }
+    }
+
+/**
+ * List All Employees By Department
+ *
+ * @swagger
+ * /admin/list-all-employees-by-department:
+ *   post:
+ *     tags:
+ *       - Role
+ *     summary: Retrieve all employees by department
+ *     description: Fetches a list of all employees in a specific department
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - department
+ *             properties:
+ *               department:
+ *                 type: string
+ *                 example: "Technical"
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Employees fetched successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "60d5ecb54d6e3d1234567890"
+ *                       name:
+ *                         type: string
+ *                         example: "John Doe"
+ *       400:
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+    async listAllEmployeesByDepartment(req, res) {
+        try {
+            const { department } = req.body
+            const employees = await RoleRepository.getAllEmployeesByDepartment(department);
+            const formattedEmployees = await Promise.all(employees.map(
+                async (employee) => await UserResponse.formatEmployeeForListing(employee)
+            ));
+            res.status(200).json({
+                status: true,
+                message: 'Employees fetched successfully',
+                data: formattedEmployees || []
+            });
+        } catch (error) {
+            console.log(error, "error");
+            if (error instanceof CustomValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.message,
+                    data: []
+                });
+            }
+            res.status(500).json({
+                status: false,
+                message: 'Error fetching employees',
                 data: []
             });
         }

@@ -241,4 +241,24 @@ export default class RoleRepository {
         } catch (error) {
         }
     }
+
+    /**
+     * Get all employees by department
+     * @param {String} department - The department to retrieve employees for
+     * @returns {Promise<Role>} - The retrieved employees
+     */
+    static async getAllEmployeesByDepartment(department) {
+      try {
+        const roles = await Role.find({ department: department })
+          .populate({
+              path: 'users',
+              select: 'full_name _id'
+          })
+          .lean();
+          return roles.map((employee) => employee.users).flat();
+      } catch (error) {
+        
+      }
+
+    }
 }
