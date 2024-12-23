@@ -145,9 +145,9 @@ export default class RoleRepository{
                 throw new Error('Role not found');
             }
 
-            return updatedRole;
+            return {status:true,data:updatedRole};
         } catch (error) {
-            throw error;
+            throw new Error(error);
         }
     }
 
