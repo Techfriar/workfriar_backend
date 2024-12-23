@@ -207,36 +207,58 @@ export default class RoleRepository {
     } catch (error) {}
   }
 
-  static async getManagers() {
-    try {
-      const role = await Role.find({ department: "Management" })
-        .populate({
-          path: "users",
-          select: "full_name _id",
-        })
-        .lean();
-      return role.map((role) => role.users).flat();
-    } catch (error) {}
-  }
-  /**
-   * Add users to a role
-   * @param {String} roleId - The ID of the role to add users to
-   * @param {String[]} userIds - The IDs of the users to add
-   * @returns {Promise<Role>} - The updated role
-   */
-  static async updateAllUsersInRole(roleId, userIds) {
-    try {
-      const updatedRole = await Role.findByIdAndUpdate(
-        roleId,
-        { $set: { users: userIds } },
-        { new: true, runValidators: true }
-      );
-      if (!updatedRole) {
-        throw new Error("Role not found");
-      }
+    static async getManagers(){
+        try {
+            const role = await Role.find({ department: 'Management' })
+                .populate({
+                    path: 'users',
+                    select: 'full_name _id'
+                })
+                .lean();
+            return role.map((role) => role.users).flat();
+
+        } catch (error) {}
+    }
+
+     /**
+     * Add users to a role
+     * @param {String} roleId - The ID of the role to add users to
+     * @param {String[]} userIds - The IDs of the users to add
+     * @returns {Promise<Role>} - The updated role
+     */
+     static async updateAllUsersInRole(roleId, userIds) {
+        try {
+            const updatedRole = await Role.findByIdAndUpdate(
+                roleId,
+                { $set: { users: userIds } },
+                { new: true, runValidators: true }
+            );
+            if (!updatedRole) {
+                throw new Error('Role not found');
+            }
 
             return updatedRole;
         } catch (error) {
         }
+    }
+
+    /**
+     * Get all employees by department
+     * @param {String} department - The department to retrieve employees for
+     * @returns {Promise<Role>} - The retrieved employees
+     */
+    static async getAllEmployeesByDepartment(department) {
+      try {
+        const roles = await Role.find({ department: department })
+          .populate({
+              path: 'users',
+              select: 'full_name _id'
+          })
+          .lean();
+          return roles.map((employee) => employee.users).flat();
+      } catch (error) {
+        
+      }
+
     }
 }
