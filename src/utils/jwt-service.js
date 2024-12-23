@@ -9,6 +9,6 @@ export default class JwtServices{
   };
 
   static createToken (payload) {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: '12h' });
   };
 }

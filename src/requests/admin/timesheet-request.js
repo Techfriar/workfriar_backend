@@ -30,28 +30,27 @@ export default class CreateTimesheetRequest {
       const user = await this.UserRepo.getUserById(user_id)
       if (!user) throw new CustomValidationError('User not found');
 
-      const teamMemberIds = team.team_members
-        .filter((member) => {
-          // Check if the member has a matching user ID and valid date range
-          return (
-            member.userid.toString() === user_id.toString() && // Match the specific userId
-            member.dates.some((date) => {
-              const today = new Date();
-              const startDate = new Date(date.start_date);
-              const endDate = date.end_date ? new Date(date.end_date) : null;
+      const isUserInTeam = team.team_members.some((member) => {
+        // Check if the member has a matching user ID and valid date range
+        return (
+          member.userid.toString() === user_id.toString() && // Match the specific userId
+          member.dates.some((date) => {
+            const today = new Date();
+            const startDate = new Date(date.start_date);
+            const endDate = date.end_date ? new Date(date.end_date) : null;
       
-              return (
-                today >= startDate && // Today's date is greater than or equal to the start date
-                (!endDate || today <= endDate) // End date is either null or today is less than or equal to it
-              );
-            })
-          );
-        })
-        .map((member) => member.userid); // Extract user IDs of valid team members
-
-      if (teamMemberIds.length == 0) {
+            return (
+              today >= startDate && // Today's date is on or after the start date
+              (!endDate || today <= endDate) // End date is either null or today is on or before it
+            );
+          })
+        );
+      });  
+      
+      if (!isUserInTeam) {
         throw new CustomValidationError('User is not part of the project team');
       }
+      
 
       const taskCategory = await this.TaskCategoryRepo.getCategoryById(task_category_id);
       if (!taskCategory) throw new CustomValidationError('Task Category not found');
