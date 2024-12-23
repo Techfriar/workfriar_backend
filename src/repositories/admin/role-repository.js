@@ -126,7 +126,7 @@ export default class RoleRepository{
      * @param {String[]} userIds - The IDs of the users to add
      * @returns {Promise<Role>} - The updated role
      */
-    static async addUsersToRole(roleId, userIds) {
+    static async updateAllUsersInRole(roleId, userIds) {
         try {
             const updatedRole = await Role.findByIdAndUpdate(
                 roleId,
