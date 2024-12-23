@@ -11,11 +11,7 @@ const teamMemberSchema = new mongoose.Schema({
             start_date: { type: Date},
             end_date: { type: Date }
         }
-    ],
-    status: {
-        type: String,
-        enum: ['active', 'inactive']
-    }
+    ]
 }, { timestamps: true }); 
 
 
@@ -25,11 +21,6 @@ const projectTeamSchema = new mongoose.Schema({
         ref: 'Project',
         required: true,              
         trim: true
-    },
-    status: {
-        type: String,
-        enum: ['Not Started', 'On hold', 'Cancelled', 'Completed'],
-        required: true
     },
     team_members: [teamMemberSchema] 
 }, { timestamps: true });
