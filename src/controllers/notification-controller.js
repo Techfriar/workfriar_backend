@@ -178,7 +178,6 @@ class NotificationController {
     async getAllNotification(req, res) {
         try {
             const user_id = req.session.user.id;
-
             
             if (!user_id) {
                 throw new CustomValidationError('UserId is a required field');
