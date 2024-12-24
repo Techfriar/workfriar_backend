@@ -1,5 +1,5 @@
 import UserRepository from "../../repositories/user-repository.js";
-import { uploadFile } from "../../utils/uploadFile.js";
+import { deleteFile, uploadFile } from "../../utils/uploadFile.js";
 import RoleRepository from "../../repositories/admin/role-repository.js";
 import EmployeeRequest from "../../requests/admin/add-employee-request.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
@@ -410,11 +410,11 @@ class EmployeeController {
       }
 
       // Handle file upload if there's a new profile picture
-      if (req.files?.employee_profile) {
+      if (req.files?.profile_pic) {
         try {
-          const fileArray = Array.isArray(req.files.employee_profile)
-            ? req.files.employee_profile
-            : [req.files.employee_profile];
+          const fileArray = Array.isArray(req.files.profile_pic)
+            ? req.files.profile_pic
+            : [req.files.profile_pic];
 
           for (const file of fileArray) {
             // Upload the new file first
