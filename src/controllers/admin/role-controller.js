@@ -901,70 +901,68 @@ export default class RoleController {
         }
     }
 
-    
-
-    /**
-     * Get Client Managers
-     *
-     * @swagger
-     * /admin/get-client-managers:
-     *   post:
-     *     tags:
-     *       - Role
-     *     summary: Retrieve all client managers
-     *     description: Fetches a list of all client managers in the system
-     *     security:
-     *       - bearerAuth: []
-     *     responses:
-     *       200:
-     *         description: Successful operation
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 status:
-     *                   type: boolean
-     *                   example: true
-     *                 message:
-     *                   type: string
-     *                   example: "Client Managers fetched successfully"
-     *                 data:
-     *                   type: array
-     *                   items:
-     *                     type: object
-     *                     properties:
-     *                       _id:
-     *                         type: string
-     *                         example: "60d5ecb54d6e3d1234567890"
-     *                       name:
-     *                         type: string
-     *                         example: "Jane Doe"
-     *                       email:
-     *                         type: string
-     *                         example: "janedoe@example.com"
-     *                       role:
-     *                         type: string
-     *                         example: "Client Manager"
-     *       401:
-     *         description: Unauthorized
-     *       500:
-     *         description: Internal Server Error
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 status:
-     *                   type: boolean
-     *                   example: false
-     *                 message:
-     *                   type: string
-     *                   example: "Error fetching Client Managers"
-     *                 data:
-     *                   type: array
-     *                   example: []
-     */
+/**
+ * Get Client Managers
+ *
+ * @swagger
+ * /admin/get-client-managers:
+ *   post:
+ *     tags:
+ *       - Role
+ *     summary: Retrieve all client managers
+ *     description: Fetches a list of all client managers in the system
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Client Managers fetched successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "60d5ecb54d6e3d1234567890"
+ *                       name:
+ *                         type: string
+ *                         example: "Jane Doe"
+ *                       email:
+ *                         type: string
+ *                         example: "janedoe@example.com"
+ *                       role:
+ *                         type: string
+ *                         example: "Client Manager"
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Error fetching Client Managers"
+ *                 data:
+ *                   type: array
+ *                   example: []
+ */
     async getClientManager(req, res) {
         try {
             const clientManagers = await RoleRepository.getManagers();

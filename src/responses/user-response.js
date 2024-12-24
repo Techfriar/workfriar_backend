@@ -37,7 +37,8 @@ export default class UserResponse {
             role: user?.roles[0]?.role,
             department: user?.roles[0]?.department,
             reporting_manager: user?.reporting_manager?.full_name,
-            status: user.status
+            status: user.status,
+            profile_pic_path: generateFileUrl(user.profile_pic),
         }
     }
     /**
