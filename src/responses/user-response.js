@@ -1,4 +1,5 @@
 import capitalizeWords from '../utils/capitalizeWords.js'
+import { generateFileUrl } from '../utils/generateFileUrl.js'
 // import { generateFileUrl } from '../utils/generateFileUrl.js'
 // import RoleMinResponse from './roleMinResponse.js'
 
@@ -18,7 +19,7 @@ export default class UserResponse {
                 phone: user?.phone,
                 role: user?.roles?.role,
                 reporting_manager: user?.reporting_manager,
-                profile_pic_path: user.profile_pic,
+                profile_pic_path: generateFileUrl(user.profile_pic),
             }
     }
 
@@ -65,7 +66,7 @@ export default class UserResponse {
             reporting_manager_id: user?.reporting_manager?._id,
             status: user.status,
             phone_number: user?.phone_number,
-            profile_pic_path: user.profile_pic,
+            profile_pic_path: generateFileUrl(user.profile_pic),
             location: user.location
         }
     }
