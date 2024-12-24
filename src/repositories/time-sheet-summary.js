@@ -71,7 +71,7 @@ class TimeSheetSummary{
     
 
     //function for retrieveing timesheets in a period of time
-    async getDueTimeSheet(userId, startDate, endDate) {
+    async getDueTimeSheet(userId, startDate, endDate, status = "saved") {
         try {
             const userObjectId =new mongoose.Types.ObjectId(userId); 
             const start = new Date(startDate); 
@@ -79,7 +79,8 @@ class TimeSheetSummary{
             const dueTimeSheets = await Timesheet.find({
                 user_id: userObjectId, 
                 startDate: { $gte: start }, 
-                endDate: { $lte: end }
+                endDate: { $lte: end },
+                status: status
             })
                 .populate({ path: "project_id", select: "project_name" })
                 .populate({ path: "user_id", select: "full_name"})
