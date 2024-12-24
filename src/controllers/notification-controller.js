@@ -177,50 +177,61 @@ class NotificationController {
 
     async getAllNotification(req, res) {
         try {
-            const user_id = req.session.user.id;
+            // const user_id = req.session.user.id;
+            const user_id = '6756c072ddd097b3e4bbadd5';
             
             if (!user_id) {
                 throw new CustomValidationError('UserId is a required field');
             }
-
+    
             const validateUser = await NotificationRequest.validateUser(user_id);
             if (validateUser.error) {
-                throw new CustomValidationError(validatedDates.error);
+                throw new CustomValidationError(validateUser.error);
             }
+    
             const timezone = await findTimezone(req);
             let today = getLocalDateStringForTimezone(timezone, new Date());
             today = new Date(today);
             const yesterday = new Date(today);
             yesterday.setDate(today.getDate() - 1);
+    
             const notifications = await NotificationRepository.groupNotificationsByDate(user_id, timezone);
-
+            
             const result = [];
             for (const date in notifications) {
+                const formattedNotifications = notifications[date].map((notification) => {
+                    // Format the time from createdAt
+                    const time = new Date(notification.createdAt).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    });
+                    return {
+                        message: notification.message,
+                        time: time,
+                        type: notification.type,
+                    };
+                });
+    
                 if (date === today.toISOString().split('T')[0]) {
-                    result.push({ date: 'Today', notifications: notifications[date] });
+                    result.push({ date: 'Today', notifications: formattedNotifications });
                 } else if (date === yesterday.toISOString().split('T')[0]) {
-                    result.push({ date: 'Yesterday', notifications: notifications[date] });
+                    result.push({ date: 'Yesterday', notifications: formattedNotifications });
                 } else {
-                    const formattedDate = new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    result.push({ date: formattedDate, notifications: notifications[date] });
+                    const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                    });
+                    result.push({ date: formattedDate, notifications: formattedNotifications });
                 }
             }
-
-            if (Object.keys(result).length > 0) {
-                res.status(200).json({
-                    success: true,
-                    message: 'Notifications fetched successfully',
-                    data: result,
-                });
-            } else {
-                res.status(200).json({
-                    success: true,
-                    message: 'No notifications found',
-                    data: [],
-                });
-            }
-
-
+    
+            res.status(200).json({
+                success: true,
+                message: 'Notifications fetched successfully',
+                data: result.length > 0 ? result : [],
+            });
+    
         } catch (err) {
             if (err instanceof CustomValidationError) {
                 res.status(422).json({
@@ -237,6 +248,7 @@ class NotificationController {
             }
         }
     }
+    
 }
 
 export default NotificationController;
