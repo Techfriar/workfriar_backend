@@ -22,7 +22,8 @@ export default class TimesheetRepository {
 	}
 
 	// Method to create and save the timesheet
-	async createTimesheet(project_id, user_id, task_category_id, task_detail, startDate, endDate, data_sheet = [], status = 'in_progress') {
+	async createTimesheet(project_id, user_id, task_category_id, task_detail, startDate, endDate, data_sheet = []) {
+		const status = 'saved'
 		try {
 			// Normalize dates to UTC midnight
 			const normalizedStartDate = this.normalizeToUTCDate(startDate);
@@ -53,7 +54,15 @@ export default class TimesheetRepository {
 	async updateTimesheetData(timesheetId, { data_sheet, status, task_detail }) {
 		try {
 			// Find the timesheet by ID
-			const timesheet = await Timesheet.findById(timesheetId);
+			const timesheet = await Timesheet.findById(timesheetId)
+				.populate({
+					path: 'project_id',
+					select: 'project_name description status categories',
+				})
+				.populate({
+					path: 'task_category_id',
+					select: 'category time_entry', // Fields from Category schema
+				});
 
 			// Validate each entry in the new data_sheet
 			data_sheet.forEach(entry => {
@@ -88,8 +97,13 @@ export default class TimesheetRepository {
 
 			// Save the updated timesheet
 			await timesheet.save();
-
-			return timesheet;
+ 
+			return { 
+				timesheet_id: timesheet._id,
+                category_name:timesheet.task_category_id.category,
+                project_name:timesheet.project_id.project_name,
+                ...timesheet.toObject(),
+			};
 		} catch (error) {
 			throw new Error(`Error updating timesheet: ${error.message}`);
 		}
@@ -282,7 +296,6 @@ export default class TimesheetRepository {
 	    }
 	}
 	  
-
 	//get timesheets for a week
 	async getWeeklyTimesheets(user_id, startDate, endDate) {
 		try {
