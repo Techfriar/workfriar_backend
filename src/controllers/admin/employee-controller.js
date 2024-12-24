@@ -117,12 +117,12 @@ class EmployeeController{
          const isAdmin=isAdminResult.status
          const isactive=status==="active"
      
-        const data=await userRepo.addEmployees(name,email,reporting_manager_id,phone_number,isAdmin,location,isactive,fileurl)
-
+        const data=await userRepo.addEmployees({name,email,reporting_manager_id,phone_number,isAdmin,location,isactive,fileurl})
 
         if(data.status)
         {
             const roleData=await RoleRepository.addUsersToRole(role_id,[data.data._id])
+
             if(roleData.status)
             {
                 return res.status(200).json({

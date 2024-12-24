@@ -1,6 +1,5 @@
 // import redisClient  from '../config/redis.js';
 
-
 export async function blacklistToken(token, expiresIn) {
     await redisClient.setex(token, expiresIn, 'blacklisted'); // Set expiry based on token expiration
 }
