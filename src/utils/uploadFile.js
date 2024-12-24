@@ -104,4 +104,50 @@ const uploadToS3 = (file, resolve, reject) => {
     })
 }
 
-export default uploadFile
+/**
+ * Function to delete a file based on the environment
+ * @param {string} filePath - The path of the file to be deleted
+ * @returns {Promise<void>}
+ */
+async function deleteFile(filePath) {
+    return new Promise((resolve, reject) => {
+        try {
+            if (storageType === 'minio') {
+                minioConfig.removeObject(uploadBucket, filePath, (error) => {
+                    if (error) {
+                        reject(error)
+                    }
+                    resolve()
+                })
+            } else if (storageType === 's3') {
+                const s3 = new awsConfig.s3()
+                const params = {
+                    Bucket: uploadBucket,
+                    Key: filePath,
+                }
+                s3.deleteObject(params, (error) => {
+                    if (error) {
+                        reject(error)
+                    }
+                    resolve()
+                })
+            } else {
+                const fullPath = './' + localStoragePath + filePath
+                if (fs.existsSync(fullPath)) {
+                    fs.unlink(fullPath, (error) => {
+                        if (error) {
+                            reject(error)
+                        }
+                        resolve()
+                    })
+                } else {
+                    resolve() // If file doesn't exist, resolve anyway
+                }
+            }
+        } catch (error) {
+            reject(error)
+        }
+    })
+}
+
+export { uploadFile, deleteFile }

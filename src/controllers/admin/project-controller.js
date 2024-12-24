@@ -2,8 +2,7 @@ import ProjectRepository from "../../repositories/admin/project-repository.js";
 import AddProjectRequest from "../../requests/admin/add-project-request.js";
 import UpdateProjectRequest from "../../requests/admin/update-project-request.js";
 import ProjectResponse from "../../responses/project-response.js";
-import uploadFile from "../../utils/uploadFile.js";
-import deleteFile from "../../utils/deleteFile.js";
+import {uploadFile, deleteFile} from "../../utils/uploadFile.js";
 import UpdateStatusRequest from "../../requests/admin/update-project-status-request.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 import CreateTimesheetRequest from "../../requests/admin/timesheet-request.js";
@@ -380,27 +379,57 @@ export default class ProjectController {
    *         description: Internal Server Error
    */
   async updateProject(req, res) {
+    let oldLogoPath = null;
+    let newLogoPath = null;
+    
     try {
+      // First get the old project details to store the logo path
+      const oldProject = await projectRepo.getProjectById(req.params.id);
+      if (!oldProject) {
+        return res.status(404).json({
+          status: false,
+          message: "Project not found.",
+          data: null,
+        });
+      }
+      
+      // Store the old logo path if it exists
+      oldLogoPath = oldProject.project_logo;
+
+      // Validate the update request
       const validatedData = await new UpdateProjectRequest(req).validate();
 
-      if (req.files && Object.keys(req.files).length > 0) {
-        if (req.files.project_logo) {
-          const fileArray = req.files.project_logo;
+      // Handle file upload if there's a new logo
+      if (req.files && Object.keys(req.files).length > 0 && req.files.project_logo) {
+        try {
+          const fileArray = Array.isArray(req.files.project_logo) 
+            ? req.files.project_logo 
+            : [req.files.project_logo];
+
           for (const file of fileArray) {
-            const uploadedFile = await uploadFile(file);
-
+            // Upload the new file first
+            const uploadedFile = await uploadFile(file, "project-logos");
+            
             if (uploadedFile.path) {
-              // Delete the old logo if it exists
-              const oldProject = await projectRepo.getProjectById(
-                req.params.id
-              );
-              if (oldProject.project_logo) {
-                await deleteFile(oldProject.project_logo);
+              newLogoPath = uploadedFile.path;
+              
+              // Only delete the old logo if we have successfully uploaded the new one
+              if (oldLogoPath) {
+                try {
+                  await deleteFile(oldLogoPath);
+                } catch (deleteError) {
+                  console.error('Error deleting old logo:', deleteError);
+                  // Continue with the update even if deletion fails
+                }
               }
-
-              validatedData.project_logo = uploadedFile.path;
+              
+              validatedData.project_logo = newLogoPath;
             }
           }
+        } catch (uploadError) {
+          throw new CustomValidationError({
+            project_logo: [`Failed to upload new logo: ${uploadError.message}`]
+          });
         }
       }
 
@@ -412,8 +441,7 @@ export default class ProjectController {
       );
 
       if (projectDetails) {
-        const projectData =
-          await ProjectResponse.formatGetByIdProjectResponse(projectDetails);
+        const projectData = await ProjectResponse.formatGetByIdProjectResponse(projectDetails);
 
         return res.status(200).json({
           status: true,
@@ -421,13 +449,31 @@ export default class ProjectController {
           data: projectData,
         });
       } else {
+        // If update fails and we uploaded a new file, clean up the new file
+        if (newLogoPath) {
+          try {
+            await deleteFile(newLogoPath);
+          } catch (cleanupError) {
+            console.error('Error cleaning up new logo after failed update:', cleanupError);
+          }
+        }
+
         return res.status(404).json({
           status: false,
-          message: "Project not found.",
+          message: "Project not found or update failed.",
           data: null,
         });
       }
     } catch (error) {
+      // If there was an error and we uploaded a new file, clean it up
+      if (newLogoPath) {
+        try {
+          await deleteFile(newLogoPath);
+        } catch (cleanupError) {
+          console.error('Error cleaning up new logo after error:', cleanupError);
+        }
+      }
+
       if (error instanceof CustomValidationError) {
         return res.status(422).json({
           status: false,
