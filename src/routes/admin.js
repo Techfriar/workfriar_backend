@@ -160,6 +160,7 @@ adminRouter.route('/all-roll-permissions').post(role.viewAllPermissionsByRole)
 adminRouter.route('/remove-user-role').post(role.removeUserFromRole)
 adminRouter.route('/get-team-leads').post(role.getTeamLeads)
 adminRouter.route('/get-client-managers').post(role.getClientManager)
+adminRouter.route('/list-all-employees-by-department').post(role.listAllEmployeesByDepartment)
 /*
 Employee Routes
 */
@@ -178,7 +179,7 @@ adminRouter.route('/managetimesheet').post(timesheetapproval.manageTimeSheet)
 
 adminRouter.route('/manage-all-timesheet').post(timesheetapproval.manageAllTimesheet)
 
-
+adminRouter.route('/teammemberswithtimesheet').post(projectTeamController.getTeamMembersWithTimesheetController)
 
 
 export default adminRouter;

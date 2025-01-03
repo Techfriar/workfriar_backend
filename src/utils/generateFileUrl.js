@@ -8,9 +8,9 @@ export const generateFileUrl = (file) => {
     if (file) {
         if (process.env.STORAGE_TYPE) {
             if (process.env.STORAGE_TYPE == 'minio') {
-                imagePath = process.env.MINIO_URL + file
+                imagePath = `${process.env.MINIO_URL}${process.env.UPLOAD_BUCKET}/${file}`
             } else if (process.env.STORAGE_TYPE == 's3') {
-                imagePath = process.env.S3_URL + file
+                imagePath = `${process.env.S3_URL}${process.env.UPLOAD_BUCKET}/${file}`
             } else {
                 imagePath =
                     process.env.APP_URL + process.env.LOCAL_STORAGE_PATH + file

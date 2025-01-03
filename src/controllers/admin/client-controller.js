@@ -145,7 +145,7 @@ class ClientController {
             });
 
             if (newClient) {
-                const createResponse = await clientResponse.allClientsResponse(newClient)
+                const createResponse = await clientResponse.clientResponse(newClient)
                 return res.status(201).json({
                     status: true,
                     message: 'Client added successfully',
@@ -167,7 +167,7 @@ class ClientController {
                 res.status(422).json({
                     status: false,
                     message: 'Validation error',
-                    errors: error.errors,
+                    errors: error.errors
                 });
             }
             else {
@@ -246,7 +246,7 @@ class ClientController {
                 const data = await Promise.all(
                     existingClients.map(
                         async (client) =>
-                            await clientResponse.allClientsResponse(client),
+                            await clientResponse.clientResponse(client),
                     ),
                 )
                 return res.status(200).json({
@@ -413,7 +413,7 @@ class ClientController {
             })
 
             if (updatedClient) {
-                const editResponse = await clientResponse.allClientsResponse(updatedClient)
+                const editResponse = await clientResponse.clientResponse(updatedClient)
                 return res.status(200).json({
                     status: true,
                     message: 'Client updated successfully',
@@ -544,12 +544,12 @@ class ClientController {
             const validationResult = await clientRequest.validateClientStatus(req.body);
             if (validationResult.error) {
                 throw new CustomValidationError(validationResult.error)
-
             }
+
             const {  _id, status } = validationResult    
             const updateClient = await clientRepository.changeClientStatus(_id, status)
             if(updateClient){
-                const createResponse = await clientResponse.allClientsResponse(updateClient)
+                const createResponse = await clientResponse.clientResponse(updateClient)
                 res.status(200).json({
                     status: true,
                     message: 'Client status updated successfully',
