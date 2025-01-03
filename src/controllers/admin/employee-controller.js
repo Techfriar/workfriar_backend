@@ -382,9 +382,9 @@ async editEmployee(req, res) {
          isactive=status==="active"
         }
         if (req.files?.employee_profile) {
-            const fileArray = Array.isArray(req.files.employee_profile)
-                ? req.files.employee_profile
-                : [req.files.employee_profile];
+            const fileArray = Array.isArray(req.files.profile_pic)
+                ? req.files.profile_pic
+                : [req.files.profile_pic];
             
             for (const file of fileArray) {
                 const uploadedFile = await uploadFile(file);

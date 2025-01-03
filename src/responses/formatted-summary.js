@@ -74,11 +74,14 @@ export default class TimeSummaryResponse {
                 }
             }
             const totalHours = timesheets.reduce((weekTotal, ts) => {
+
+
+                
                 const sheetHours = ts.data_sheet.reduce(
                     (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
                     0
                 );
-                return weekTotal + sheetHours;
+                return parseFloat(weekTotal + sheetHours).toFixed(2);
             }, 0);
     
             let rejectedHours = 0;
@@ -90,7 +93,7 @@ export default class TimeSummaryResponse {
                             (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
                             0
                         );
-                        return rejectTotal + sheetHours;
+                        return parseFloat(rejectTotal + sheetHours).toFixed(2);
                     }, 0);
             }
             return {

@@ -25,7 +25,7 @@ export default class ProjectTeamResponse{
                 status: teams.project.status,
                 start_date:startDate,
                 end_date:endDate,
-                date: `${moment(startDate).format('MM/DD/YYYY')} - ${moment(endDate).format('MM/DD/YYYY')}`,
+                date: `${moment(startDate).format('DD/MM/YYYY')} - ${moment(endDate).format('DD/MM/YYYY')}`,
                 teamsMembers: teams.team_members.map(member => ({
                     id: member.userid._id,
                     name: member.userid.full_name,
