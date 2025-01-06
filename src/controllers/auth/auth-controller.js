@@ -130,7 +130,7 @@ export default class  AuthController {
         const front_end_url = process.env.FRONT_END_URL;
 
         // Redirect to login page
-        return res.redirect(`${front_end_url}/'?error='+'Authentication failed.':''}`);
+        return res.redirect(`${front_end_url}/?error=Authentication failed!.`);
 
     }
     
