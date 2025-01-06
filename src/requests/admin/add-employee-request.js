@@ -40,7 +40,7 @@ class EmployeeRequest {
                 'any.required': `"Phone Number" is a required field`
             }),
     
-        reporting_manager_id: Joi.string().required().messages({
+        reporting_manager_id: Joi.string().optional().allow("").messages({
             'string.base': `"Reporting Manager" should be a type of 'text'`,
             'string.empty': `"Reporting Manager" cannot be an empty field`,
             'any.required': `"Reporting Manager" is a required field`
@@ -94,12 +94,14 @@ class EmployeeRequest {
                 });
             }
     
-            const reportingManager = await User.findById(data.reporting_manager_id);
-            if (!reportingManager) {
-                errors.push({
-                    field: "reporting_manager",
-                    message: `User with ID '${data.reporting_manager}' does not exist as a Reporting Manager`,
-                });
+            if (data.reporting_manager_id) {
+                const reportingManager = await User.findById(data.reporting_manager_id);
+                if (!reportingManager) {
+                    errors.push({
+                        field: "reporting_manager",
+                        message: `User with ID '${validationData.reporting_manager_id}' does not exist as a Reporting Manager`,
+                    });
+                }
             }
         } catch (err) {
             console.error("Error during custom validation:", err);
