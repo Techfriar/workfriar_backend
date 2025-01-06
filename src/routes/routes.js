@@ -23,6 +23,6 @@ const configureRoutes = (app) => {
   app.use("/api/timesheet", authenticateEmployee, timesheetRouter);
   app.use("/api/subscription", subscriptionRouter);
   app.use("/api/transaction", transactionRouter);
-};
+}; 
 
 export default configureRoutes;
