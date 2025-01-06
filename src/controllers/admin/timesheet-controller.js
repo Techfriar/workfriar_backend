@@ -1944,11 +1944,13 @@ export default class TimesheetController {
 						return res.status(200).json({
 							status: true,
 							message: 'Timesheets submitted successfully',
+							data:[]
 						});
 					} else {
 						return res.status(200).json({
 							status: false,
 							message: 'No timesheets found for the given date range',
+							data:[]
 						});
 				}
 			}
