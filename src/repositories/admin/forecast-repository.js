@@ -63,6 +63,7 @@ export default class ForecastRepository{
     }
 
     async updateForecast(forecastData, id) {
+
         try {
             const updatedForecast = await projectForecast.findByIdAndUpdate(
                 id,                 
