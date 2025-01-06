@@ -158,7 +158,9 @@ class CreateForecastRequest {
     productManager: Joi.string().optional().min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/),
     techLead: Joi.string().optional().min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/),
     accountManager: Joi.string().optional().min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/),
-    estimatedCompletion: Joi.string().optional().allow("").min(3).max(30),
+    estimatedCompletion: Joi.string().optional().allow("").min(3).max(30).regex(/^(?!\d+$)[a-zA-Z0-9\s]+$/).messages({
+      "string.base": "Estimated Project Completion must be a string",
+    }),
     team: Joi.array()
       .items(
         Joi.object({
