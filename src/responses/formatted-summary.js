@@ -5,6 +5,8 @@ export default class TimeSummaryResponse {
     async formattedSummary(timeData) {
         try {
             const userSummary = {};
+    
+            // Iterate through the timeData
             timeData.forEach((summary) => {
                 const userName = summary.user_id.full_name;
                 if (!userSummary[userName]) {
@@ -15,25 +17,53 @@ export default class TimeSummaryResponse {
                         submitted_or_rejected_time: 0, 
                     };
                 }
+    
+                // Iterate through the data_sheet
                 summary.data_sheet.forEach((sheetData) => {
                     if (sheetData.hours) {
-                        const hours = parseFloat(sheetData.hours);
-                        userSummary[userName].total_time += hours;
+                        const [hours, minutes] = sheetData.hours.split(':').map(Number);
+                        const totalMinutes = hours * 60 + minutes;
+    
+                        // Add to total_time
+                        userSummary[userName].total_time += totalMinutes;
+    
+                        // Add to approved_time if status is "accepted"
                         if (summary.status === "accepted") {
-                            userSummary[userName].approved_time += hours;
+                            userSummary[userName].approved_time += totalMinutes;
                         }
+    
+                        // Add to submitted_or_rejected_time if status is "submitted" or "rejected"
                         if (summary.status === "submitted" || summary.status === "rejected") {
-                            userSummary[userName].submitted_or_rejected_time += hours;
+                            userSummary[userName].submitted_or_rejected_time += totalMinutes;
                         }
                     }
                 });
             });
+    
+            // Helper function to format minutes into HH:MM
+            function formatTime(totalMinutes) {
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            }
+    
+            // Format all times in userSummary
+            for (const user in userSummary) {
+                userSummary[user].total_time = formatTime(userSummary[user].total_time);
+                userSummary[user].approved_time = formatTime(userSummary[user].approved_time);
+                userSummary[user].submitted_or_rejected_time = formatTime(userSummary[user].submitted_or_rejected_time);
+            }
+    
+            // Convert userSummary to an array and return it
             const result = Object.values(userSummary);
             return result;
+    
         } catch (error) {
-            throw new Error(error);
+            console.error("Error in formattedSummary:", error);
+            throw new Error("An error occurred while processing the time data.");
         }
     }
+    
 
     // Function for formatting all timesheets that are overdue
   

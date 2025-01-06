@@ -14,6 +14,7 @@ export default class ProjectTeamResponse{
     };   
 
     async formatProjectTeamSet(teams) {
+        console.log(teams)
         const startDate=new Date(teams.project?.actual_start_date)
         const endDate=new Date(teams.project?.actual_end_date)
         try {
@@ -47,21 +48,29 @@ export default class ProjectTeamResponse{
                     project_id: data.project._id,
                     projectname: data.project.project_name,
                     status: data.status,
-                    date: `${moment(data.start_date).format('MM/DD/YYYY')} - ${moment(data.close_date).format('MM/DD/YYYY')}`,
+                    date: `${moment(data.start_date).format('DD/MM/YYYY')} - ${moment(data.close_date).format('DD/MM/YYYY')}`,
                     teamsMembers: data.team_members.map(member => ({
                         id: member.userid._id,
                         name: member.userid.full_name,
                         email: member.userid.email,
                         profile_pic: member.userid.profile_pic,
                         status:member.status,
-                        dates:member.dates.map((date)=>
-                        {
-                            return{
-                                start_date:date.start_date,
-                                end_date:date.end_date,
-                                period: `${moment(data.start_date).format('MM/DD/YYYY')} - ${moment(data.close_date).format('MM/DD/YYYY')}`,
-                            }
-                        })
+                        teamsMembers: data.team_members.map(member => ({
+                            id: member.userid._id,
+                            name: member.userid.full_name,
+                            email: member.userid.email,
+                            profile_pic: member.userid.profile_pic,
+                            status: member.status,
+                            dates: member.dates.length > 0 ? 
+                                {
+                                    start_date: member.dates[member.dates.length - 1].start_date,
+                                    end_date: member.dates[member.dates.length - 1].end_date,
+                                    period: `${moment(member.dates[member.dates.length - 1].start_date).format('DD/MM/YYYY')} - ${moment(member.dates[member.dates.length - 1].end_date).format('DD/MM/YYYY')}`,
+                                }
+                             : {},
+                             status:member.dates[member.dates.length - 1].end_date>new Date || member.dates[member.dates.length - 1].end_date==null?"active":"inactive"
+                        }))
+                        
 
                     }))
                 };
