@@ -100,22 +100,6 @@ class ProjectTeamController{
  *                           userid:
  *                             type: string
  *                             example: "6476a63bf79ea71d30770de7"
- *                           dates:
- *                             type: array
- *                             items:
- *                               type: object
- *                               properties:
- *                                 start_date:
- *                                   type: string
- *                                   format: date
- *                                   example: "2024-01-01"
- *                                 end_date:
- *                                   type: string
- *                                   format: date
- *                                   example: ""
- *                           status:
- *                             type: string
- *                             example: "active"
  *       422:
  *         description: Validation failed
  *         content:
@@ -161,14 +145,18 @@ class ProjectTeamController{
             }
     
             const projectDates=await projectRepo.getProjectDates(project)
+           
      
+            const timezone = await findTimeZone(req)
+            let startDate = getLocalDateStringForTimezone(timezone, new Date(projectDates.actual_start_date))
+            startDate=new Date(startDate)
        
             const updatedTeamMembers = req.body.team_members.map((member) => {
                 return {
                     userid: member.userid,
                     dates: [
                         {
-                            start_date: projectDates.actual_start_date,
+                            start_date: startDate,
                             end_date: "" 
                         }
                     ]

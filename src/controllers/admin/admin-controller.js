@@ -88,6 +88,17 @@ export default class AdminController {
      *   post:
      *     tags:
      *       - Admin
+     *     requestBody:
+     *       required: false
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *       properties:
+     *         userId:
+     *         type: string
+     *         description: Enter user id
+     *     description: Get my profile
      *     summary: Get my profile
      *     security:
      *       - bearerAuth: []
@@ -104,7 +115,12 @@ export default class AdminController {
     async getMyProfile(req, res) {
         try {
             // Extract UserId from the user session
-			const UserId = req.session.user.id;
+			let UserId = req.session.user.id;
+
+            // check if user id passed through request
+            if(req.body.userId) {
+                UserId = req.body.id
+            }
 
             const adminData = await userRepo.getUserExpanded( UserId )
 

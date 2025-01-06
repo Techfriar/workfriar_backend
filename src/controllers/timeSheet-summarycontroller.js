@@ -288,7 +288,6 @@ class TimeSheetSummaryController{
     async pastDueController(req,res)
     {
         let userId= req.session.user._id
-        
         let {status,passedUserid,page=1,limit=10}=req.body
         const pageNumber = parseInt(page,10);
         const limitNumber = parseInt(limit, 10);
