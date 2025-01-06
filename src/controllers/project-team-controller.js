@@ -988,7 +988,7 @@ class ProjectTeamController{
 
      /**
      * @swagger
-     * /admin/teammemberswithtimesheet:
+     * /admin/team-members-with-timesheet:
      *   post:
      *     summary: Get team members under a team lead with timesheets
      *     tags: [TimeSheet]
@@ -1011,7 +1011,7 @@ class ProjectTeamController{
      *         description: Internal server error
      */
      async getTeamMembersWithTimesheetController(req, res) {
-        const { teamLeadId } = req.body;
+        const teamLeadId = req.session.user.id;
         try {
             const data = await projectTeamRepo.getTeamMembersWithTimesheet(teamLeadId);
 

@@ -117,40 +117,33 @@ class EmployeeController {
             fileurl = uploadedFile.path;
           }
         }
-      }
-      const isAdminResult = await userRepo.checkPermission(role_id);
-      const isAdmin = isAdminResult.status;
-      const isactive = status === "active";
-
-      const data = await userRepo.addEmployees(
-        name,
-        email,
-        reporting_manager_id,
-        phone_number,
-        isAdmin,
-        location,
-        isactive,
-        fileurl
-      );
-
-      if (data.status) {
-        const roleData = await RoleRepository.addUsersToRole(role_id, [
-          data.data._id,
-        ]);
-        if (roleData.status) {
-          return res.status(200).json({
-            status: true,
-            message: "Employee added successfully",
-            data: data.data,
-          });
-        } else {
-          return res.status(400).json({
-            status: false,
-            message: "Failed to add employee to role",
-            data: [],
-          });
         }
-      } else {
+         const isAdminResult = await userRepo.checkPermission(role_id)
+         const isAdmin = isAdminResult.status
+         const isactive = status==="active"
+     
+        const data = await userRepo.addEmployees({name,email,reporting_manager_id,phone_number,isAdmin,location,isactive,fileurl})
+
+        if(data.status)
+        {
+            const roleData=await RoleRepository.addUsersToRole(role_id,[data.data._id])
+
+            if(roleData.status)
+            {
+                return res.status(200).json({
+                    status:true,
+                    message:"Employee added successfully",
+                    data:data.data
+                })
+            }else
+            {
+                return res.status(400).json({
+                    status:false,
+                    message:"Failed to add employee to role",
+                    data:[]
+                })
+            }
+        } else {
         return res.status(400).json({
           status: false,
           message: "Failed to add employee",
