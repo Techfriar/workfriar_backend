@@ -1414,39 +1414,36 @@ export default class TimesheetController {
 				switch (tabKey) {
 					case 'project_summary':					
 						data = await Promise.all(
-							report.flatMap(item =>
-								item.projects.map(async (item) => {
-									return await timesheetResponse.projectSummaryTimesheetResponse(item, monthName, year);
-								})
+							report.map(item =>
+								timesheetResponse.projectSummaryTimesheetResponse(item, monthName, year)
 							)
 						);
 
 						break;
 					case 'project_detail':
 						data = await Promise.all(
-							report.flatMap(item =>
-								item.projects.map(async (item) => {
-									return await timesheetResponse.projectDetailTimesheetResponse(item, monthName, year, range);
-								})
+							report.map(item =>
+								timesheetResponse.projectDetailTimesheetResponse(item, monthName, year, range)
 							)
 						);
 						break;
-					case 'employee_summary':
-						data = await Promise.all(
-							report.map(async (item) => {
-								return await timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, year);
-							})
-						)
-						data = data.flat();
+						case 'employee_summary':
+							data = await Promise.all(
+							  report.map(item =>
+								timesheetResponse.employeeSummaryTimesheetResponse(item, monthName, year)
+							  )
+							);
 						break;
+
 					case 'employee_detail':
 						data = await Promise.all(
-							report.map(async (item) => {
-								return await timesheetResponse.employeeDetailTimesheetResponse(item, monthName, year, range);
-							})
-						)
-						data = data.flat();
+							report.map(item =>
+							  timesheetResponse.employeeDetailTimesheetResponse(item, monthName, year, range)
+							)
+						  );
+
 						break;
+
 					default:
 						return res.status(400).json({
 							status: false,
@@ -1454,8 +1451,6 @@ export default class TimesheetController {
 							data: [],
 						});
 				}
-
-				const total = data.length
 
 				res.status(200).json({
 					status: true,
@@ -1466,8 +1461,8 @@ export default class TimesheetController {
 					pagination: {
 						currentPage: pageNumber,
 						itemsPerPage: limitNumber,
-						totalItems: total,
-						totalPages: Math.ceil(total / limitNumber)
+						totalItems: totalCount,
+						totalPages: Math.ceil(totalCount / limitNumber)
 					}
 				})
 			}
