@@ -864,7 +864,7 @@ export default class TimesheetController {
 		try {
 			let { startDate, endDate, user_id } = req.body;
 			let user_location;
-
+			
 			if(!user_id){
 				user_id = req.session.user.id ;
 			    user_location =  req.session.user.location;
@@ -1818,7 +1818,7 @@ export default class TimesheetController {
 	 */
 	async getStatusCount(req, res) {
 		try {
-			// Extract UserId from the user session
+			//extract userId from req body or from session if it is undefined 
 			const user_id = req.body.user_id === undefined ? req.session.user.id: req.body.user_id
 			const timezone = await findTimezone(req);
 
