@@ -178,24 +178,24 @@ class NotificationController {
     async getAllNotification(req, res) {
         try {
             const user_id = req.session.user.id;
-            
+
             if (!user_id) {
                 throw new CustomValidationError('UserId is a required field');
             }
-    
+
             const validateUser = await NotificationRequest.validateUser(user_id);
             if (validateUser.error) {
                 throw new CustomValidationError(validateUser.error);
             }
-    
+
             const timezone = await findTimezone(req);
             let today = getLocalDateStringForTimezone(timezone, new Date());
             today = new Date(today);
             const yesterday = new Date(today);
             yesterday.setDate(today.getDate() - 1);
-    
+
             const notifications = await NotificationRepository.groupNotificationsByDate(user_id, timezone);
-            
+
             const result = [];
             for (const date in notifications) {
                 const formattedNotifications = notifications[date].map((notification) => {
@@ -210,7 +210,7 @@ class NotificationController {
                         type: notification.type,
                     };
                 });
-    
+
                 if (date === today.toISOString().split('T')[0]) {
                     result.push({ date: 'Today', notifications: formattedNotifications });
                 } else if (date === yesterday.toISOString().split('T')[0]) {
@@ -224,13 +224,13 @@ class NotificationController {
                     result.push({ date: formattedDate, notifications: formattedNotifications });
                 }
             }
-    
+
             res.status(200).json({
                 success: true,
                 message: 'Notifications fetched successfully',
                 data: result.length > 0 ? result : [],
             });
-    
+
         } catch (err) {
             if (err instanceof CustomValidationError) {
                 res.status(422).json({
@@ -247,7 +247,121 @@ class NotificationController {
             }
         }
     }
-    
+
+    /**
+     * @swagger
+     * /user/notify-user:
+     *   post:
+     *     summary: Send a notification to a user
+     *     tags:
+     *       - Notification
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - user_id
+     *             properties:
+     *               user_id:
+     *                 type: string
+     *                 description: The ID of the user to notify
+     *     responses:
+     *       200:
+     *         description: Notification sent successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: Notification sent successfully
+     *                 data:
+     *                   type: array
+     *                   items: {}
+     *       422:
+     *         description: Validation error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: Validation error
+     *                 errors:
+     *                   type: object
+     *       500:
+     *         description: Server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: An unexpected error occurred
+     *                 data:
+     *                   type: array
+     *                   items: {}
+     */
+
+    async notifyUser(req, res) {
+        try {
+            const { user_id } = req.body
+            if (!user_id) {
+                throw new CustomValidationError('UserId is a required fields');
+            }
+
+            const validateUser = await NotificationRequest.validateUser(user_id);
+            if (validateUser.error) {
+                throw new CustomValidationError(validateUser.error);
+            }
+
+            const notification = {
+                user_id,
+                message: 'You have pending timesheets',
+                type: 'info',
+            };
+
+            const newNotification = await NotificationRepository.createNotification(notification);
+            sendNotificationToRecipient(user_id, newNotification);
+            if (newNotification) {
+                res.status(200).json({
+                    success: true,
+                    message: 'Notification sent successfully',
+                    data: [],
+                })
+            }
+
+        } catch (err) {
+            if (err instanceof CustomValidationError) {
+                res.status(422).json({
+                    success: false,
+                    message: 'Validation error',
+                    errors: err.errors,
+                });
+            } else {
+                return res.status(500).json({
+                    success: false,
+                    message: err.message,
+                    data: [],
+                });
+            }
+        }
+    }
+
 }
 
 export default NotificationController;
