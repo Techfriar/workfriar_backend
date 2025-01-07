@@ -1009,51 +1009,73 @@ class ProjectTeamController{
  *                   type: string
  *                   example: "Unexpected error occurred"
  */
-    async editProjectTeamController(req,res)
-    {
-        try {
-            const{id}=req.body
-            const validationResult = await projectTeamRequest.validateUpdateProjectteam(req.body);
-            if (!validationResult.isValid) {
-                throw new CustomValidationError(validationResult.message);
-            } 
-            const newTeam = await projectTeamRepo.updateProjectTeam(id,req.body);
-            if(newTeam.status)
-            {
-                const  data=await projectTeamResponse.formattedResponse(newTeam.data)
-                res.status(200).json(
+async editProjectTeamController(req, res) {
+    try {
+        const { id, project } = req.body;
+        
+
+        const validationResult = await projectTeamRequest.validateUpdateProjectteam(req.body);
+        if (!validationResult.isValid) {
+            throw new CustomValidationError(validationResult.message);
+        }
+
+
+        const projectDates = await projectRepo.getProjectDates(project);
+        const timezone = await findTimeZone(req);
+        let startDate = getLocalDateStringForTimezone(timezone, new Date(projectDates.actual_start_date));
+        startDate = new Date(startDate);
+
+     
+        const updatedTeamMembers = req.body.team_members.map((member) => {
+            return {
+                userid: member.userid,
+                dates: [
                     {
-                        status:true,
-                        message:"Project Team Updated",
-                        data:data,
-                    })
-            }
-            else
-            {
-                res.status(422).json(
-                    {
-                        status:false,
-                        message:"Failed to edit Project Team",
-                        data:[],
-                    })
-            }
-        } catch (error) {
-                if (error instanceof CustomValidationError) {
-                    return res.status(422).json({
-                        status: false,
-                        message: "Validation Failed",
-                        errors: error.errors, 
-                    });
-                } else {
-                    return res.status(500).json({
-                        status: false,
-                        message: "Internal Server Error",
-                        errors: error.message || error,
-                    });
-            }
+                        start_date: member.dates?.[0]?.start_date || startDate,
+                        end_date: member.dates?.[0]?.end_date || ""
+                    }
+                ]
+            };
+        });
+
+        const projectTeamData = {
+            project: req.body.project,
+            team_members: updatedTeamMembers
+        };
+
+    
+        const updatedTeam = await projectTeamRepo.updateProjectTeam(id, projectTeamData);
+
+        if (updatedTeam.status) {
+            const data = await projectTeamResponse.formattedResponse(updatedTeam.data);
+            res.status(200).json({
+                status: true,
+                message: "Project Team Updated",
+                data: data
+            });
+        } else {
+            res.status(422).json({
+                status: false,
+                message: "Failed to Update Project Team",
+                data: []
+            });
+        }
+    } catch (error) {
+        if (error instanceof CustomValidationError) {
+            return res.status(422).json({
+                status: false,
+                message: "Validation Failed",
+                errors: error.errors
+            });
+        } else {
+            return res.status(500).json({
+                status: false,
+                message: "Internal Server Error",
+                errors: error.message || error
+            });
         }
     }
-
+}
      /**
      * @swagger
      * /admin/team-members-with-timesheet:
