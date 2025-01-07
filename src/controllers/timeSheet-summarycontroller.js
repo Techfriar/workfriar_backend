@@ -178,7 +178,7 @@ class TimeSheetSummaryController{
             }
             else
             {
-                res.status(400).json(
+                res.status(200).json(
                 {
                     status:false,
                     message:"No Data",
@@ -310,7 +310,7 @@ class TimeSheetSummaryController{
             }
             else
             {
-                res.status(400).json(
+                res.status(200).json(
                     {
                     status:false,
                     message:"No Data",
@@ -497,7 +497,7 @@ class TimeSheetSummaryController{
             }
             else
             {
-                res.status(400).json(
+                res.status(200).json(
                     {
                     status:false,
                     message:"No Data",
@@ -596,7 +596,7 @@ class TimeSheetSummaryController{
             }
             else
             {
-               return res.status(400).json(
+               return res.status(200).json(
                     {
                     status:false,
                     message:"No Data",
