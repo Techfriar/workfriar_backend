@@ -15,8 +15,12 @@ export class UpdateProjectStatusReportRequest {
     reporting_period: Joi.date().optional().messages({
       "date.base": "Please enter a valid reporting period.",
     }),
-    progress: Joi.string().optional().messages({
-      "string.empty": "Please enter the progress.",
+    progress: Joi.number().integer().min(0).max(100).required().messages({
+      "number.base": "Progress must be a number.",
+      "number.integer": "Progress must be an integer.",
+      "number.min": "Progress cannot be less than 0.",
+      "number.max": "Progress cannot exceed 100.",
+      "any.required": "Please enter the progress.",
     }),
     comments: Joi.string().optional().allow("").allow(null),
     accomplishments: Joi.string().optional().messages({
@@ -60,7 +64,7 @@ export class UpdateProjectStatusReportRequest {
 
     // Check if project status report exists
     const reportExists =
-      await UpdateProjectStatusReportRequest.reportRepo.getProjectStatusReportById(
+      await UpdateProjectStatusReportRequest.reportRepo.getReportById(
         this.data.reportId
       );
 
