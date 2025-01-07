@@ -1455,6 +1455,8 @@ export default class TimesheetController {
 						});
 				}
 
+				const total = data.length
+
 				res.status(200).json({
 					status: true,
 					message: 'Timesheet Report fetched successfully',
@@ -1464,8 +1466,8 @@ export default class TimesheetController {
 					pagination: {
 						currentPage: pageNumber,
 						itemsPerPage: limitNumber,
-						totalItems: totalCount,
-						totalPages: Math.ceil(totalCount / limitNumber)
+						totalItems: total,
+						totalPages: Math.ceil(total / limitNumber)
 					}
 				})
 			}
