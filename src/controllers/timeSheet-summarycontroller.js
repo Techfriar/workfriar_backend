@@ -287,7 +287,7 @@ class TimeSheetSummaryController{
 
     async pastDueController(req,res)
     {
-        let userId= req.session.user._id
+        let userId= req.session?.user?.id?req.session.user.id:""
         let {status,passedUserid,page=1,limit=10}=req.body
         const pageNumber = parseInt(page,10);
         const limitNumber = parseInt(limit, 10);
@@ -344,7 +344,7 @@ class TimeSheetSummaryController{
  *           schema:
  *             type: object
  *             properties:
- *               userId:
+ *               passedUserid:
  *                 type: string
  *                 description: The ID of the user whose due time sheets are to be retrieved.
  *                 example: "6746a63bf79ea71d30770de9"
@@ -427,7 +427,7 @@ class TimeSheetSummaryController{
  */
 
  async getDueTimeSheetController(req,res) {
-    let userId = req.session.user._id
+       let userId= req.session?.user?.id?req.session.user.id:""
 
         let {passedUserid,startDate,endDate,status}=req.body
         try
@@ -508,6 +508,7 @@ class TimeSheetSummaryController{
         }
         catch(error)
         {
+           
             res.status(500).json(
                 {
                     status:false,
@@ -694,8 +695,6 @@ class TimeSheetSummaryController{
         const data=await generateWeekDateRanges()
         const result=await getDateRangeAroundInput(date,10,data)
         const formattedDates = await formatDates.formattedDateResponse(result);
-
-
      res.status(200).json(
         {
         status:true,

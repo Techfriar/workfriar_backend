@@ -41,26 +41,18 @@ export default class ProjectTeamResponse{
     
     async formatTeamMembers(data)
     {
-        
         try {
             return{
                     id: data._id,
                     project_id: data.project._id,
                     projectname: data.project.project_name,
-                    status: data.status,
                     date: `${moment(data.start_date).format('DD/MM/YYYY')} - ${moment(data.close_date).format('DD/MM/YYYY')}`,
-                    teamsMembers: data.team_members.map(member => ({
-                        id: member.userid._id,
-                        name: member.userid.full_name,
-                        email: member.userid.email,
-                        profile_pic: member.userid.profile_pic,
-                        status:member.status,
+                  
                         teamsMembers: data.team_members.map(member => ({
                             id: member.userid._id,
                             name: member.userid.full_name,
                             email: member.userid.email,
                             profile_pic: member.userid.profile_pic,
-                            status: member.status,
                             dates: member.dates.length > 0 ? 
                                 {
                                     start_date: member.dates[member.dates.length - 1].start_date,
@@ -69,9 +61,6 @@ export default class ProjectTeamResponse{
                                 }
                              : {},
                              status:member.dates[member.dates.length - 1].end_date>new Date || member.dates[member.dates.length - 1].end_date==null?"active":"inactive"
-                        }))
-                        
-
                     }))
                 };
             } catch (error) {

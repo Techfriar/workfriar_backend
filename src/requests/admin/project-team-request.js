@@ -1,6 +1,5 @@
 import Joi from 'joi';
 import Project from '../../models/projects.js';
-import projectTeam from '../../models/project-team.js';
 class ProjectTeamRequest {
 
     
@@ -27,6 +26,25 @@ static teamDataSchema = Joi.object({
               .messages({
                 "string.pattern.base": "Each team member's 'userid' must be a valid ObjectId.",
                 "any.required": "Team member 'userid' is required.",
+              }),
+            dates: Joi.array()
+              .items(
+                Joi.object({
+                  start_date: Joi.date().optional().allow("").required().messages({
+                    "date.base": "Start date must be a valid date.",
+                    "any.required": "Start date is required for each date range.",
+                  }),
+                  end_date: Joi.date().optional().allow("").messages({
+                    "date.base": "End date must be a valid date.",
+                    "any.required": "End date is required for each date range.",
+                  }),
+                })
+              )
+              .min(1)
+              .required()
+              .messages({
+                "array.base": "'dates' must be an array of objects.",
+                "array.min": "At least one date range is required for each team member.",
               }),
           })
         )
@@ -87,14 +105,9 @@ static teamDataUpdateSchema = Joi.object({
     async validateProjectTeam(input) {
         const { error } = ProjectTeamRequest.teamDataSchema.validate(input);
         const isExisting=await Project.findOne({_id:input.project})
-        const isCreated=await projectTeam.findOne({project:input.project})
         if(!isExisting)
         {
             return { isValid: false, message: "Project does not exist" };
-        }
-        if(isCreated)
-        {
-            return { isValid: false, message: "Project team already exists" };
         }
         if (error) {
             return { isValid: false, message: error.details.map(err => err.message) };

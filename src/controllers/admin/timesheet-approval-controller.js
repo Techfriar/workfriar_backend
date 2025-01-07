@@ -20,7 +20,7 @@ const userRepository=new UserRepository()
 
 class TimesheetApprovalController 
 {
-    /**
+/**
  * @swagger
  * /admin/approvalcenter:
  *   post:
@@ -129,7 +129,7 @@ class TimesheetApprovalController
             const pageNumber = parseInt(page,10);
             const limitNumber = parseInt(limit, 10);
             const skip=(pageNumber-1)*limitNumber
-            const userId="6756bf8c7edc09dc1d2d39e4" //get from Token
+            let userId= req.session?.user?.id //get from Token
             const userRole=await RoleRepository.getRoleByUserId(userId)
             if(userRole.role==="Team Lead")
             {
@@ -253,9 +253,8 @@ class TimesheetApprovalController
  */
     async manageTimeSheet(req,res)
     {
-        const userId="6756c072ddd097b3e4bbadd5"//id comes from token
+        let userId= req.session?.user?.id//id comes from token
         const {timesheetid,state}=req.body
-
         try
         {
             const user=await userRepository.getUserById(userId)
@@ -281,7 +280,8 @@ class TimesheetApprovalController
         catch(error)
         {
             return res.status(500).json(
-                {status:false,
+                {
+                status:false,
                 message:error.message,
                 data:[]
             })
@@ -378,7 +378,7 @@ class TimesheetApprovalController
 
     async manageAllTimesheet(req,res)
     {
-        const adminId="6756c072ddd097b3e4bbadd5"//id comes from token
+        let adminId= req.session?.user?.id//id comes from token
         const admin=await userRepository.getUserById(adminId)
         
         const{timesheetid,status,userid,notes}=req.body
@@ -434,7 +434,7 @@ class TimesheetApprovalController
         }
         catch(error)
         {
-            console.log(error)
+            
             if(error instanceof CustomValidationError)
             {
                 return res.status(422).json(
@@ -446,7 +446,8 @@ class TimesheetApprovalController
             else
             {
             return res.status(500).json(
-                {status:false,
+                {
+                status:false,
                 message:"Internal server error",
                 data:[]
             })

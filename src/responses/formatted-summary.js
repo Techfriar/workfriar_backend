@@ -59,8 +59,7 @@ export default class TimeSummaryResponse {
             return result;
     
         } catch (error) {
-            console.error("Error in formattedSummary:", error);
-            throw new Error("An error occurred while processing the time data.");
+            throw new Error("An error occurred while processing the time data.",error);
         }
     }
     
@@ -68,74 +67,100 @@ export default class TimeSummaryResponse {
     // Function for formatting all timesheets that are overdue
   
     async formattedPastDueList(data, status) {
-        return data.map((week) => {
-            const timesheets = week.timesheets;
-            
-            // If status is "accepted", we need to check if all timesheets are accepted
-            if (status === "accepted") {
-                const allAccepted = timesheets.every((ts) => ts.status === "accepted");
+        const accepted = [];
+        const rejected = [];
+        const saved = [];
     
-                // If not all timesheets are accepted, return null to exclude this week
-                if (!allAccepted) {
-                    return null;
-                }
-            }
+        data.forEach((week) => {
+            const timesheets = week.timesheets;
     
             let finalStatus = "";
     
+            if (status === "accepted") {
+                const allAccepted = timesheets.every((ts) => ts.status === "accepted");
+                if (!allAccepted) return;
+                finalStatus = "accepted";
+            }
             if (status === "rejected") {
                 const hasRejected = timesheets.some((ts) => ts.status === "rejected");
-    
-                if (hasRejected) {
-                    finalStatus = "rejected";
-                } else {
-                    return null; 
-                }
+                if (!hasRejected) return;
+                finalStatus = "rejected";
             }
+            if (status !== "rejected" && status !== "accepted") {
+                const allAccepted = timesheets.every((ts) => ts.status === "accepted");
+                const hasSaved = timesheets.some((ts) => ts.status === "saved");
     
-            const allAccepted = timesheets.every((ts) => ts.status === "accepted");
-            const hasSaved = timesheets.some((ts) => ts.status === "saved");
-            
-            if (status !== "rejected") {
                 if (hasSaved) {
-                    finalStatus = "saved"; 
+                    finalStatus = "saved";
                 } else if (allAccepted) {
-                    finalStatus = "accepted"; 
+                    finalStatus = "accepted";
+                } else {
+                    return;
                 }
             }
-            const totalHours = timesheets.reduce((weekTotal, ts) => {
-
-
-                
-                const sheetHours = ts.data_sheet.reduce(
-                    (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
-                    0
-                );
-                return parseFloat(weekTotal + sheetHours).toFixed(2);
+            const totalMinutes = timesheets.reduce((weekTotal, ts) => {
+                const sheetMinutes = ts.data_sheet.reduce((sheetTotal, entry) => {
+                    if (entry.hours) {
+                        const [hours, minutes] = entry.hours.split(":").map(Number);
+                        return sheetTotal + (hours * 60 + minutes);
+                    }
+                    return sheetTotal;
+                }, 0);
+                return weekTotal + sheetMinutes;
             }, 0);
+    
+            const formatTime = (minutes) => {
+                const hours = Math.floor(minutes / 60);
+                const remainingMinutes = minutes % 60;
+                return `${hours.toString().padStart(2, "0")}:${remainingMinutes.toString().padStart(2, "0")}`;
+            };
+    
+            const totalHours = formatTime(totalMinutes);
     
             let rejectedHours = 0;
             if (finalStatus === "rejected") {
                 rejectedHours = timesheets
                     .filter((ts) => ts.status === "rejected")
                     .reduce((rejectTotal, ts) => {
-                        const sheetHours = ts.data_sheet.reduce(
-                            (sheetTotal, entry) => sheetTotal + parseFloat(entry.hours),
-                            0
-                        );
-                        return parseFloat(rejectTotal + sheetHours).toFixed(2);
+                        const sheetMinutes = ts.data_sheet.reduce((sheetTotal, entry) => {
+                            if (entry.hours) {
+                                const [hours, minutes] = entry.hours.split(":").map(Number);
+                                return sheetTotal + (hours * 60 + minutes);
+                            }
+                            return sheetTotal;
+                        }, 0);
+                        return rejectTotal + sheetMinutes;
                     }, 0);
+                rejectedHours = formatTime(rejectedHours);
             }
-            return {
+    
+            const weekSummary = {
                 startDate: week.startDate,
                 endDate: week.endDate,
                 status: finalStatus,
                 totalHours,
-                ...(finalStatus === "rejected" ? { rejectedHours } : {}), 
+                ...(finalStatus === "rejected" ? { rejectedHours } : {}),
             };
-        }).filter((week) => week !== null); 
+    
+            // Push the week summary into the corresponding array
+            if (finalStatus === "accepted") {
+                accepted.push(weekSummary);
+               
+            } else if (finalStatus === "rejected") {
+                rejected.push(weekSummary);
+           
+            } else if (finalStatus === "saved") {
+                saved.push(weekSummary);
+            }
+        });
+        if(status === "accepted") {
+            return accepted;
+        } else if(status === "rejected") {
+            return rejected;
+        }
+        return saved;
     }
-
+    
     
     //Function for formatting a past due
     async formattedPastDue(data, status) {
@@ -149,11 +174,14 @@ export default class TimeSummaryResponse {
     
                 // Accumulate daily hours for each entry
                 item.data_sheet.forEach((entry) => {
+                    console.log(entry)
                     const entryDate = moment(entry.date).format("YYYY-MM-DD");
                     if (!overallDailyHours[entryDate]) {
                         overallDailyHours[entryDate] = 0;
                     }
-                    overallDailyHours[entryDate] += parseFloat(entry.hours);
+                        const [hours, minutes] = entry.hours.split(":").map(Number);
+                        overallDailyHours[entryDate] += hours * 60 + minutes;
+                        
                 });
 
                 // Filter out timesheets based on the provided status
