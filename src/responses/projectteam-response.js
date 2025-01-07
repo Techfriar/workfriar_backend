@@ -54,11 +54,14 @@ export default class ProjectTeamResponse{
                             email: member.userid.email,
                             profile_pic: member.userid.profile_pic,
                             dates: member.dates.length > 0 ? 
-                                {
-                                    start_date: member.dates[member.dates.length - 1].start_date,
-                                    end_date: member.dates[member.dates.length - 1].end_date,
-                                    period: `${moment(member.dates[member.dates.length - 1].start_date).format('DD/MM/YYYY')} - ${moment(member.dates[member.dates.length - 1].end_date).format('DD/MM/YYYY')}`,
-                                }
+                            {
+                                start_date: member.dates[member.dates.length - 1].start_date,
+                                end_date: member.dates[member.dates.length - 1].end_date,
+                                period: member.dates[member.dates.length - 1].end_date
+                                    ? `${moment(member.dates[member.dates.length - 1].start_date).format('DD/MM/YYYY')} - ${moment(member.dates[member.dates.length - 1].end_date).format('DD/MM/YYYY')}`
+                                    : `${moment(member.dates[member.dates.length - 1].start_date).format('DD/MM/YYYY')} -`,
+                            }
+                            
                              : {},
                              status:member.dates[member.dates.length - 1].end_date>new Date || member.dates[member.dates.length - 1].end_date==null?"active":"inactive"
                     }))
@@ -82,7 +85,6 @@ export default class ProjectTeamResponse{
              {
                 status="active"
              }
-          
             return{
                 id:teams._id,
                 project_id:teams.project._id,
