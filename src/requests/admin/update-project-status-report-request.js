@@ -12,14 +12,6 @@ export class UpdateProjectStatusReportRequest {
     project_lead: Joi.string().optional().messages({
       "string.empty": "Please specify the project lead.",
     }),
-    planned_start_date: Joi.date().optional().messages({
-      "date.base": "Please enter a valid planned start date.",
-    }),
-    planned_end_date: Joi.date().optional().messages({
-      "date.base": "Please enter a valid planned end date.",
-    }),
-    actual_start_date: Joi.date().optional().allow("").allow(null),
-    actual_end_date: Joi.date().optional().allow("").allow(null),
     reporting_period: Joi.date().optional().messages({
       "date.base": "Please enter a valid reporting period.",
     }),
@@ -43,10 +35,6 @@ export class UpdateProjectStatusReportRequest {
     this.data = {
       project_name: req.body.project_name,
       project_lead: req.body.project_lead,
-      planned_start_date: req.body.planned_start_date,
-      planned_end_date: req.body.planned_end_date,
-      actual_start_date: req.body.actual_start_date,
-      actual_end_date: req.body.actual_end_date,
       reporting_period: req.body.reporting_period,
       progress: req.body.progress,
       comments: req.body.comments,
