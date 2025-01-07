@@ -877,26 +877,38 @@ class ProjectTeamController{
  *             properties:
  *               id:
  *                 type: string
+ *                 description: ID of the project team to be updated
  *                 example: "67481220d2193ae713064508"
  *               project:
  *                 type: string
- *                 example: "67481220d2193ae713064508" 
- *               status:
- *                 type: string
- *                 example: "In Progress"
- *               startDate:
- *                 type: string
- *                 format: date
- *                 example: "2024-01-01"
- *               endDate:
- *                 type: string
- *                 format: date
- *                 example: "2024-12-31"
- *               teamMembers:
+ *                 description: ID of the project associated with the team
+ *                 example: "67481220d2193ae713064508"
+ *               team_members:
  *                 type: array
+ *                 description: Array of team members with their updated details
  *                 items:
- *                   type: string
- *                   example: "teamMemberId"
+ *                   type: object
+ *                   properties:
+ *                     userid:
+ *                       type: string
+ *                       description: User ID of the team member
+ *                       example: "6476a63bf79ea71d30770de7"
+ *                     dates:
+ *                       type: array
+ *                       description: Updated availability dates for the team member
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           start_date:
+ *                             type: string
+ *                             format: date
+ *                             description: Updated start date for the team member's availability
+ *                             example: "2024-01-01"
+ *                           end_date:
+ *                             type: string
+ *                             format: date
+ *                             description: Updated end date for the team member's availability
+ *                             example: "2024-06-30"
  *     responses:
  *       200:
  *         description: Successfully updated the project team
@@ -916,30 +928,87 @@ class ProjectTeamController{
  *                   properties:
  *                     id:
  *                       type: string
+ *                       description: ID of the updated project team
  *                       example: "647a9b6c1234567890abcdef"
  *                     project:
  *                       type: string
+ *                       description: Name or ID of the associated project
  *                       example: "Project Alpha"
  *                     status:
  *                       type: string
- *                       example: "in Progress"
+ *                       description: Updated status of the project team
+ *                       example: "In Progress"
  *                     start_date:
  *                       type: string
+ *                       format: date
+ *                       description: Updated start date of the project team
  *                       example: "2024-01-01"
  *                     end_date:
  *                       type: string
+ *                       format: date
+ *                       description: Updated end date of the project team
  *                       example: "2024-12-31"
  *                     team_members:
  *                       type: array
+ *                       description: Array of updated team members
  *                       items:
- *                         type: string
- *                         example: "teamMemberId"
+ *                         type: object
+ *                         properties:
+ *                           userid:
+ *                             type: string
+ *                             description: User ID of the team member
+ *                             example: "6476a63bf79ea71d30770de7"
+ *                           dates:
+ *                             type: array
+ *                             description: Updated availability dates for the team member
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 start_date:
+ *                                   type: string
+ *                                   format: date
+ *                                   description: Updated start date for the team member's availability
+ *                                   example: "2024-01-01"
+ *                                 end_date:
+ *                                   type: string
+ *                                   format: date
+ *                                   description: Updated end date for the team member's availability
+ *                                   example: "2024-06-30"
  *       422:
- *         description: Failed to update project team
+ *         description: Validation failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation Failed"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     example: "Field 'id' is required"
  *       500:
  *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ *                 errors:
+ *                   type: string
+ *                   example: "Unexpected error occurred"
  */
-
     async editProjectTeamController(req,res)
     {
         try {
@@ -969,7 +1038,6 @@ class ProjectTeamController{
                     })
             }
         } catch (error) {
-            
                 if (error instanceof CustomValidationError) {
                     return res.status(422).json({
                         status: false,

@@ -186,14 +186,8 @@ class ProjectTeamRepository {
       const updateFields = {};
       if (teamData.project !== undefined)
         updateFields.project = teamData.project;
-      if (teamData.status !== undefined) updateFields.status = teamData.status;
-      if (teamData.startDate !== undefined)
-        updateFields.start_date = teamData.startDate;
-      if (teamData.endDate !== undefined)
-        updateFields.end_date = teamData.endDate;
-      if (teamData.teamMembers !== undefined)
-        updateFields.team_members = teamData.teamMembers;
-
+      if (teamData.team_members !== undefined)
+        updateFields.team_members = teamData.team_members;
       const updatedTeam = await projectTeam.findByIdAndUpdate(
         id,
         { $set: updateFields },
