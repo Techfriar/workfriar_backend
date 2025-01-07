@@ -8,6 +8,7 @@ import FindS from '../../utils/findSunday.js';
 import getLocalDateStringForTimezone from '../../utils/getLocalDateStringForTimezone.js';
 import HolidayRepository from '../../repositories/admin/holiday-repository.js';
 import FormatDate from '../../utils/formatDate.js';
+import UserRepository from '../../repositories/user-repository.js';
 
 const TimesheetRepo = new TimesheetRepository()
 
@@ -18,6 +19,8 @@ const timesheetResponse = new TimesheetResponse()
 const HolidayRepo = new HolidayRepository()
 
 const FormatDate_ = new FormatDate()
+
+const UserRepo = new UserRepository()
 
 // Admin controller to add a timesheet
 export default class TimesheetController {
@@ -761,6 +764,10 @@ export default class TimesheetController {
 	 *                 format: date
 	 *                 example: "2024-12-07"
 	 *                 description: End date of the week (optional).
+	 *               user_id:
+	 *                 type: string
+	 *                 example: "67627ab34035ba33d1877ba3"
+	 *                 description: User id (optional).
 	 *     responses:
 	 *       200:
 	 *         description: Weekly timesheets fetched successfully.
@@ -775,9 +782,9 @@ export default class TimesheetController {
 	 *                 message:
 	 *                   type: string
 	 *                   example: "Weekly timesheets fetched successfully"
-	 *                 length:
-	 *                   type: integer
-	 *                   example: 1
+	 *                 date_range:
+	 *                   type: string
+	 *                   example: "2024-12-01-2024-12-07"
 	 *                 data:
 	 *                   type: array
 	 *                   items:
@@ -806,25 +813,46 @@ export default class TimesheetController {
 	 *                               example: "2024-12-05T00:00:00.000Z"
 	 *                             hours:
 	 *                               type: string
-	 *                               example: "4:00"
-	 *                             normalizedDate:
+	 *                               example: "04:00"
+	 *                             normalized_date:
 	 *                               type: string
 	 *                               example: "2024-12-05"
-	 *                             dayOfWeek:
+	 *                             day_of_week:
 	 *                               type: string
 	 *                               example: "Thu"
-	 *                             isHoliday:
+	 *                             is_holiday:
 	 *                               type: boolean
 	 *                               example: false
-	 *                             isDisable:
+	 *                             is_disable:
 	 *                               type: boolean
 	 *                               example: false
-	 *                       total_hours:
-	 *                         type: integer
+	 *                       totalHours:
+	 *                         type: number
 	 *                         example: 4
 	 *                       status:
 	 *                         type: string
 	 *                         example: "saved"
+	 *                 weekDates:
+	 *                   type: array
+	 *                   items:
+	 *                     type: object
+	 *                     properties:
+	 *                       date:
+	 *                         type: string
+	 *                         format: date
+	 *                         example: "2024-12-01T00:00:00.000Z"
+	 *                       normalized_date:
+	 *                         type: string
+	 *                         example: "2024-12-01"
+	 *                       day_of_week:
+	 *                         type: string
+	 *                         example: "Sun"
+	 *                       is_holiday:
+	 *                         type: boolean
+	 *                         example: false
+	 *                       is_disable:
+	 *                         type: boolean
+	 *                         example: false
 	 *       422:
 	 *         description: Validation error.
 	 *         content:
@@ -855,18 +883,25 @@ export default class TimesheetController {
 	 *                 message:
 	 *                   type: string
 	 *                   example: "An error occurred while fetching timesheets."
+	 *                 data:
+	 *                   type: array
+	 *                   items: {}
 	 */
-
 	async getWeeklyTimesheets(req, res) {
 		try {
-			// Extract UserId from the user session
-			const user_id = req.session.user.id;
+			let { startDate, endDate, user_id } = req.body;
+			let user_location;
 
-			const user_location =  req.session.user.location;
+			if(!user_id){
+				user_id = req.session.user.id ;
+			    user_location =  req.session.user.location;
+			}
+			else{
+				const user = await UserRepo.getUserById(user_id);
+				user_location = user.location;
+			}
 
-			let { startDate, endDate } = req.body;
 			let actualStartWeek, actualEndWeek;
-
 			if (startDate && endDate) {
 				const validatedDates = await TimesheetRequest.validateDateRange(startDate, endDate);
 				if (validatedDates.error) {
@@ -897,7 +932,6 @@ export default class TimesheetController {
 				endDate = FindWeekRange_.getWeekEndDate(today);
 			}
 
-			startDate.setUTCHours(0, 0, 0, 0);
 			endDate.setUTCHours(0, 0, 0, 0);
 			let range = `${startDate.toISOString().split('T')[0]}-${endDate.toISOString().split('T')[0]}`;
 
@@ -1811,9 +1845,8 @@ export default class TimesheetController {
 	 */
 	async getStatusCount(req, res) {
 		try {
-			// Extract UserId from the user session
-			const user_id = req.session.user.id;
-			
+			//extract userId from req body or from session if it is undefined 
+			const user_id = req.body.user_id === undefined ? req.session.user.id: req.body.user_id
 			const timezone = await findTimezone(req);
 
 			let today = getLocalDateStringForTimezone(timezone, new Date());
