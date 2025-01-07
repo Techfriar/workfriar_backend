@@ -18,7 +18,8 @@ export default class ProjectStatusReportRepository {
       const reports = await ProjectStatusReport.find()
         .populate({
           path: "project_name",
-          select: "project_name -_id",
+          select:
+            "project_name planned_start_date planned_end_date actual_start_date actual_end_date -_id",
         })
         .populate({
           path: "project_lead",
@@ -41,7 +42,8 @@ export default class ProjectStatusReportRepository {
       const report = await ProjectStatusReport.findById(reportId)
         .populate({
           path: "project_name",
-          select: "project_name",
+          select:
+            "project_name planned_start_date planned_end_date actual_start_date actual_end_date",
         })
         .populate({
           path: "project_lead",
@@ -65,7 +67,8 @@ export default class ProjectStatusReportRepository {
       )
         .populate({
           path: "project_name",
-          select: "project_name -_id",
+          select:
+            "project_name planned_start_date planned_end_date actual_start_date actual_end_date -_id",
         })
         .populate({
           path: "project_lead",
@@ -90,23 +93,37 @@ export default class ProjectStatusReportRepository {
       const config = {
         projects: {
           model: Project,
-          fields: "project_name _id",
-          nameField: "project_name",
+          fields:
+            "project_name project_lead planned_start_date planned_end_date actual_start_date actual_end_date",
+          populate: {
+            path: "project_lead",
+            select: "full_name _id",
+          },
         },
         leads: {
           model: User,
           fields: "full_name _id",
-          nameField: "full_name",
         },
       };
 
-      const { model, fields, nameField } = config[type];
+      const { model, fields, populate } = config[type];
 
-      const items = await model.find({}, fields).sort({ [nameField]: 1 }); // Sort alphabetically
+      let query = model.find({}, fields);
+      if (populate) {
+        query = query.populate(populate);
+      }
+
+      const items = await query.sort({ project_name: 1 });
 
       return items.map((item) => ({
         id: item._id,
-        name: item[nameField],
+        name: item.project_name || item.full_name,
+        project_lead: item.project_lead
+          ? {
+              id: item.project_lead._id,
+              name: item.project_lead.full_name,
+            }
+          : null,
       }));
     } catch (error) {
       throw new Error(`Failed to retrieve ${type}: ${error.message}`);

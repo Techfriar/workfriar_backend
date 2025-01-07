@@ -119,7 +119,7 @@ export default class AdminController {
 
             // check if user id passed through request
             if(req.body.userId) {
-                UserId = req.body.id
+                UserId = req.body.userId
             }
 
             const adminData = await userRepo.getUserExpanded( UserId )
