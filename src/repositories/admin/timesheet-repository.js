@@ -572,6 +572,9 @@ export default class TimesheetRepository {
 									savedCount: {
 										$sum: { $cond: [{ $eq: ["$status", "saved"] }, 1, 0] }
 									},
+									submittedCount: {
+										$sum: { $cond: [{ $eq: ["$status", "submitted"] }, 1, 0] }
+									},
 									approvedCount: {
 										$sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] }
 									},
@@ -587,6 +590,7 @@ export default class TimesheetRepository {
 									endDate: "$_id.endDate",
 									totalCount: 1,
 									savedCount: 1,
+									submittedCount: 1,
 									approvedCount: 1,
 									rejectedCount: 1
 								}
@@ -603,6 +607,9 @@ export default class TimesheetRepository {
 									totalSaved: {
 										$sum: { $cond: [{ $eq: ["$status", "saved"] }, 1, 0] }
 									},
+									totalSubmitted: {
+										$sum: { $cond: [{ $eq: ["$status", "submitted"] }, 1, 0] }
+									},
 									totalApproved: {
 										$sum: { $cond: [{ $eq: ["$status", "accepted"] }, 1, 0] }
 									},
@@ -616,6 +623,7 @@ export default class TimesheetRepository {
 									_id: 0,
 									totalTimesheets: 1,
 									totalSaved: 1,
+									totalSubmitted: 1,
 									totalApproved: 1,
 									totalRejected: 1
 								}
@@ -628,6 +636,7 @@ export default class TimesheetRepository {
 			const totalCounts = result[0].totalCounts[0] || {
 				totalTimesheets: 0,
 				totalSaved: 0,
+				totalSubmitted: 0,
 				totalApproved: 0,
 				totalRejected: 0
 			};

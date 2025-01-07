@@ -12,19 +12,15 @@ export class UpdateProjectStatusReportRequest {
     project_lead: Joi.string().optional().messages({
       "string.empty": "Please specify the project lead.",
     }),
-    planned_start_date: Joi.date().optional().messages({
-      "date.base": "Please enter a valid planned start date.",
-    }),
-    planned_end_date: Joi.date().optional().messages({
-      "date.base": "Please enter a valid planned end date.",
-    }),
-    actual_start_date: Joi.date().optional().allow("").allow(null),
-    actual_end_date: Joi.date().optional().allow("").allow(null),
     reporting_period: Joi.date().optional().messages({
       "date.base": "Please enter a valid reporting period.",
     }),
-    progress: Joi.string().optional().messages({
-      "string.empty": "Please enter the progress.",
+    progress: Joi.number().integer().min(0).max(100).required().messages({
+      "number.base": "Progress must be a number.",
+      "number.integer": "Progress must be an integer.",
+      "number.min": "Progress cannot be less than 0.",
+      "number.max": "Progress cannot exceed 100.",
+      "any.required": "Please enter the progress.",
     }),
     comments: Joi.string().optional().allow("").allow(null),
     accomplishments: Joi.string().optional().messages({
@@ -43,10 +39,6 @@ export class UpdateProjectStatusReportRequest {
     this.data = {
       project_name: req.body.project_name,
       project_lead: req.body.project_lead,
-      planned_start_date: req.body.planned_start_date,
-      planned_end_date: req.body.planned_end_date,
-      actual_start_date: req.body.actual_start_date,
-      actual_end_date: req.body.actual_end_date,
       reporting_period: req.body.reporting_period,
       progress: req.body.progress,
       comments: req.body.comments,
@@ -72,7 +64,7 @@ export class UpdateProjectStatusReportRequest {
 
     // Check if project status report exists
     const reportExists =
-      await UpdateProjectStatusReportRequest.reportRepo.getProjectStatusReportById(
+      await UpdateProjectStatusReportRequest.reportRepo.getReportById(
         this.data.reportId
       );
 

@@ -12,21 +12,6 @@ const projectStatusReportSchema = mongoose.Schema(
       ref: "User",
       required: true,
     },
-    planned_start_date: {
-      type: Date,
-      required: true,
-    },
-    planned_end_date: {
-      type: Date,
-      required: true,
-    },
-    actual_start_date: {
-      type: Date,
-      required: true,
-    },
-    actual_end_date: {
-      type: Date,
-    },
     reporting_period: {
       type: Date,
       required: true,

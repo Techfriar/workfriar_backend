@@ -13,28 +13,16 @@ export class AddProjectStatusReportRequest {
       "string.empty": "Please specify the project lead.",
       "any.required": "Please enter the project lead.",
     }),
-    planned_start_date: Joi.date().required().messages({
-      "date.base": "Please enter a valid planned start date.",
-      "any.required": "Please enter the planned start date.",
-    }),
-    planned_end_date: Joi.date().required().messages({
-      "date.base": "Please enter a valid planned end date.",
-      "any.required": "Please enter the planned end date.",
-    }),
-    actual_start_date: Joi.date().required().messages({
-      "date.base": "Please enter a valid actual start date.",
-      "any.required": "Please enter the actual start date.",
-    }),
-    actual_end_date: Joi.date().required().messages({
-      "date.base": "Please enter a valid actual end date.",
-      "any.required": "Please enter the actual end date.",
-    }),
     reporting_period: Joi.date().required().messages({
       "date.base": "Please enter a valid reporting period date.",
       "any.required": "Please enter the reporting period date.",
     }),
-    progress: Joi.string().required().messages({
-      "string.empty": "Please enter the progress.",
+    progress: Joi.number().integer().min(0).max(100).required().messages({
+      "number.base": "Progress must be a number.",
+      "number.integer": "Progress must be an integer.",
+      "number.min": "Progress cannot be less than 0.",
+      "number.max": "Progress cannot exceed 100.",
+      "any.required": "Please enter the progress.",
     }),
     comments: Joi.string().optional().allow("").allow(null),
     accomplishments: Joi.string().required().messages({
@@ -50,10 +38,6 @@ export class AddProjectStatusReportRequest {
     this.data = {
       project_name: req.body.project_name,
       project_lead: req.body.project_lead,
-      planned_start_date: req.body.planned_start_date,
-      planned_end_date: req.body.planned_end_date,
-      actual_start_date: req.body.actual_start_date,
-      actual_end_date: req.body.actual_end_date,
       reporting_period: req.body.reporting_period,
       progress: req.body.progress,
       comments: req.body.comments,
