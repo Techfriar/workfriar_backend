@@ -30,6 +30,7 @@ export default class ForecastController{
             expectedEnddate: "expected_project_end_date",
             revenue: "estimated_revenue",
             stage: "opportunity_stage",
+            status: "status",
             resource: "expected_resource_breakdown",
             projectManager: "project_manager",
             productManager: "product_manager",
