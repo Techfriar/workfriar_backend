@@ -174,14 +174,13 @@ export default class TimeSummaryResponse {
     
                 // Accumulate daily hours for each entry
                 item.data_sheet.forEach((entry) => {
-                    console.log(entry)
                     const entryDate = moment(entry.date).format("YYYY-MM-DD");
                     if (!overallDailyHours[entryDate]) {
                         overallDailyHours[entryDate] = 0;
                     }
                         const [hours, minutes] = entry.hours.split(":").map(Number);
                         overallDailyHours[entryDate] += hours * 60 + minutes;
-                        
+
                 });
 
                 // Filter out timesheets based on the provided status
