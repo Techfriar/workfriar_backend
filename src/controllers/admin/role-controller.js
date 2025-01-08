@@ -588,7 +588,7 @@ export default class RoleController {
             }
 
             // Save the updated role
-            await existingRole.save();
+            await existingRole.save({ validateBeforeSave: true, w: 1, j: true, versionKey: false });
 
             // Format the response
             const formattedRole = await RoleResponse.formatRole(existingRole);
@@ -599,6 +599,7 @@ export default class RoleController {
                 data: formattedRole
             });
         } catch (error) {
+            console.log(error);
             if (error instanceof CustomValidationError) {
                 return res.status(400).json({
                     status: false,
