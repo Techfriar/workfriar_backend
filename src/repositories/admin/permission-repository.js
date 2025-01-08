@@ -1,4 +1,5 @@
 import Permission from '../../models/permission.js';
+import Role from '../../models/role.js';
 export default  class PermissionRepository {
    
     /**
@@ -27,13 +28,22 @@ export default  class PermissionRepository {
      */
     static async findOneAndUpdatePermission(category, actions, roleId) {
         try {
-            const permission = await Permission.findOneAndUpdate(
-                { category, role: roleId  },
-                { $set: { actions } },
-                { upsert: true, new: true }
-            );
+            const role = await Role.findById(roleId).populate('permissions');
+            const permission = role.permissions.find(p => p.category === category);
 
-            return permission;
+            if (permission) {
+                // Update the actions
+                permission.actions = actions;
+                await permission.save();
+                return permission
+            } else {
+                // Create a new permission and associate it with the role
+                const newPermission = await Permission.create({ category, actions });
+                role.permissions.push(newPermission._id);
+                await role.save();
+                return newPermission;
+
+            }
         } catch (error) {
             console.error('Error in findOneAndUpdatePermission:', error);
             throw error;
