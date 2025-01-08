@@ -319,7 +319,7 @@ class NotificationController {
 
     async notifyUser(req, res) {
         try {
-            const { user_id } = req.body
+            const { user_id, date_range } = req.body
             if (!user_id) {
                 throw new CustomValidationError('UserId is a required fields');
             }
@@ -331,8 +331,8 @@ class NotificationController {
 
             const notification = {
                 user_id,
-                message: 'You have pending timesheets',
-                type: 'info',
+                message: `You have pending timesheets for ${date_range}`,
+                type: 'warning',
             };
 
             const newNotification = await NotificationRepository.createNotification(notification);

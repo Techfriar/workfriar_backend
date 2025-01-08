@@ -180,6 +180,19 @@ class ProjectTeamRepository {
     } catch (error) {}
   }
 
+  //Function for getting project team by id
+  async getTeamMembersbyTeamId(teamId) {
+    try
+    {
+      const data = await projectTeam.findById(teamId)
+      return data
+    }
+    catch(error)
+    {
+      throw new Error(error)
+    }
+  
+  }
   //Function for editing a project team
   async updateProjectTeam(id, teamData) {
     try {
