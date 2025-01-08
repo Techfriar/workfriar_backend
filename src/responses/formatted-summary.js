@@ -70,6 +70,7 @@ export default class TimeSummaryResponse {
         const accepted = [];
         const rejected = [];
         const saved = [];
+        const submitted = [];
     
         data.forEach((week) => {
             const timesheets = week.timesheets;
@@ -86,7 +87,12 @@ export default class TimeSummaryResponse {
                 if (!hasRejected) return;
                 finalStatus = "rejected";
             }
-            if (status !== "rejected" && status !== "accepted") {
+            if (status === "submitted") {
+                const allSubmitted = timesheets.every((ts) => ts.status === "submitted");
+                if (!allSubmitted) return;
+                finalStatus = "submitted";
+            }
+            if (status !== "rejected" && status !== "accepted" && status !== "submitted") {
                 const allAccepted = timesheets.every((ts) => ts.status === "accepted");
                 const hasSaved = timesheets.some((ts) => ts.status === "saved");
     
@@ -98,6 +104,7 @@ export default class TimeSummaryResponse {
                     return;
                 }
             }
+    
             const totalMinutes = timesheets.reduce((weekTotal, ts) => {
                 const sheetMinutes = ts.data_sheet.reduce((sheetTotal, entry) => {
                     if (entry.hours) {
@@ -145,18 +152,21 @@ export default class TimeSummaryResponse {
             // Push the week summary into the corresponding array
             if (finalStatus === "accepted") {
                 accepted.push(weekSummary);
-               
             } else if (finalStatus === "rejected") {
                 rejected.push(weekSummary);
-           
             } else if (finalStatus === "saved") {
                 saved.push(weekSummary);
+            } else if (finalStatus === "submitted") {
+                submitted.push(weekSummary);
             }
         });
-        if(status === "accepted") {
+    
+        if (status === "accepted") {
             return accepted;
-        } else if(status === "rejected") {
+        } else if (status === "rejected") {
             return rejected;
+        } else if (status === "submitted") {
+            return submitted;
         }
         return saved;
     }
