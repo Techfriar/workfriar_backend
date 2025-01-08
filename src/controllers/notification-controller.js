@@ -55,7 +55,7 @@ class NotificationController {
      *             schema:
      *               type: object
      *               properties:
-     *                 success:
+     *                 status:
      *                   type: boolean
      *                   example: true
      *                 message:
@@ -95,14 +95,14 @@ class NotificationController {
             const notifications = await NotificationRepository.getUserNotifications(user_id);
             if (notifications.length > 0) {
                 res.status(200).json({
-                    success: true,
+                    status: true,
                     message: 'Notifications fetched successfully',
                     data: notifications,
                 })
             }
             else {
                 res.status(200).json({
-                    success: true,
+                    status: true,
                     message: 'No notifications found',
                     data: [],
                 })
@@ -112,13 +112,13 @@ class NotificationController {
         catch (err) {
             if (err instanceof CustomValidationError) {
                 res.status(422).json({
-                    success: false,
+                    status: false,
                     message: 'Validation error',
                     errors: err.errors,
                 });
             } else {
                 return res.status(500).json({
-                    success: false,
+                    status: false,
                     message: err.message,
                     data: [],
                 });
@@ -143,7 +143,7 @@ class NotificationController {
      *             schema:
      *               type: object
      *               properties:
-     *                 success:
+     *                 status:
      *                   type: boolean
      *                   example: true
      *                 message:
@@ -226,7 +226,7 @@ class NotificationController {
             }
 
             res.status(200).json({
-                success: true,
+                status: true,
                 message: 'Notifications fetched successfully',
                 data: result.length > 0 ? result : [],
             });
@@ -234,13 +234,13 @@ class NotificationController {
         } catch (err) {
             if (err instanceof CustomValidationError) {
                 res.status(422).json({
-                    success: false,
+                    status: false,
                     message: 'Validation error',
                     errors: err.errors,
                 });
             } else {
                 return res.status(500).json({
-                    success: false,
+                    status: false,
                     message: err.message,
                     data: [],
                 });
@@ -275,7 +275,7 @@ class NotificationController {
      *             schema:
      *               type: object
      *               properties:
-     *                 success:
+     *                 status:
      *                   type: boolean
      *                   example: true
      *                 message:
@@ -291,7 +291,7 @@ class NotificationController {
      *             schema:
      *               type: object
      *               properties:
-     *                 success:
+     *                 status:
      *                   type: boolean
      *                   example: false
      *                 message:
@@ -306,7 +306,7 @@ class NotificationController {
      *             schema:
      *               type: object
      *               properties:
-     *                 success:
+     *                 status:
      *                   type: boolean
      *                   example: false
      *                 message:
@@ -339,7 +339,7 @@ class NotificationController {
             sendNotificationToRecipient(user_id, newNotification);
             if (newNotification) {
                 res.status(200).json({
-                    success: true,
+                    status: true,
                     message: 'Notification sent successfully',
                     data: [],
                 })
@@ -348,13 +348,13 @@ class NotificationController {
         } catch (err) {
             if (err instanceof CustomValidationError) {
                 res.status(422).json({
-                    success: false,
+                    status: false,
                     message: 'Validation error',
                     errors: err.errors,
                 });
             } else {
                 return res.status(500).json({
-                    success: false,
+                    status: false,
                     message: err.message,
                     data: [],
                 });
