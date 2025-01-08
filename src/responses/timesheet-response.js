@@ -27,7 +27,7 @@ class TimesheetResponse{
 
     async projectSummaryTimesheetResponse(report,month,year){
         return{    
-            project_name: report.project_name,
+            project_name: report.projectName,
             logged_hours: report.loggedHours,
             approved_hours: report.approvedHours,
             year,
@@ -41,37 +41,33 @@ class TimesheetResponse{
             date_range:range,
             year,
             month,
-            project_name: report.project_name,
+            project_name: report.projectName,
             logged_hours: report.loggedHours,
             approved_hours: report.approvedHours,
         }
     }
 
     async employeeSummaryTimesheetResponse(report,month,year){
-        const data = report.projects.map(project => ({
+        return{
             year,
             month,
-            employee: report._id,
-            project_name: project.project_name,
-            logged_hours: project.loggedHours,
-            approved_hours: project.approvedHours,
-        }));
-        
-        return data;
+            employee_name: report.userName,
+            project_name: report.projectName,
+            logged_hours: report.loggedHours,
+            approved_hours: report.approvedHours,
+        }
     }
 
     async employeeDetailTimesheetResponse(report,month,year,range){
-        const data = report.projects.map(project => ({
+        return{
             date_range: range,
             year,
             month,
-            employee: report._id,
-            project_name: project.project_name,
-            logged_hours: project.loggedHours,
-            approved_hours: project.approvedHours,
-        }));
-        
-        return data;
+            employee_name: report.userName,
+            project_name: report.projectName,
+            logged_hours: report.loggedHours,
+            approved_hours: report.approvedHours,
+        }
     }
 
     
