@@ -120,7 +120,7 @@ class TimeSheetSummary{
                     }
                 },
                 {
-                    $sort: { startDate: -1 } 
+                    $sort: { startDate: 1 } 
                 }
             ]);
     
