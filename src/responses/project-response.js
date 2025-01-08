@@ -72,8 +72,8 @@ export default class ProjectResponse {
       id: project._id,
       project_name: project.project_name,
       client: project?.client_name.client_name,
-      startDate: project.actual_start_date,
-      endDate: project.actual_end_date,
+      startDate: this.formatDate(project.actual_start_date),
+      endDate: this.formatDate(project.actual_end_date),  
       project_lead: project?.project_lead.full_name,
       status: project.status,
     };

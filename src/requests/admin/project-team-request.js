@@ -27,25 +27,6 @@ static teamDataSchema = Joi.object({
                 "string.pattern.base": "Each team member's 'userid' must be a valid ObjectId.",
                 "any.required": "Team member 'userid' is required.",
               }),
-            dates: Joi.array()
-              .items(
-                Joi.object({
-                  start_date: Joi.date().optional().allow("").required().messages({
-                    "date.base": "Start date must be a valid date.",
-                    "any.required": "Start date is required for each date range.",
-                  }),
-                  end_date: Joi.date().optional().allow("").messages({
-                    "date.base": "End date must be a valid date.",
-                    "any.required": "End date is required for each date range.",
-                  }),
-                })
-              )
-              .min(1)
-              .required()
-              .messages({
-                "array.base": "'dates' must be an array of objects.",
-                "array.min": "At least one date range is required for each team member.",
-              }),
           })
         )
         .min(1)
@@ -72,25 +53,6 @@ static teamDataUpdateSchema = Joi.object({
               .messages({
                 "string.pattern.base": "Each team member's 'userid' must be a valid ObjectId.",
                 "any.required": "Team member 'userid' is required.",
-              }),
-            dates: Joi.array()
-              .items(
-                Joi.object({
-                  start_date: Joi.date().optional().allow("").required().messages({
-                    "date.base": "Start date must be a valid date.",
-                    "any.required": "Start date is required for each date range.",
-                  }),
-                  end_date: Joi.date().optional().allow("").messages({
-                    "date.base": "End date must be a valid date.",
-                    "any.required": "End date is required for each date range.",
-                  }),
-                })
-              )
-              .min(1)
-              .required()
-              .messages({
-                "array.base": "'dates' must be an array of objects.",
-                "array.min": "At least one date range is required for each team member.",
               }),
           })
         )

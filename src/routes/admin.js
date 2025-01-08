@@ -185,5 +185,6 @@ adminRouter.route('/manage-all-timesheet').post(timesheetapproval.manageAllTimes
 
 adminRouter.route('/team-members-with-timesheet').post(projectTeamController.getTeamMembersWithTimesheetController)
 
+adminRouter.route('/get-all-weekly-timesheets-for-review').post(timesheetapproval.getAllWeeklyTimesheetsForReview)
 
 export default adminRouter;

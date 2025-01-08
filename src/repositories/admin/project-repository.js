@@ -157,7 +157,7 @@ export default class ProjectRepository {
         }
         else
         {
-          throw new CustomValidationError("Project status should be either Cancelled,Completed or On hold to close tume entry")
+          throw new CustomValidationError("Project status should be either Cancelled, Completed or On hold to close time entry");
         }
       } else {
         const data = await Project.updateOne(
