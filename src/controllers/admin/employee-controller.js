@@ -383,7 +383,7 @@ class EmployeeController {
       }
 
       // Get existing employee to store the profile picture path
-      const oldEmployee = await userRepo.getEmployeeById(id);
+      const oldEmployee = await userRepo.getUserById(id);
       if (!oldEmployee) {
         return res.status(404).json({
           status: false,

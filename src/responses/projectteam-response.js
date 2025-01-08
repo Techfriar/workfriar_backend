@@ -15,7 +15,8 @@ export default class ProjectTeamResponse{
 
     async formatProjectTeamSet(teams) {
         const startDate=new Date(teams.project?.actual_start_date)
-        const endDate=new Date(teams.project?.actual_end_date)
+        const endDate = teams.project?.actual_end_date ? new Date(teams.project.actual_end_date) : "";
+
         try {
         return{
                 id: teams._id,
@@ -25,7 +26,9 @@ export default class ProjectTeamResponse{
                 status: teams.project.status,
                 start_date:startDate,
                 end_date:endDate,
-                date: `${moment(startDate).format('DD/MM/YYYY')} - ${moment(endDate).format('DD/MM/YYYY')}`,
+                date:  endDate
+                ? `${moment(startDate).format('DD/MM/YYYY')} - ${moment(endDate).format('DD/MM/YYYY')}`
+                : `${moment(startDate).format('DD/MM/YYYY')}-`,
                 teamsMembers: teams.team_members.map(member => ({
                     id: member.userid._id,
                     name: member.userid.full_name,
