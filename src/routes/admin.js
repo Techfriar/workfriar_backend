@@ -134,6 +134,10 @@ adminRouter
         // checkPermissions('Users', 'delete'),
         admin.deleteEmployee
     )
+
+adminRouter
+  .route('/list-projects-employees')
+  .post(admin.getProjectsAndEmployees) 
 /* 
 * Client Routes
 */

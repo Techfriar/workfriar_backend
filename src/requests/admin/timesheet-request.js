@@ -183,12 +183,12 @@ export default class CreateTimesheetRequest {
 
   static async validateEmployeeDetailParams({ year, month, projectId, startDate, endDate, userId }) {
     const schema = Joi.object({
-      year: Joi.number().integer().min(1900).max(new Date().getFullYear()).optional().messages({
+      year: Joi.number().integer().min(1900).max(new Date().getFullYear()).allow(null).optional().messages({
         'number.base': '"year" must be a number if provided.',
         'number.min': '"year" must be a valid year (after 1900).',
         'number.max': '"year" must not be in the future.',
       }),
-      month: Joi.number().integer().min(1).max(12).optional().messages({
+      month: Joi.number().integer().min(1).max(12).allow(null).optional().messages({
         'number.base': '"month" must be a number if provided.',
         'number.min': '"month" must be between 1 and 12.',
         'number.max': '"month" must be between 1 and 12.',
@@ -198,13 +198,13 @@ export default class CreateTimesheetRequest {
           return helpers.message('Invalid "projectId".');
         }
         return value;
-      }).optional().messages({
+      }).optional().allow(null).messages({
         'string.base': '"projectId" must be a string if provided.',
       }),
-      startDate: Joi.date().iso().optional().messages({
+      startDate: Joi.date().iso().optional().allow(null).messages({
         'date.base': '"startDate" must be a valid ISO 8601 date string if provided.',
       }),
-      endDate: Joi.date().iso().optional().greater(Joi.ref('startDate')).messages({
+      endDate: Joi.date().iso().optional().allow(null).greater(Joi.ref('startDate')).messages({
         'date.base': '"endDate" must be a valid ISO 8601 date string if provided.',
         'date.greater': '"endDate" must be greater than "startDate".',
       }),
@@ -213,7 +213,7 @@ export default class CreateTimesheetRequest {
           return helpers.message('Invalid "userId".');
         }
         return value;
-      }).optional().messages({
+      }).allow(null).optional().messages({
         'string.base': '"userId" must be a string if provided.',
       }),
     });
