@@ -1017,23 +1017,32 @@ async editProjectTeamController(req, res) {
             throw new CustomValidationError(validationResult.message);
         }
 
+        const startDate = new Date();
 
-        const projectDates = await projectRepo.getProjectDates(project);
-        const timezone = await findTimeZone(req);
-        let startDate = getLocalDateStringForTimezone(timezone, new Date(projectDates.actual_start_date));
-        startDate = new Date(startDate);
-
+        const getTeam=await projectTeamRepo.getTeamMembersbyTeamId(id)
+        
      
         const updatedTeamMembers = req.body.team_members.map((member) => {
-            return {
-                userid: member.userid,
-                dates: [
-                    {
-                        start_date: member.dates?.[0]?.start_date || startDate,
-                        end_date: member.dates?.[0]?.end_date || ""
-                    }
-                ]
-            };
+            const existingMember = getTeam.team_members.find((teamMember) => 
+                teamMember.userid.toString() === member.userid.toString()
+            );
+        
+            if (existingMember) {
+                return {
+                    userid: existingMember.userid,
+                    dates: existingMember.dates 
+                };
+            } else {
+                return {
+                    userid: member.userid,
+                    dates: [
+                        {
+                            start_date: member.dates?.[0]?.start_date || startDate,
+                            end_date: member.dates?.[0]?.end_date || ""
+                        }
+                    ]
+                };
+            }
         });
 
         const projectTeamData = {
