@@ -597,6 +597,14 @@ export default class ProjectController {
         });
       }
     } catch (error) {
+      if(error instanceof CustomValidationError)
+      {
+        return res.status(422).json({
+          status:false,
+          message:error.message,
+          data:[]
+        })
+      }
       return res.status(500).json({
         status: false,
         message: "Internal Server Error",

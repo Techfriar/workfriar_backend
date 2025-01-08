@@ -390,14 +390,13 @@ export default class TimesheetRepository {
 			},
 			{
 			  $group: {
-				_id: { user_id: "$user_id", project_id: "$project_id" },
+				_id: { user_id: "$user_id", project_id: "$project_id", task_category_id: "$data_sheet.task_category_id" },
 				loggedHours: { $sum: "$totalHours" },
 				approvedHours: {
 				  $sum: {
 					$cond: [{ $eq: ["$status", "accepted"] }, "$totalHours", 0],
 				  },
 				},
-				timesheets: { $push: "$$ROOT" },
 			  },
 			},
 			{
@@ -416,14 +415,6 @@ export default class TimesheetRepository {
 			},
 			{
 			  $lookup: {
-				from: "categories",
-				localField: "timesheets.task_category_id",
-				foreignField: "_id",
-				as: "taskCategories",
-			  },
-			},
-			{
-			  $lookup: {
 				from: "users",
 				localField: "_id.user_id",
 				foreignField: "_id",
@@ -433,59 +424,30 @@ export default class TimesheetRepository {
 			{
 			  $addFields: {
 				project_name: { $arrayElemAt: ["$projectDetails.project_name", 0] },
-				categories: {
-				  $map: {
-					input: "$taskCategories",
-					as: "category",
-					in: "$$category.category",
-				  },
-				},
 				userName: { $arrayElemAt: ["$userDetails.full_name", 0] },
 			  },
 			},
 			{
 			  $project: {
-				projectDetails: 0,
-				taskCategories: 0,
-				userDetails: 0,
-				timesheets: 0,
+				_id: 0,
+				user_id: "$_id.user_id",
+				project_id: "$_id.project_id",
+				userName: 1,
+				project_name: 1,
+				loggedHours: 1,
+				approvedHours: 1,
 			  },
 			},
 			{
-			  $group: {
-				_id: "$userName",
-				projects: {
-				  $push: {
-					project_name: "$project_name",
-					project_id: "$_id.project_id",
-					loggedHours: "$loggedHours",
-					approvedHours: "$approvedHours",
-					categories: "$categories",
-				  },
-				},
-				totalLoggedHours: { $sum: "$loggedHours" },
-				totalApprovedHours: { $sum: "$approvedHours" },
-			  },
+			  $sort: { userName: 1, project_name: 1 },
 			},
 			{
-			  $addFields: {
-				totalLoggedHours: { $round: ["$totalLoggedHours", 0] }, // Round totalLoggedHours to whole numbers
-				totalApprovedHours: { $round: ["$totalApprovedHours", 0] }, // Round totalApprovedHours to whole numbers
+			  $facet: {
+				paginatedResults: [{ $skip: skip }, { $limit: limit }],
+				totalCount: [{ $count: "count" }],
 			  },
-			},
-			{
-			  $sort: { _id: 1 },
 			},
 		  ];
-	  
-		  const facetStage = {
-			$facet: {
-			  paginatedResults: [{ $skip: skip }, { $limit: limit }],
-			  totalCount: [{ $count: "count" }],
-			},
-		  };
-	  
-		  aggregationPipeline.push(facetStage);
 	  
 		  const result = await Timesheet.aggregate(aggregationPipeline).exec();
 	  
@@ -493,13 +455,22 @@ export default class TimesheetRepository {
 		  const totalCount = result[0].totalCount[0] ? result[0].totalCount[0].count : 0;
 	  
 		  return {
-			report: paginatedResults,
-			totalCount: totalCount,
+			report: paginatedResults.map((item) => ({
+			  userName: item.userName,
+			  projectName: item.project_name,
+			  loggedHours: item.loggedHours,
+			  approvedHours: item.approvedHours,
+			  userId: item.user_id,
+			  projectId: item.project_id,
+			})),
+			totalCount,
 		  };
 		} catch (error) {
 		  throw new Error(error);
 		}
 	  }
+	  
+	  
 	  
 	//get timesheet snapshot for a month
 	async getMonthlySnapshot(userId, start, endDate) {

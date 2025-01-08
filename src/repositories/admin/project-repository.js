@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Project from "../../models/projects.js";
 import client from "../../models/client.js";
 import User from "../../models/user.js";
+import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
 
 export default class ProjectRepository {
   /**
@@ -153,6 +154,10 @@ export default class ProjectRepository {
             }
           );
           return data;
+        }
+        else
+        {
+          throw new CustomValidationError("Project status should be either Cancelled,Completed or On hold to close tume entry")
         }
       } else {
         const data = await Project.updateOne(
