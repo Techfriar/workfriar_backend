@@ -597,6 +597,13 @@ export default class ProjectController {
         });
       }
     } catch (error) {
+      if(error instanceof CustomValidationError) {
+        return res.status(422).json({
+          status: false,
+          message: error.message,
+          data: [],
+        });
+      }
       if(error instanceof CustomValidationError)
       {
         return res.status(422).json({

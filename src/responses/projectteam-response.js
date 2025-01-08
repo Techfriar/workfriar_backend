@@ -14,7 +14,6 @@ export default class ProjectTeamResponse{
     };   
 
     async formatProjectTeamSet(teams) {
-        console.log(teams)
         const startDate=new Date(teams.project?.actual_start_date)
         const endDate=new Date(teams.project?.actual_end_date)
         try {
