@@ -8,6 +8,11 @@ import ManageTimesheetRequest from "../../requests/admin/manage-timesheet-reques
 import UserRepository from "../../repositories/user-repository.js";
 import NotificationController from "../notification-controller.js";
 import { CustomValidationError } from "../../exceptions/custom-validation-error.js";
+import CreateTimesheetRequest from "../../requests/admin/timesheet-request.js";
+import FindSunday from "../../utils/findSunday.js";
+import FindWeekRange from "../../utils/findWeekRange.js";
+import HolidayRepository from "../../repositories/admin/holiday-repository.js";
+import TimesheetResponse from "../../responses/timesheet-response.js";
 
 const projectTeamrepo = new ProjectTeamRepository();
 const projectRepo = new ProjectRepository();
@@ -17,6 +22,9 @@ const rejectRepo = new RejectionNotesRepository();
 const notification = new NotificationController();
 const managetimesheetRequest = new ManageTimesheetRequest();
 const userRepository = new UserRepository();
+const FindWeekRange_ = new FindWeekRange();
+const HolidayRepo = new HolidayRepository();
+const timesheetResponse = new TimesheetResponse()
 
 class TimesheetApprovalController {
   /**
@@ -449,7 +457,7 @@ class TimesheetApprovalController {
   //get users timesheet for a week
   /**
    * @swagger
-   * /timesheet/get-all-weekly-timesheets-for-review:
+   * /admin/get-all-weekly-timesheets-for-review:
    *   post:
    *     summary: Fetch weekly timesheets
    *     description: Fetch weekly timesheets for a user, grouped by week and including daily details and total hours. Accepts either a specified date range or defaults to the current week.
@@ -596,21 +604,23 @@ class TimesheetApprovalController {
    *                   items: {}
    */
   async getAllWeeklyTimesheetsForReview(req, res) {
+    
     try {
       let { startDate, endDate, user_id } = req.body;
       let user_location;
-
+  
       if (!user_id) {
         user_id = req.session.user.id;
         user_location = req.session.user.location;
       } else {
-        const user = await UserRepo.getUserById(user_id);
+        const user = await userRepository.getUserById(user_id);
         user_location = user.location;
       }
+      console.log(user_id);
 
       let actualStartWeek, actualEndWeek;
       if (startDate && endDate) {
-        const validatedDates = await TimesheetRequest.validateDateRange(
+        const validatedDates = await CreateTimesheetRequest.validateDateRange(
           startDate,
           endDate
         );
@@ -622,7 +632,7 @@ class TimesheetApprovalController {
         endDate = new Date(endDate);
 
         // Find actual start and end of the week
-        actualStartWeek = FindS.getPreviousSunday(startDate);
+        actualStartWeek = FindSunday.getPreviousSunday(startDate);
         actualEndWeek = new Date(actualStartWeek);
         actualEndWeek.setDate(actualStartWeek.getDate() + 6);
       } else {
@@ -633,7 +643,7 @@ class TimesheetApprovalController {
           today = new Date(today);
         }
 
-        actualStartWeek = FindS.getPreviousSunday(today);
+        actualStartWeek = FindSunday.getPreviousSunday(today);
         actualEndWeek = new Date(actualStartWeek);
         actualEndWeek.setDate(actualStartWeek.getDate() + 6);
 
@@ -747,6 +757,7 @@ class TimesheetApprovalController {
         });
       }
     } catch (err) {
+      console.error("This is the error:",err)
       if (err instanceof CustomValidationError) {
         res.status(422).json({
           status: false,
