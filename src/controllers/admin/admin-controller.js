@@ -9,10 +9,14 @@ import RoleRequest from '../../requests/admin/role-request.js'
 import UserResponse from '../../responses/user-response.js'
 import bcryptPassword from '../../utils/bcryptPassword.js'
 import capitalizeWords from '../../utils/capitalizeWords.js'
+import ProjectRepository from '../../repositories/admin/project-repository.js'
+import ProjectResponse from '../../responses/project-response.js'
 
 const employeeRepo = new UserRepository()
 const userRepo = new UserRepository()
 const emailRepo = new EmailRepository()
+const projectRepo = new ProjectRepository()
+const projectRes = new ProjectResponse()
 
 export default class AdminController {
     /**
@@ -115,17 +119,17 @@ export default class AdminController {
     async getMyProfile(req, res) {
         try {
             // Extract UserId from the user session
-			let UserId = req.session.user.id;
+            let UserId = req.session.user.id;
 
             // check if user id passed through request
-            if(req.body.userId) {
+            if (req.body.userId) {
                 UserId = req.body.userId
             }
 
-            const adminData = await userRepo.getUserExpanded( UserId )
+            const adminData = await userRepo.getUserExpanded(UserId)
 
             if (adminData) {
-                const adminDetails = await UserResponse.format( adminData )
+                const adminDetails = await UserResponse.format(adminData)
                 res.status(200).json({
                     status: true,
                     message: 'Profile fetched successfully.',
@@ -147,100 +151,100 @@ export default class AdminController {
         }
     }
 
-/**
- * List All Employees Data
- *
- * @swagger
- * /admin/employees-data:
- *   post:
- *     tags:
- *       - Admin
- *     summary: List All Employees Data with pagination
- *     security:
- *       - bearerAuth: []
- *     produces:
- *       - application/json
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               tabKey:
- *                  type: string
- *                  example: Operations
- *               page:
- *                 type: integer
- *                 description: Page number (default 1)
- *                 example: 1
- *               limit:
- *                 type: integer
- *                 description: Number of items per page (default 10)
- *                 example: 10
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Employees fetched successfully."
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "64b7a1234cdef567890ab123"
- *                       name:
- *                         type: string
- *                         example: "John Doe"
- *                       email:
- *                         type: string
- *                         example: "john.doe@example.com"
- *                       role:
- *                         type: string
- *                         example: "Manager"
- *                       department:
- *                         type: string
- *                         example: "Human Resources"
- *                       reporting_manager:
- *                         type: string
- *                         example: "Jane Smith"
- *                       status:
- *                         type: string
- *                         example: "Active"
- *                       profile_pic: 
- *                         type: string
- *                         example: "http://example-imgsc.URL_ADDRESS" 
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     totalItems:
- *                       type: integer
- *                       example: 100
- *                     currentPage:
- *                       type: integer
- *                       example: 1
- *                     pageSize:
- *                       type: integer
- *                       example: 10
- *                     totalPages:
- *                       type: integer
- *                       example: 10
- *       422:
- *         description: Unprocessable Entity
- *       401:
- *         description: Unauthenticated
- */
+    /**
+     * List All Employees Data
+     *
+     * @swagger
+     * /admin/employees-data:
+     *   post:
+     *     tags:
+     *       - Admin
+     *     summary: List All Employees Data with pagination
+     *     security:
+     *       - bearerAuth: []
+     *     produces:
+     *       - application/json
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               tabKey:
+     *                  type: string
+     *                  example: Operations
+     *               page:
+     *                 type: integer
+     *                 description: Page number (default 1)
+     *                 example: 1
+     *               limit:
+     *                 type: integer
+     *                 description: Number of items per page (default 10)
+     *                 example: 10
+     *     responses:
+     *       200:
+     *         description: Success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: "Employees fetched successfully."
+     *                 data:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       id:
+     *                         type: string
+     *                         example: "64b7a1234cdef567890ab123"
+     *                       name:
+     *                         type: string
+     *                         example: "John Doe"
+     *                       email:
+     *                         type: string
+     *                         example: "john.doe@example.com"
+     *                       role:
+     *                         type: string
+     *                         example: "Manager"
+     *                       department:
+     *                         type: string
+     *                         example: "Human Resources"
+     *                       reporting_manager:
+     *                         type: string
+     *                         example: "Jane Smith"
+     *                       status:
+     *                         type: string
+     *                         example: "Active"
+     *                       profile_pic: 
+     *                         type: string
+     *                         example: "http://example-imgsc.URL_ADDRESS" 
+     *                 pagination:
+     *                   type: object
+     *                   properties:
+     *                     totalItems:
+     *                       type: integer
+     *                       example: 100
+     *                     currentPage:
+     *                       type: integer
+     *                       example: 1
+     *                     pageSize:
+     *                       type: integer
+     *                       example: 10
+     *                     totalPages:
+     *                       type: integer
+     *                       example: 10
+     *       422:
+     *         description: Unprocessable Entity
+     *       401:
+     *         description: Unauthenticated
+     */
 
 
     async listAllEmployeesData(req, res) {
@@ -251,12 +255,12 @@ export default class AdminController {
 
             let department = req.body.tabKey
 
-            if(!department || department == "all") department = null
+            if (!department || department == "all") department = null
             else department = capitalizeWords(department)
 
             // Fetch total count of employees
             const totalItems = await userRepo.countAllUsers(department);
-           
+
             // Fetch all employees from the database
             const employees = await userRepo.getAllUsers(skip, limit, department); // Replace with your repository function
 
@@ -292,7 +296,7 @@ export default class AdminController {
                 });
             }
         } catch (error) {
-                        
+
             res.status(422).json({
                 status: false,
                 message: "Failed to fetch employees.",
@@ -300,52 +304,52 @@ export default class AdminController {
                 errors: error,
             });
         }
-    }   
+    }
 
-/**
- * List All Employees
- *
- * @swagger
- * /admin/list-all-employees:
- *   post:
- *     tags:
- *       - Admin
- *     summary: list All Employees
- *     security:
- *       - bearerAuth: []
- *     produces:
- *       - application/json
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Employees fetched successfully."
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         example: "64b7a1234cdef567890ab123"
- *                       name:
- *                         type: string
- *                         example: "John Doe"
- *       422:
- *         description: Unprocessable Entity
- *       401:
- *         description: Unauthenticated
- */
-    
+    /**
+     * List All Employees
+     *
+     * @swagger
+     * /admin/list-all-employees:
+     *   post:
+     *     tags:
+     *       - Admin
+     *     summary: list All Employees
+     *     security:
+     *       - bearerAuth: []
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: Success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: "Employees fetched successfully."
+     *                 data:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       id:
+     *                         type: string
+     *                         example: "64b7a1234cdef567890ab123"
+     *                       name:
+     *                         type: string
+     *                         example: "John Doe"
+     *       422:
+     *         description: Unprocessable Entity
+     *       401:
+     *         description: Unauthenticated
+     */
+
     async listAllEmployees(req, res) {
         try {
             // Fetch all employees from the database
@@ -367,92 +371,92 @@ export default class AdminController {
         }
     }
 
-/**
- * Get Employee Details
- *
- * @swagger
- * /admin/employee-details:
- *   post:
- *     tags:
- *       - Admin
- *     summary: Get Employee Details
- *     security:
- *       - bearerAuth: []
- *     produces:
- *       - application/json
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - id
- *             properties:
- *               id:
- *                 type: string
- *                 description: Employee ID
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Employee data fetched successfully."
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: "674d80901b1320de33e2467f"
- *                     name:
- *                       type: string
- *                       example: "John Doe"
- *                     email:
- *                       type: string
- *                       example: "john.doe@example.com"
- *                     phone_number:
- *                       type: string
- *                       example: "7123431323"
- *                     reporting_manager:
- *                       type: string
- *                     reporting_manager_id:
- *                       type: string
- *                       example: "1as23f31f2332a"   
- *                     role:
- *                       type: string
- *                       example: "Project Manager"
- *                     role_id:
- *                       type: string
- *                       example: "11sdd2123d213"
- *                     department:
- *                       type: string
- *                       example: "Operations"
- *                     status:
- *                       type: boolean
- *                       example: true
- *                     profile_pic_path:
- *                       type: string
- *                       example: "https://example.com/images/john-doe.jpg"
- *                     location:
- *                       type: string
- *                       example: "Dubai"
- *       400:
- *         description: Bad Request
- *       500:
- *         description: Internal Server Error
- */
+    /**
+     * Get Employee Details
+     *
+     * @swagger
+     * /admin/employee-details:
+     *   post:
+     *     tags:
+     *       - Admin
+     *     summary: Get Employee Details
+     *     security:
+     *       - bearerAuth: []
+     *     produces:
+     *       - application/json
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - id
+     *             properties:
+     *               id:
+     *                 type: string
+     *                 description: Employee ID
+     *     responses:
+     *       200:
+     *         description: Success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: "Employee data fetched successfully."
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     id:
+     *                       type: string
+     *                       example: "674d80901b1320de33e2467f"
+     *                     name:
+     *                       type: string
+     *                       example: "John Doe"
+     *                     email:
+     *                       type: string
+     *                       example: "john.doe@example.com"
+     *                     phone_number:
+     *                       type: string
+     *                       example: "7123431323"
+     *                     reporting_manager:
+     *                       type: string
+     *                     reporting_manager_id:
+     *                       type: string
+     *                       example: "1as23f31f2332a"   
+     *                     role:
+     *                       type: string
+     *                       example: "Project Manager"
+     *                     role_id:
+     *                       type: string
+     *                       example: "11sdd2123d213"
+     *                     department:
+     *                       type: string
+     *                       example: "Operations"
+     *                     status:
+     *                       type: boolean
+     *                       example: true
+     *                     profile_pic_path:
+     *                       type: string
+     *                       example: "https://example.com/images/john-doe.jpg"
+     *                     location:
+     *                       type: string
+     *                       example: "Dubai"
+     *       400:
+     *         description: Bad Request
+     *       500:
+     *         description: Internal Server Error
+     */
 
     async getEmployeeDetails(req, res) {
         const { id } = req.body
         try {
-            const employeeData = await FetchEmployeeRequest.validateUserId( id )
+            const employeeData = await FetchEmployeeRequest.validateUserId(id)
 
             if (employeeData) {
                 const employeeDetails = await UserResponse.formatEmployeeDetails(
@@ -471,7 +475,7 @@ export default class AdminController {
                 })
             }
         } catch (error) {
-            if(error instanceof CustomValidationError) {
+            if (error instanceof CustomValidationError) {
                 return res.status(400).json({
                     status: false,
                     message: 'Failed to get employee.',
@@ -486,76 +490,76 @@ export default class AdminController {
         }
     }
 
-/**
- * Update Employee Role
- *
- * @swagger
- * /admin/update-employee-role:
- *   post:
- *     tags:
- *       - Admin
- *     summary: Update Employee Role
- *     security:
- *       - bearerAuth: []
- *     produces:
- *       - application/json
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - employeeId
- *               - newRole
- *             properties:
- *               employeeId:
- *                 type: string
- *                 description: ID of the employee to update
- *               newRole:
- *                 type: string
- *                 description: New role for the employee
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Employee role updated successfully."
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: "674d80901b1320de33e2467f"
- *                     name:
- *                       type: string
- *                       example: "John Doe"
- *                     email:
- *                       type: string
- *                       example: "john.doe@example.com"
- *                     role:
- *                       type: string
- *                       example: "Senior Manager"
- *       400:
- *         description: Bad Request
- *       404:
- *         description: Employee Not Found
- *       500:
- *         description: Internal Server Error
- */
+    /**
+     * Update Employee Role
+     *
+     * @swagger
+     * /admin/update-employee-role:
+     *   post:
+     *     tags:
+     *       - Admin
+     *     summary: Update Employee Role
+     *     security:
+     *       - bearerAuth: []
+     *     produces:
+     *       - application/json
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - employeeId
+     *               - newRole
+     *             properties:
+     *               employeeId:
+     *                 type: string
+     *                 description: ID of the employee to update
+     *               newRole:
+     *                 type: string
+     *                 description: New role for the employee
+     *     responses:
+     *       200:
+     *         description: Success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: "Employee role updated successfully."
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     id:
+     *                       type: string
+     *                       example: "674d80901b1320de33e2467f"
+     *                     name:
+     *                       type: string
+     *                       example: "John Doe"
+     *                     email:
+     *                       type: string
+     *                       example: "john.doe@example.com"
+     *                     role:
+     *                       type: string
+     *                       example: "Senior Manager"
+     *       400:
+     *         description: Bad Request
+     *       404:
+     *         description: Employee Not Found
+     *       500:
+     *         description: Internal Server Error
+     */
     async updateEmployeeRole(req, res) {
         const { newRole: roleId, employeeId: userId } = req.body
         try {
-            const UserData = await FetchEmployeeRequest.validateUserId( userId )
+            const UserData = await FetchEmployeeRequest.validateUserId(userId)
 
-            if(UserData?.roles) {
+            if (UserData?.roles) {
                 await RoleRepository.removeUserFromRole(UserData.roles[0]._id, userId)
             }
             const { roleId: validatedRoleId, userIds } = await RoleRequest.validateMapUsersToRole({ roleId, userIds: [userId] });
@@ -567,8 +571,8 @@ export default class AdminController {
                 message: 'Employee role updated successfully.',
                 data: updatedRole,
             });
-        } catch (error) { 
-            if(error instanceof CustomValidationError) {
+        } catch (error) {
+            if (error instanceof CustomValidationError) {
                 return res.status(400).json({
                     status: false,
                     message: 'Failed to update employee role.',
@@ -576,7 +580,7 @@ export default class AdminController {
                 })
             }
             console.log(error);
-            
+
             res.status(500).json({
                 status: false,
                 message: 'Failed to update employee role.',
@@ -585,63 +589,63 @@ export default class AdminController {
         }
 
     }
- 
-/**
- * Delete Employee
- *
- * @swagger
- * /admin/delete-employee:
- *   post:
- *     tags:
- *       - Admin
- *     summary: Delete an employee
- *     security:
- *       - bearerAuth: []
- *     produces:
- *       - application/json
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - employeeId
- *             properties:
- *               employeeId:
- *                 type: string
- *                 description: ID of the employee to delete
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Employee deleted successfully."
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: "674d80901b1320de33e2467f"
- *       400:
- *         description: Bad Request
- *       404:
- *         description: Employee Not Found
- *       500:
- *         description: Internal Server Error
- */
+
+    /**
+     * Delete Employee
+     *
+     * @swagger
+     * /admin/delete-employee:
+     *   post:
+     *     tags:
+     *       - Admin
+     *     summary: Delete an employee
+     *     security:
+     *       - bearerAuth: []
+     *     produces:
+     *       - application/json
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - employeeId
+     *             properties:
+     *               employeeId:
+     *                 type: string
+     *                 description: ID of the employee to delete
+     *     responses:
+     *       200:
+     *         description: Success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: "Employee deleted successfully."
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     id:
+     *                       type: string
+     *                       example: "674d80901b1320de33e2467f"
+     *       400:
+     *         description: Bad Request
+     *       404:
+     *         description: Employee Not Found
+     *       500:
+     *         description: Internal Server Error
+     */
     async deleteEmployee(req, res) {
         const { employeeId: id } = req.body
         try {
-            await FetchEmployeeRequest.validateUserId( id )
- 
+            await FetchEmployeeRequest.validateUserId(id)
+
             await userRepo.deleteUser(id)
             await RoleRepository.removeUserFromAllRoles(id)
 
@@ -652,7 +656,7 @@ export default class AdminController {
             })
 
         } catch (error) {
-            if(error instanceof CustomValidationError) {
+            if (error instanceof CustomValidationError) {
                 return res.status(400).json({
                     status: false,
                     message: 'Failed to delete employee.',
@@ -666,5 +670,109 @@ export default class AdminController {
             })
         }
     }
+
+    /**
+     * Get Projects and Employees
+     *
+     * @swagger
+     * /admin/list-projects-employees:
+     *   post:
+     *     tags:
+     *       - Admin
+     *     summary: Get all projects and employees
+     *     security:
+     *       - bearerAuth: []
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: Success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: "Employees and projects fetched successfully."
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     projects:
+     *                       type: array
+     *                       items:
+     *                         type: object
+     *                         properties:
+     *                           id:
+     *                             type: string
+     *                             example: "5f9d88b9b6f8a62e4c5f5d5a"
+     *                           name:
+     *                             type: string
+     *                             example: "Project A"
+     *                     employees:
+     *                       type: array
+     *                       items:
+     *                         type: object
+     *                         properties:
+     *                           id:
+     *                             type: string
+     *                             example: "5f9d88b9b6f8a62e4c5f5d5b"
+     *                           name:
+     *                             type: string
+     *                             example: "John Doe"
+     *       500:
+     *         description: Internal Server Error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: "Failed to get employees and projects."
+     *                 errors:
+     *                   type: object
+     */
+
+    async getProjectsAndEmployees(req, res) {
+        try {
+            const allProjects = await projectRepo.getAllProjects()
+            const allEmplopyees = await userRepo.getAllUsers()
+            const projects = allProjects.projects
+            
+            const formattedProjects = await Promise.all(
+                projects.map(project => 
+                    ProjectResponse.formatGetAllOpenProjectsByUserResponse(project)
+                ));
+            const formattedEmployees = await Promise.all(
+                allEmplopyees.map(employee => UserResponse.formatEmployeeForListing(employee)
+                ));
+            const data = {
+                projects: formattedProjects,
+                employees: formattedEmployees
+            }
+            res.status(200).json({
+                status: true,
+                message: 'Employees and projects fetched successfully.',
+                data,
+            })
+        }
+        catch (error) {
+            console.log(error);
+            
+            res.status(500).json({
+                status: false,
+                message: 'Failed to get employees and projects.',
+                errors: error,
+            })
+        }
+    }
+
 
 }
