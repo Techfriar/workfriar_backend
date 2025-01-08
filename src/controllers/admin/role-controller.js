@@ -586,12 +586,25 @@ export default class RoleController {
 
                 existingRole.permissions = permissionIds;
             }
+            const updatedRoleData = { ...existingRole.toObject()}
+
+            // Update the role directly in the database using findOneAndUpdate
+            const updatedRole = await RoleRepository.updateRole(
+               existingRole._id,  // Find the role by its _id
+                updatedRoleData,   // Update the role with the merged data
+                { 
+                    new: true,               // Return the updated document
+                    runValidators: true,     // Run validators (like schema validation) on the update
+                    upsert: false,           // Don't insert if no match found (optional)
+                    versionKey: false        // Disable version checking (optional)
+                }
+            );
 
             // Save the updated role
-            await existingRole.save();
+            // await existingRole.save({ validateBeforeSave: true, versionKey: false });
 
             // Format the response
-            const formattedRole = await RoleResponse.formatRole(existingRole);
+            const formattedRole = await RoleResponse.formatRole(updatedRole);
 
             res.status(200).json({
                 status: true,
@@ -599,6 +612,7 @@ export default class RoleController {
                 data: formattedRole
             });
         } catch (error) {
+            console.log(error);
             if (error instanceof CustomValidationError) {
                 return res.status(400).json({
                     status: false,
