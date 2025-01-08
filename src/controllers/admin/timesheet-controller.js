@@ -260,10 +260,15 @@ export default class TimesheetController {
 		timezone,
 		passedDate
 	}) {
+		// check task detail is not empty
+		if(!task_detail) {
+			throw new CustomValidationError('Task Detail is required to save timesheet')
+		}
+
 		// If no timesheetId is provided but required parameters exist, create a new timesheet		
 		if (!timesheetId) {
 
-			if (!project_id || !task_category_id) {
+			if (!project_id || !task_category_id ) {
 				throw new CustomValidationError('Project ID and Task Category ID are required to create a new timesheet');
 			}
 
