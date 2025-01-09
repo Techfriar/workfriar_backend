@@ -34,9 +34,6 @@ userRouter
     .post(notification.getAllNotification
 )
 
-userRouter
-    .route('/notify-user')
-    .post(notification.notifyUser
-)
+
 
 export default userRouter

@@ -16,39 +16,6 @@ export default class ForecastController{
      * @param {Object} input - The request object.
      * @return {Object} - An object containing state and message whether the input is valid or not.
      */
-
-   static async formattedForecast(input) {
-        const allowedKeys = {
-            name: "opportunity_name",
-            manager: "opportunity_manager",
-            description: "opportunity_description",
-            clientName: "client_name",
-            billing: "billing_model",
-            startDate: "opportunity_start_date",
-            endDate: "opportunity_close_date",
-            expectedStartdate: "expected_project_start_date",
-            expectedEnddate: "expected_project_end_date",
-            revenue: "estimated_revenue",
-            stage: "opportunity_stage",
-            status: "status",
-            resource: "expected_resource_breakdown",
-            projectManager: "project_manager",
-            productManager: "product_manager",
-            techLead: "tech_lead",
-            accountManager: "account_manager",
-            estimatedCompletion: "estimated_project_completion",
-            team: "team_forecast",
-        };
-    
-        const forecastData = Object.entries(allowedKeys).reduce((acc, [key, mappedKey]) => {
-            if (input[key]) {
-                acc[mappedKey] = input[key];
-            }
-            return acc;
-        }, {});
-    
-        return forecastData;
-    }
  /**
  * @swagger
  * /admin/addforecast:
@@ -62,90 +29,90 @@ export default class ForecastController{
  *           schema:
  *             type: object
  *             required:
- *               - name
- *               - manager
- *               - description
- *               - clientName
- *               - startDate
- *               - stage
+ *               - opportunity_name
+ *               - opportunity_manager
+ *               - opportunity_description
+ *               - client_name
+ *               - opportunity_start_date
+ *               - opportunity_stage
  *             properties:
- *               name:
+ *               opportunity_name:
  *                 type: string
  *                 description: Name of the opportunity/project
  *                 example: "New Website Development"
- *               manager:
+ *               opportunity_manager:
  *                 type: string
  *                 description: ObjectId of the opportunity manager
  *                 example: "64ec9990c26a2a5d8cfa9921"
- *               description:
+ *               opportunity_description:
  *                 type: string
  *                 description: Detailed description of the opportunity/project
  *                 example: "Development of a new e-commerce platform."
- *               clientName:
+ *               client_name:
  *                 type: string
  *                 description: Name of the client
  *                 example: "ABC Corp"
- *               billing:
+ *               billing_model:
  *                 type: string
  *                 description: Billing model
  *                 example: "Hourly"
- *               startDate:
+ *               opportunity_start_date:
  *                 type: string
  *                 format: date
  *                 description: Start date of the opportunity
  *                 example: "2024-01-01"
- *               endDate:
+ *               opportunity_close_date:
  *                 type: string
  *                 format: date
  *                 description: End date of the opportunity
  *                 example: "2024-12-31"
- *               expectedStartdate:
+ *               expected_project_start_date:
  *                 type: string
  *                 format: date
  *                 description: Expected start date of the project
  *                 example: "2024-02-01"
- *               expectedEnddate:
+ *               expected_project_end_date:
  *                 type: string
  *                 format: date
  *                 description: Expected end date of the project
  *                 example: "2024-11-30"
- *               revenue:
+ *               estimated_revenue:
  *                 type: string
  *                 description: Estimated revenue (in string format)
  *                 example: "50000"
- *               stage:
+ *               opportunity_stage:
  *                 type: string
  *                 description: Current stage of the opportunity
  *                 example: "Closed Won"
  *               status:
- *                 type:string
- *                 description:Current status of the opportunity
- *                  example:"On hold"
- *               resource:
+ *                 type: string
+ *                 description: Current status of the opportunity
+ *                 example: "On hold"
+ *               expected_resource_breakdown:
  *                 type: string
  *                 description: Expected resource breakdown (must be a number)
  *                 example: "3"
- *               projectManager:
+ *               project_manager:
  *                 type: string
  *                 description: ObjectId of the project manager
  *                 example: "64ec9990c26a2a5d8cfa9922"
- *               productManager:
+ *               product_manager:
  *                 type: string
  *                 description: ObjectId of the product manager
  *                 example: "64ec9990c26a2a5d8cfa9923"
- *               techLead:
+ *               tech_lead:
  *                 type: string
  *                 description: ObjectId of the technical lead
  *                 example: "64ec9990c26a2a5d8cfa9924"
- *               accountManager:
+ *               account_manager:
  *                 type: string
  *                 description: ObjectId of the account manager
  *                 example: "64ec9990c26a2a5d8cfa9925"
- *               estimatedCompletion:
+ *               estimated_project_completion:
  *                 type: string
  *                 description: Estimated project completion (e.g., "6 months")
  *                 example: "6 months"
- *               team:
+ *               team_forecast:
  *                 type: array
  *                 description: Team members with their forecasted hours
  *                 items:
@@ -200,7 +167,7 @@ export default class ForecastController{
  *                   type: array
  *                   items:
  *                     type: string
- *                     example: "Name is required"
+ *                     example: "Opportunity Name is required"
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -216,6 +183,7 @@ export default class ForecastController{
  *                   example: "Internal Server Error"
  */
 
+
     async addForecastController(req,res)
     {
         try                     
@@ -224,8 +192,7 @@ export default class ForecastController{
         if (!validationResult.isValid) {
             throw new CustomValidationError(validationResult.message)
         } 
-        const forecastData=await ForecastController.formattedForecast(req.body)
-            const newForecast=await forecastRepo.createForecast(forecastData)
+            const newForecast=await forecastRepo.createForecast(req.body)
             if(newForecast.status)
             {
                 const  data=await forecastResponse.formattedResponse(newForecast.data)
@@ -658,7 +625,6 @@ export default class ForecastController{
         }
     }
 /**
- * Update an existing project forecast by ID
  * @swagger
  * /admin/updateforecast:
  *   post:
@@ -671,68 +637,71 @@ export default class ForecastController{
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               id:
+ *                 type: string
+ *                 example: "6746e9bbaf88b6fea9ada851"
+ *               opportunity_name:
  *                 type: string
  *                 minLength: 3
  *                 maxLength: 30
  *                 example: "App Dev"
- *               description:
+ *               opportunity_description:
  *                 type: string
  *                 minLength: 3
  *                 maxLength: 100
  *                 example: "Description of the project"
- *               clientName:
+ *               client_name:
  *                 type: string
  *                 minLength: 3
  *                 maxLength: 30
  *                 example: "TechCorp"
- *               billing:
+ *               billing_model:
  *                 type: string
  *                 example: "Monthly"
- *               manager:
+ *               opportunity_manager:
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de9"
- *               startDate:
+ *               opportunity_start_date:
  *                 type: string
  *                 format: date
  *                 example: "2024-01-01"
- *               endDate:
+ *               opportunity_close_date:
  *                 type: string
  *                 format: date
  *                 example: "2024-12-31"
- *               expectedStartdate:
+ *               expected_project_start_date:
  *                 type: string
  *                 format: date
  *                 example: "2024-01-01"
- *               expectedEnddate:
+ *               expected_project_end_date:
  *                 type: string
  *                 format: date
  *                 example: "2024-12-31"
- *               revenue:
+ *               estimated_revenue:
  *                 type: string
  *                 example: "100000"
- *               stage:
+ *               opportunity_stage:
  *                 type: string
  *                 example: "Prospecting"
- *               resource:
+ *               expected_resource_breakdown:
  *                 type: string
  *                 example: "5"
- *               projectManager:
+ *               project_manager:
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de9"
- *               productManager:
+ *               product_manager:
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de9"
- *               techLead:
+ *               tech_lead:
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de9"
- *               accountManager:
+ *               account_manager:
  *                 type: string
  *                 example: "6746a63bf79ea71d30770de9"
- *               estimatedCompletion:
+ *               estimated_project_completion:
  *                 type: string
  *                 example: "2024-10-31"
- *               team:
+ *               team_forecast:
  *                 type: array
  *                 items:
  *                   type: object
@@ -763,12 +732,12 @@ export default class ForecastController{
  *                     id:
  *                       type: string
  *                       example: "6746e9bbaf88b6fea9ada851"
- *                     name:
+ *                     opportunity_name:
  *                       type: string
  *                       example: "App Dev"
- *                     category:
+ *                     opportunity_stage:
  *                       type: string
- *                       example: "App Development"
+ *                       example: "Prospecting"
  *       400:
  *         description: Validation failed
  *         content:
@@ -787,7 +756,7 @@ export default class ForecastController{
  *                   items:
  *                     type: string
  *                   example: 
- *                     - "Name must contain letters and cannot be only numbers"
+ *                     - "Opportunity Name must contain letters and cannot be only numbers"
  *                     - "Client Name must contain letters and cannot be only numbers"
  *       404:
  *         description: Forecast not found for the provided ID
@@ -815,7 +784,8 @@ export default class ForecastController{
  *                 message:
  *                   type: string
  *                   example: "Internal Server Error"
- */  
+ */
+
     async updateForecast(req,res)
     {
         const {id}=req.body
@@ -826,9 +796,7 @@ export default class ForecastController{
             if (!validationResult.isValid) {
                 throw new CustomValidationError(validationResult.message)
             } 
-           const forecastData=await ForecastController.formattedForecast(req.body)
-
-            const newForecast=await forecastRepo.updateForecast(forecastData,id)
+            const newForecast=await forecastRepo.updateForecast(req.body,id)
             if(newForecast.status)
             {
                 const  data=await forecastResponse.formattedResponse(newForecast.data)

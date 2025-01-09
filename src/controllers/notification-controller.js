@@ -250,7 +250,7 @@ class NotificationController {
 
     /**
      * @swagger
-     * /user/notify-user:
+     * /admin/notify-user:
      *   post:
      *     summary: Send a notification to a user
      *     tags:

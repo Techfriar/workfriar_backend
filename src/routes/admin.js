@@ -12,6 +12,7 @@ import TimesheetApprovalController from "../controllers/admin/timesheet-approval
 import EmployeeController from "../controllers/admin/employee-controller.js";
 import multer from "multer";
 import PopulateData from "../utils/currency-country-populate.js";
+import NotificationController from '../controllers/notification-controller.js';
 
 const adminRouter = express.Router();
 const upload=multer()
@@ -21,6 +22,8 @@ const forecastController=new ForecastController()
 const projectTeamController=new ProjectTeamController()
 const timeSheetSummary=new TimeSheetSummaryController()
 const employee = new EmployeeController();
+const notification = new NotificationController()
+
 
 const admin = new AdminController();
 const client = new ClientController();
@@ -93,6 +96,12 @@ adminRouter.route("/pastdue").post(timeSheetSummary.pastDueController)
 
 adminRouter.route("/getduetimesheet").post(timeSheetSummary.getDueTimeSheetController)
 
+/**
+ * Notify User of Due Timesheets
+ */
+adminRouter
+    .route('/notify-user')
+    .post(notification.notifyUser)
 
 /**
  * Admin profile view
