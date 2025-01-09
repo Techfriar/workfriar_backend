@@ -77,9 +77,9 @@ export default class RoleRepository {
      * @param {Object} role - The updated role object
      * @returns {Promise<Role>} - The updated role
      */
-    static async updateRole(id, role){
+    static async updateRole(id, role, customValidations={}){
         try{
-            const updatedRole = await Role.findByIdAndUpdate(id, role, { new: true });
+            const updatedRole = await Role.findByIdAndUpdate(id, role, { new: true, ...customValidations});
             return updatedRole;
         }catch(error){
         }
