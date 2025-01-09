@@ -32,9 +32,11 @@ export default class ForecastResponse{
 //Formatted Response for Entire data 
     async formattedFullResponse(forecast)
     {
+        
         return({
             id:forecast._id,
             opportunity_name:forecast.opportunity_name,
+            opportunity_manager_id:forecast.opportunity_manager._id,
             opportunity_manager:forecast.opportunity_manager.full_name,
             client_name:forecast.client_name,
             opportunity_description:forecast.opportunity_description,
@@ -45,13 +47,18 @@ export default class ForecastResponse{
             estimated_revenue:forecast.estimated_revenue,
             opportunity_stage:forecast.opportunity_stage,
             expected_resource_breakdown:forecast.expected_resource_breakdown,
+            project_manager_id:forecast.project_manager._id,
             project_manager:forecast.project_manager.full_name,
+            product_manager_id:forecast.product_manager._id,
             product_manager:forecast. product_manager.full_name,
+            tech_lead_id:forecast.tech_lead._id,
             tech_lead:forecast. tech_lead.full_name,
+            account_manager_id:forecast.account_manager._id,
             account_manager:forecast.account_manager.full_name,
             estimated_project_completion:forecast.estimated_project_completion,
             status:forecast.status,
             team_forecast: forecast.team_forecast.map(item => ({
+                team_member_id: item.team_member._id,
                 name: item.team_member.full_name, 
                 forecast_hours: item.forecast_hours 
               })),
