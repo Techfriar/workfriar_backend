@@ -18,7 +18,7 @@ const FindWeekRange_=new FindWeekRange()
 const HolidayRepo = new HolidayRepository()
 /**
  * @swagger
- * /admin/timesummary:
+ * /timesheet/timesummary:
  *   post:
  *     summary: Fetch and format the time sheet summary.
  *     description: Returns a formatted time sheet summary based on the provided start date, end date, project ID, and optional pagination parameters.
@@ -199,7 +199,7 @@ class TimeSheetSummaryController{
 
   /**
  * @swagger
- * /admin/pastdue:
+ * /timesheet/pastdue:
  *   post:
  *     summary: Get due time sheets for a user
  *     description: Retrieves due time sheets for a specific user within a date range
@@ -331,7 +331,7 @@ class TimeSheetSummaryController{
 
 /**
  * @swagger
- * /admin/getduetimesheet:
+ * /timesheet/getduetimesheet:
  *   post:
  *     summary: Get due time sheets for a specific user
  *     description: Retrieves due time sheets for a specific user within a given date range.
@@ -520,7 +520,7 @@ class TimeSheetSummaryController{
 
     /**
  * @swagger
- * /user/getduedates:
+ * /timesheet/getduedates:
  *   post:
  *     summary: Fetches specified dates based on the week start date.
  *     description: Returns data for the specified week start date. If no data is found, it returns an appropriate response. 
@@ -618,7 +618,7 @@ class TimeSheetSummaryController{
    }
 /**
  * @swagger
- * /user/getdates:
+ * /timesheet/getdates:
  *   post:
  *     summary: Retrieves the date ranges around a specific input date.
  *     description: This endpoint returns the date ranges around a specific input date, including the weeks before and after, based on the logic in the getDateRangeAroundInput function.

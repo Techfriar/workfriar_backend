@@ -1,9 +1,13 @@
 import express from 'express'
 import TimesheetController from '../controllers/admin/timesheet-controller.js'
+import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js'
+
 
 const timesheetRouter = express.Router()
 
 const timesheet = new TimesheetController()
+const timeSheetSummary=new TimeSheetSummaryController()
+
 
 timesheetRouter
     .route('/save-timesheets')
@@ -49,5 +53,16 @@ timesheetRouter
 timesheetRouter
     .route('/submit-due-timesheets')
     .post(timesheet.submitDueTimesheets)
+
+timesheetRouter.route("/timesummary").post(timeSheetSummary.TimeSummaryController)
+
+timesheetRouter.route("/pastdue").post(timeSheetSummary.pastDueController)
+
+timesheetRouter.route("/getduetimesheet").post(timeSheetSummary.getDueTimeSheetController)
+
+timesheetRouter.route("/getduedates").post(timeSheetSummary.getDatesController)
+
+timesheetRouter.route("/getdates").post(timeSheetSummary.getAllDatesController)
+
 
 export default timesheetRouter

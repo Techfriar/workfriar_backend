@@ -7,7 +7,7 @@ import ClientController from '../controllers/admin/client-controller.js'
 import AdminController from '../controllers/admin/admin-controller.js'
 import { checkPermissions } from '../middlewares/check-permission.js';
 import RoleController from "../controllers/admin/role-controller.js";
-import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js'
+
 import TimesheetApprovalController from "../controllers/admin/timesheet-approval-controller.js";
 import EmployeeController from "../controllers/admin/employee-controller.js";
 import multer from "multer";
@@ -20,7 +20,7 @@ const upload=multer()
 const categoryController = new CategoryController();
 const forecastController=new ForecastController()
 const projectTeamController=new ProjectTeamController()
-const timeSheetSummary=new TimeSheetSummaryController()
+
 const employee = new EmployeeController();
 const notification = new NotificationController()
 
@@ -89,12 +89,7 @@ adminRouter.route("/editprojectteam").post(projectTeamController.editProjectTeam
 //Route for making a user active in a project
 adminRouter.route("/activateuser").post(projectTeamController.activateUserController);
 
-//Route for displaying time summary
-adminRouter.route("/timesummary").post(timeSheetSummary.TimeSummaryController)
 
-adminRouter.route("/pastdue").post(timeSheetSummary.pastDueController)
-
-adminRouter.route("/getduetimesheet").post(timeSheetSummary.getDueTimeSheetController)
 
 /**
  * Notify User of Due Timesheets
