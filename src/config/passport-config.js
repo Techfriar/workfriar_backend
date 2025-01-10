@@ -30,7 +30,6 @@ passport.use(
 
                 const user = await userRepo.getUserByEmail(email);
                 if (!user) {
-                    console.log('User not found');
                     return done(null, false, { message: 'User not found' });
                 }
 
