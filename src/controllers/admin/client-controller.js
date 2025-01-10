@@ -240,7 +240,10 @@ class ClientController {
 
     async allClient(req, res) {
         try {
-            const existingClients = await clientRepository.allClients();
+            const { page = 1, limit = 10 } = req.body; 
+            const pageNumber = parseInt(page, 10);
+            const limitNumber = parseInt(limit, 10);
+            const { existingClients, totalCount } = await clientRepository.allClients(pageNumber, limitNumber);
 
             if (existingClients.length > 0) {
                 const data = await Promise.all(
@@ -253,12 +256,24 @@ class ClientController {
                     status: true,
                     message: 'Clients fetched successfully',
                     data,
+                    pagination: {
+                        currentPage: pageNumber,
+                        itemsPerPage: limitNumber,
+                        totalItems: totalCount,
+                        totalPages: Math.ceil(totalCount / limitNumber),
+                    },
                 });
             } else {
                 return res.status(200).json({
                     status: false,
                     message: 'No clients found.',
                     data: [],
+                    pagination: {
+                        currentPage: pageNumber,
+                        itemsPerPage: limitNumber,
+                        totalItems: totalCount,
+                        totalPages: Math.ceil(totalCount / limitNumber),
+                    },
                 });
             }
         } catch (error) {

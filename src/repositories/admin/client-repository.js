@@ -41,14 +41,22 @@ class ClientRepository {
         }
     }
 
-    async allClients() {
+    async allClients(page, limit) {
         try {
-            return await client
-            .find()
+            const skip = (page - 1) * limit;
+
+            // Count total clients
+            const totalCount = await client.countDocuments();
+
+            const existingClients = await client.find()
             .populate('client_manager', 'full_name')
             .populate('location', 'name')
             .populate('billing_currency', 'code')
+            .skip(skip) 
+            .limit(limit) 
             .lean();
+
+        return { existingClients, totalCount };
         } catch (error) {
             throw new Error(error); 
         }
