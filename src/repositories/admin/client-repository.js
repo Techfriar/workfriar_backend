@@ -48,7 +48,7 @@ class ClientRepository {
             // Count total clients
             const totalCount = await client.countDocuments();
 
-            const existingClients = await client.find()
+            const clients = await client.find()
             .populate('client_manager', 'full_name')
             .populate('location', 'name')
             .populate('billing_currency', 'code')
@@ -56,7 +56,7 @@ class ClientRepository {
             .limit(limit) 
             .lean();
 
-        return { existingClients, totalCount };
+        return { clients , totalCount };
         } catch (error) {
             throw new Error(error); 
         }

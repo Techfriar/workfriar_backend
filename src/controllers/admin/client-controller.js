@@ -243,7 +243,9 @@ class ClientController {
             const { page = 1, limit = 10 } = req.body; 
             const pageNumber = parseInt(page, 10);
             const limitNumber = parseInt(limit, 10);
-            const { existingClients, totalCount } = await clientRepository.allClients(pageNumber, limitNumber);
+            const { clients, totalCount } = await clientRepository.allClients(pageNumber, limitNumber);
+
+            const existingClients = clients
 
             if (existingClients.length > 0) {
                 const data = await Promise.all(
