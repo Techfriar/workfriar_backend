@@ -17,6 +17,7 @@ passport.use(
             clientID: CLIENT_ID,
             clientSecret: CLIENT_SECRET,
             callbackURL: BACK_END_URL, // Match callback route
+            passReqToCallback: true,
         },
         async (req, accessToken, refreshToken, profile, done) => {
             const userRepo = new UserRepository();
@@ -30,6 +31,7 @@ passport.use(
 
                 const user = await userRepo.getUserByEmail(email);
                 if (!user) {
+                    console.log('User not found');
                     return done(null, false, { message: 'User not found' });
                 }
 
