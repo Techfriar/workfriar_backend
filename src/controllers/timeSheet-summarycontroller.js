@@ -583,7 +583,9 @@ class TimeSheetSummaryController{
    {
         try{
             const userid=req.session.user.id
-            const data=await timeSheetSummary.getSpecifiedDates(userid)
+            const date=new Date()
+            const actualStartWeek = FindSunday.getPreviousSunday(date);
+            const data=await timeSheetSummary.getSpecifiedDates(userid,actualStartWeek)
             const formattedDates=await formatDates.formattedDateResponse(data)
             if(data.length>0)
             {
