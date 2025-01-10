@@ -9,14 +9,14 @@ dotenv.config();
 const GoogleStrategy = googleStrategy.Strategy;
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const BACK_END_URL = process.env.CALL_BACK_URL
 
 passport.use(
     new GoogleStrategy(
         {
             clientID: CLIENT_ID,
             clientSecret: CLIENT_SECRET,
-            callbackURL: '/api/auth/google-callback', // Match callback route
-            passReqToCallback: true,
+            callbackURL: BACK_END_URL, // Match callback route
         },
         async (req, accessToken, refreshToken, profile, done) => {
             const userRepo = new UserRepository();
