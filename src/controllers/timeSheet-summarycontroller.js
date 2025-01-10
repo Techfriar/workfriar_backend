@@ -604,7 +604,7 @@ class TimeSheetSummaryController{
                     })
             }
 
-
+            
         }
         catch(error)
         {
