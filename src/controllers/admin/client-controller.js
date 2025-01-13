@@ -241,6 +241,23 @@ class ClientController {
     async allClient(req, res) {
         try {
             const { page = 1, limit = 10 } = req.body; 
+            if (!page && !limit) {
+                // Fetch all clients without pagination
+                const allClients = await clientRepository.getAllClients(); 
+                const data = await Promise.all(
+                    allClients.map(
+                        async (client) =>
+                            await clientResponse.clientResponse(client),
+                    ),
+                );
+                return res.status(200).json({
+                    status: true,
+                    message: 'All clients fetched successfully',
+                    data,
+                    pagination: null, 
+                });
+            }
+
             const pageNumber = parseInt(page, 10);
             const limitNumber = parseInt(limit, 10);
             const { existingClients, totalCount } = await clientRepository.allClients(pageNumber, limitNumber);

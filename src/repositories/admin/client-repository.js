@@ -62,6 +62,18 @@ class ClientRepository {
         }
     }
 
+    async getAllClients() {
+        try {
+            return await client.find()
+                .populate('client_manager', 'full_name')
+                .populate('location', 'name')
+                .populate('billing_currency', 'code')
+                .lean();
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+
 
     async updateClient(id, updatedData) {
         try {
