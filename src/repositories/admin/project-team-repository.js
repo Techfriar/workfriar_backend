@@ -97,10 +97,10 @@ class ProjectTeamRepository {
   }
 
   //Function for retrieveing all project team
-  async getAllProjectTeam() {
+  async getAllProjectTeam(skip,limitNumber) {
     try {
       const teamData = await projectTeam
-        .find()
+        .find().skip(skip).limit(limitNumber)
         .populate({
           path: "project",
           select:
@@ -111,7 +111,8 @@ class ProjectTeamRepository {
           select: "full_name profile_pic email",
         })
         .lean();
-      return { status: true, data: teamData };
+        const total=teamData.length
+        return { status: true, data: teamData,total:total };
     } catch (error) {
       throw new Error(error);
     }

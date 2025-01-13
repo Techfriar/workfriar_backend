@@ -418,9 +418,14 @@ class ProjectTeamController{
     {
         try
         {
-            const data = await projectTeamRepo.getAllProjectTeam()
+             
+        const {page=1,limit=10}=req.body
+        const pageNumber = parseInt(page,10);
+        const limitNumber = parseInt(limit, 10);
+        const skip=(pageNumber-1)*limitNumber
+            const data = await projectTeamRepo.getAllProjectTeam(skip,limitNumber)
             if (data.length === 0) {
-                res.status(422).json({
+                res.status(200).json({
                     status:false,
                     message:"No Project Team Found",
                     data:[],
@@ -438,6 +443,7 @@ class ProjectTeamController{
                     status:true,
                     message:"Project team data",
                     data:formattedData,
+                    totalLength:Math.ceil(data.total)
                 })
             }
         }
