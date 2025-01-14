@@ -31,14 +31,14 @@ export default class ForecastResponse{
 
 //Formatted Response for Entire data 
     async formattedFullResponse(forecast)
-    {
-        
+    { 
         return({
             id:forecast._id,
             opportunity_name:forecast.opportunity_name,
             opportunity_manager_id:forecast.opportunity_manager._id,
             opportunity_manager:forecast.opportunity_manager.full_name,
             client_name:forecast.client_name,
+            billing_model:forecast.billing_model,        
             opportunity_description:forecast.opportunity_description,
             opportunity_start_date:moment(forecast.opportunity_start_date).format('MM/DD/YYYY'),
             opportunity_close_date:moment(forecast.opportunity_close_date).format('MM/DD/YYYY'),
