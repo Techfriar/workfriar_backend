@@ -359,7 +359,7 @@ export default class ForecastController{
                         status:true,
                         message:"Forecasts",
                         data:foremattedData,
-                        totalLength:Math.ceil(total/limitNumber),
+                        totalLength:total,
                     })
                 }
             } catch (error) {

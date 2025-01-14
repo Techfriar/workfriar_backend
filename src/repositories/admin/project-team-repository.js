@@ -138,8 +138,9 @@ class ProjectTeamRepository {
     }
   }
 
-  async getProjectsByEmployeeId(employeeid) {
+  async getProjectsByEmployeeId(employeeid,page,limit) {
     try {
+      const skip = (page - 1) * limit;
       const data = await projectTeam
         .find({ "team_members.userid": employeeid })
         .populate({
@@ -156,7 +157,10 @@ class ProjectTeamRepository {
             },
           ],
         })
-        .lean();
+        .lean()
+        .skip(skip)
+				.limit(limit);
+        const totalCount = await projectTeam.countDocuments({"team_members.userid": employeeid });
 
       data.forEach((project) => {
         project.team_members = project.team_members.filter(
@@ -164,7 +168,7 @@ class ProjectTeamRepository {
         );
       });
 
-      return data;
+      return {data,totalCount};
     } catch (error) {
       throw new Error(error);
     }
