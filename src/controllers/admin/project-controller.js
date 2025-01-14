@@ -171,15 +171,6 @@ export default class ProjectController {
    *               limit:
    *                 type: integer
    *                 description: Number of items per page
-   *               status:
-   *                 type: string
-   *                 description: Filter by status
-   *               client_name:
-   *                 type: string
-   *                 description: Filter by client name
-   *               project_name:
-   *                 type: string
-   *                 description: Filter by project name
    *     responses:
    *       200:
    *         description: Success
