@@ -97,10 +97,10 @@ class ProjectTeamRepository {
   }
 
   //Function for retrieveing all project team
-  async getAllProjectTeam() {
+  async getAllProjectTeam(skip,limitNumber) {
     try {
       const teamData = await projectTeam
-        .find()
+        .find().skip(skip).limit(limitNumber)
         .populate({
           path: "project",
           select:
@@ -111,7 +111,8 @@ class ProjectTeamRepository {
           select: "full_name profile_pic email",
         })
         .lean();
-      return { status: true, data: teamData };
+        const total=teamData.length
+        return { status: true, data: teamData,total:total };
     } catch (error) {
       throw new Error(error);
     }
@@ -137,8 +138,9 @@ class ProjectTeamRepository {
     }
   }
 
-  async getProjectsByEmployeeId(employeeid) {
+  async getProjectsByEmployeeId(employeeid,page,limit) {
     try {
+      const skip = (page - 1) * limit;
       const data = await projectTeam
         .find({ "team_members.userid": employeeid })
         .populate({
@@ -155,7 +157,10 @@ class ProjectTeamRepository {
             },
           ],
         })
-        .lean();
+        .lean()
+        .skip(skip)
+				.limit(limit);
+        const totalCount = await projectTeam.countDocuments({"team_members.userid": employeeid });
 
       data.forEach((project) => {
         project.team_members = project.team_members.filter(
@@ -163,7 +168,7 @@ class ProjectTeamRepository {
         );
       });
 
-      return data;
+      return {data,totalCount};
     } catch (error) {
       throw new Error(error);
     }

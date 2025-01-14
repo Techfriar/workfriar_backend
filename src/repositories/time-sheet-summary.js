@@ -92,14 +92,16 @@ class TimeSheetSummary{
         }
     }
 
-    async  getSpecifiedDates(userid) {
+    async  getSpecifiedDates(userid,weekStart) {
         try {
+          
             const timesheetDateRanges = await Timesheet.aggregate([
                 {
                     $match: {
                         status: "saved",
-                        user_id: new mongoose.Types.ObjectId(userid) 
-                    }
+                        user_id: new mongoose.Types.ObjectId(userid),
+                        endDate: { $lt: new Date(weekStart) } 
+                    }   
                 },
                 {
                     $group: {
