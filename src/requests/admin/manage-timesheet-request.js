@@ -4,7 +4,7 @@ class ManageTimesheetRequest {
 
     static manageTimesheetSchema = Joi.object({
         timesheetid: Joi.string().required(), 
-        status: Joi.string().valid( 'approved', 'rejected').required(), 
+        status: Joi.string().valid( 'accepted', 'rejected').required(), 
         userid: Joi.string().alphanum().required(),
         notes: Joi.string()
             .optional()
