@@ -7,21 +7,15 @@ class ManageTimesheetRequest {
         status: Joi.string().valid( 'approved', 'rejected').required(), 
         userid: Joi.string().alphanum().required(),
         notes: Joi.string()
-            .min(10)
-            .max(100)
-            .required()
-            .required()
+            .optional()
+            .max(200)
+            .allow("")
             .messages({
                 'string.base': 'Notes must be a string',
-                'string.empty': 'Notes cannot be empty',
-                'string.min': 'Notes must be at least 10 characters long',
                 'string.max': 'Notes must be less than or equal to 200 characters',
-                'any.required': 'Notes is required'
             }),
     });
   
-
-
     async validateData(data) {
         const { error } = ManageTimesheetRequest.manageTimesheetSchema.validate(data);
         if (error) {

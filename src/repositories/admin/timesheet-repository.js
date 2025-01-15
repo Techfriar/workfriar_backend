@@ -684,13 +684,21 @@ export default class TimesheetRepository {
 	 * @param {string} status
 	 * @returns {Promise<Timesheet>} 
 	 */
-	async updateAllTimesheetStatus(startDate, endDate, status) {
+	async updateAllTimesheetStatus(startDate, endDate, status, userid) {
 		try {
-			const timesheets = await Timesheet.updateMany({ startDate: { $gte: startDate, $lte: endDate }, status: { $ne: status } }, { status: status });
+			const timesheets = await Timesheet.updateMany(
+				{
+					startDate: { $gte: startDate, $lte: endDate },
+					status: { $ne: status },
+					user_id: userid 
+				},
+				{ status: status }
+			);
 			return timesheets;
 		} catch (error) {
-			throw new Error(error);
+			throw new Error(error.message);
 		}
 	}
+	
 }
 

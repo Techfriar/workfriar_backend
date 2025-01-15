@@ -380,7 +380,8 @@ class TimesheetApprovalController {
    */
 
   async manageAllTimesheet(req, res) {
-    let adminId = req.session?.user?.id; //id comes from token
+
+    let adminId =req.session?.user?.id;//id comes from token
     const admin = await userRepository.getUserById(adminId);
 
     const { timesheetid, status, userid, notes } = req.body;
@@ -399,6 +400,13 @@ class TimesheetApprovalController {
         userid
       );
 
+      await timesheetrepo.updateAllTimesheetStatus(
+        startDate,
+        endDate,
+        status,
+        userid
+      );
+
       if (alreadyRejected && status === "approved") {
         await notification.createNotification(
           userid,
@@ -412,13 +420,6 @@ class TimesheetApprovalController {
           data: [],
         });
       }
-
-      await timesheetrepo.updateAllTimesheetStatus(
-        startDate,
-        endDate,
-        status,
-        userid
-      );
 
       if (status === "rejected") {
         if (alreadyRejected) {
