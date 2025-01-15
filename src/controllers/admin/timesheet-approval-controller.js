@@ -657,11 +657,10 @@ class TimesheetApprovalController {
       endDate.setUTCHours(0, 0, 0, 0);
       let range = `${startDate.toISOString().split("T")[0]}-${endDate.toISOString().split("T")[0]}`;
 
-      const timesheets = await timesheetrepo.getWeeklyTimesheetsWithSpecificStatus(
+      const timesheets = await timesheetrepo.getAllWeeklyTimesheetsForReview(
         user_id,
         startDate,
-        endDate,
-        "submitted"
+        endDate
       );
 
       let allDates = FindWeekRange_.getDatesBetween(
