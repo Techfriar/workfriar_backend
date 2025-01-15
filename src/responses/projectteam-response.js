@@ -87,13 +87,22 @@ export default class ProjectTeamResponse{
              {
                 status="active"
              }
+             const formattedDates = teams.team_members[0].dates.map(date => ({
+                ...date,
+                start_date: date.start_date 
+                  ? new Date(date.start_date).toISOString().split("T")[0] 
+                  : null,
+                end_date: date.end_date 
+                  ? new Date(date.end_date).toISOString().split("T")[0] 
+                  : null
+              }));
             return{
                 id:teams._id,
                 project_id:teams.project._id,
                 projectname:teams.project.project_name,
                 projectlead:teams.project.project_lead.full_name,
                 clientname:teams.project.client_name.client_name,
-                dates:teams.team_members[0].dates,
+                dates:formattedDates,
                 status:status
             }
         }
