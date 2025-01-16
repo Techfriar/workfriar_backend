@@ -311,9 +311,9 @@ class TimesheetApprovalController {
    *                 example: "63f1e9f9a6a3bca97e8b4567"
    *               status:
    *                 type: string
-   *                 enum: [approved, rejected]
+   *                 enum: [accepted, rejected]
    *                 description: The new status for the timesheet.
-   *                 example: "approved"
+   *                 example: "accepted"
    *               userid:
    *                 type: string
    *                 description: The user ID associated with the timesheet.
@@ -381,7 +381,7 @@ class TimesheetApprovalController {
 
   async manageAllTimesheet(req, res) {
 
-    let adminId =req.session?.user?.id;//id comes from token
+    let adminId =req.session?.user?.id;;//id comes from token
     const admin = await userRepository.getUserById(adminId);
 
     const { timesheetid, status, userid, notes } = req.body;
@@ -406,20 +406,21 @@ class TimesheetApprovalController {
         status,
         userid
       );
-
-      if (alreadyRejected && status === "approved") {
+  if(status=="accepted"){
+      if (alreadyRejected ) {
         await notification.createNotification(
           userid,
           `Timesheet  has been ${status} by ${admin.full_name}`,
           "info"
         );
         await rejectRepo.delete(alreadyRejected._id);
-        return res.status(200).json({
-          status: true,
-          message: "Timesheet Approved",
-          data: [],
-        });
       }
+      return res.status(200).json({
+        status: true,
+        message: "Timesheet Approved",
+        data: [],
+      });
+    }
 
       if (status === "rejected") {
         if (alreadyRejected) {
