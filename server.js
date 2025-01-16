@@ -22,7 +22,7 @@ const app = express();
 // Use the cors() middleware to enable CORS support
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with your frontend's [origin http://localhost:3000]
+    origin: process.env.FRONTEND_URL,
     credentials: true, // Allow cookies to be sent and received
   })
 );
