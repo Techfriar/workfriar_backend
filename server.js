@@ -22,7 +22,7 @@ const app = express();
 // Use the cors() middleware to enable CORS support
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONT_END_URL,
     credentials: true, // Allow cookies to be sent and received
   })
 );
