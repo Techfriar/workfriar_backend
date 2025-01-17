@@ -17,13 +17,31 @@ import seedCurrencies from "./src/seeders/CurrencySeeder.js";
 
 dotenv.config();
 
+const allowedOrigins = [
+  "http://admin.workfriar.techfriar.xyz",
+  "https://admin.workfriar.techfriar.xyz",
+  "http://admin.workfriar.techfriar.xyz/",
+  "https://admin.workfriar.techfriar.xyz/",
+  "https://workfriar.techfriar.xyz",
+  "https://workfriar.techfriar.xyz/",
+  process.env.FRONT_END_URL.replace(/\/$/, ""),
+];
+
 // Create Express app
 const app = express();
 // Use the cors() middleware to enable CORS support
 app.use(
   cors({
-    origin: process.env.FRONT_END_URL,
+    origin: (origin, callback) => {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true, // Allow cookies to be sent and received
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","HEAD"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
 
