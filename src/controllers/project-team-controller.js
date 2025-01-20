@@ -569,7 +569,7 @@ class ProjectTeamController{
             const data = await projectTeamRepo. getProjectTeambyId(id)
        
             if (data.length === 0) {
-                res.status(422).json({
+                res.status(200).json({
                     status:false,
                     message:"No Project Team  Found",
                     data:[],
@@ -711,7 +711,7 @@ class ProjectTeamController{
             const {data,totalCount}=await projectTeamRepo.getProjectsByEmployeeId(employeeId,pageNumber, limitNumber)
             if(data.length===0)
             {
-                res.status(422).json({
+                res.status(400).json({
                     status:false,
                     message:"No Project Found",
                     data:[],
@@ -857,7 +857,7 @@ class ProjectTeamController{
             }
             else
             {
-                res.status(422).json({
+                res.status(400).json({
                     status:false,
                     message:"Failed to Activate User",
                     data:[],
@@ -1076,7 +1076,7 @@ async editProjectTeamController(req, res) {
                 data: data
             });
         } else {
-            res.status(422).json({
+            res.status(400).json({
                 status: false,
                 message: "Failed to Update Project Team",
                 data: []
@@ -1128,7 +1128,7 @@ async editProjectTeamController(req, res) {
             const data = await projectTeamRepo.getTeamMembersWithTimesheet(teamLeadId);
 
             if (data.data.length === 0) {
-                return res.status(422).json({
+                return res.status(400).json({
                     status: false,
                     message: "No team members with timesheets found",
                     data: [],
