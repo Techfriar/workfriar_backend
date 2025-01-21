@@ -76,7 +76,7 @@ export default class  AuthController {
 
             // Check if user is an admin
             if(isAdmin){
-                const isValidAdmin = user.isAdmin || (await userRepo.isAdminByEmail(email));
+                const isValidAdmin = req.user.isAdmin || (await userRepo.isAdminByEmail(email));
                 if (!isValidAdmin) {
                     throw new Error('Authentication failed. User is not an admin.');                
                 }
