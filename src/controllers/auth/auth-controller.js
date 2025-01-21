@@ -71,8 +71,8 @@ export default class  AuthController {
 
             if(!req.user) throw new Error('Authentication failed. User not found.');
 
-            const email = req.email;
-            const isAdmin = req.isAdmin;
+            const email = req.user.email;
+            const isAdmin = req.user.isAdmin;
 
             // Check if user is an admin
             if(isAdmin){
