@@ -24,7 +24,8 @@ const allowedOrigins = [
   "https://admin.workfriar.techfriar.xyz/",
   "https://workfriar.techfriar.xyz",
   "https://workfriar.techfriar.xyz/",
-  process.env.FRONT_END_URL.replace(/\/$/, ""),
+  process.env.USER_FRONT_END_URL.replace(/\/$/, ""),
+  process.env.ADMIN_FRONT_END_URL.replace(/\/$/, ""),
 ];
 
 // Create Express app
