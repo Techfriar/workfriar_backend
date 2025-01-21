@@ -204,7 +204,7 @@ export default class ForecastController{
                     })
             }
             else{
-                res.status(422).json(
+                res.status(400).json(
                     {
                         status:false,
                         message:"Failed to Add Forecast",
@@ -344,7 +344,7 @@ export default class ForecastController{
                 const skip=(pageNumber-1)*limitNumber
                 const{forecastData,total} = await forecastRepo.getForecast(skip,limitNumber)
                 if (forecastData.length === 0) {
-                    res.status(422).json({
+                    res.status(200).json({
                         status:false,
                         message:"No Project forecasts Found",
                         data:[],
@@ -359,7 +359,7 @@ export default class ForecastController{
                         status:true,
                         message:"Forecasts",
                         data:foremattedData,
-                        totalLength:Math.ceil(total/limitNumber),
+                        totalLength:total,
                     })
                 }
             } catch (error) {
@@ -511,7 +511,7 @@ export default class ForecastController{
             const { id } = req.body; 
             const data = await forecastRepo.getForecastByid(id)
             if (data.length === 0) {
-                res.status(422).json({
+                res.status(200).json({
                     status:false,
                     message:"No Project forecasts Found",
                     data:[],
@@ -808,7 +808,7 @@ export default class ForecastController{
                     })
             }
             else{
-                res.status(422).json(
+                res.status(400).json(
                     {
                         status:false,
                         message:"Failed to Add Forecast",

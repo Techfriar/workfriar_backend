@@ -171,15 +171,6 @@ export default class ProjectController {
    *               limit:
    *                 type: integer
    *                 description: Number of items per page
-   *               status:
-   *                 type: string
-   *                 description: Filter by status
-   *               client_name:
-   *                 type: string
-   *                 description: Filter by client name
-   *               project_name:
-   *                 type: string
-   *                 description: Filter by project name
    *     responses:
    *       200:
    *         description: Success
@@ -190,12 +181,19 @@ export default class ProjectController {
    */
   async getAllProjects(req, res) {
     try {
-      const { page = 1, limit = 10 } = req.body;
+      const { page, limit } = req.body;
 
-      const { projects, totalCount } = await projectRepo.getAllProjects({
-        page: parseInt(page, 10),
-        limit: parseInt(limit, 10),
-      });
+      let projects, totalCount;
+
+      if(page && limit){
+        const paginationOptions = {
+          page: parseInt(page, 10),
+          limit: parseInt(limit, 10),
+        };
+        ({projects, totalCount} = await projectRepo.getAllProjects(paginationOptions));
+      }else{
+        ({projects, totalCount} = await projectRepo.getAllProjects());
+      }
 
       const formattedProjects = await Promise.all(
         projects.map(
@@ -204,19 +202,24 @@ export default class ProjectController {
         )
       );
 
-      return res.status(200).json({
+      const response = {
         status: true,
-        message: "Projects retrieved successfully.",
+        message: "Projcts retrieved successfully.",
         data: {
           projects: formattedProjects,
-          pagination: {
-            page: parseInt(page, 10),
-            limit: parseInt(limit, 10),
-            totalCount,
-            totalPages: Math.ceil(totalCount / limit),
-          },
         },
-      });
+      };
+
+      if (page && limit) {
+        response.data.pagination = {
+          page: parseInt(page, 10),
+          limit: parseInt(limit, 10),
+          totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+        };
+      }
+
+      return res.status(200).json(response);
     } catch (error) {
       return res.status(500).json({
         status: false,

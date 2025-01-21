@@ -418,9 +418,14 @@ class ProjectTeamController{
     {
         try
         {
-            const data = await projectTeamRepo.getAllProjectTeam()
+             
+        const {page=1,limit=10}=req.body
+        const pageNumber = parseInt(page,10);
+        const limitNumber = parseInt(limit, 10);
+        const skip=(pageNumber-1)*limitNumber
+            const data = await projectTeamRepo.getAllProjectTeam(skip,limitNumber)
             if (data.length === 0) {
-                res.status(422).json({
+                res.status(200).json({
                     status:false,
                     message:"No Project Team Found",
                     data:[],
@@ -438,11 +443,13 @@ class ProjectTeamController{
                     status:true,
                     message:"Project team data",
                     data:formattedData,
+                    totalLength:Math.ceil(data.total)
                 })
             }
         }
         catch(error)
         {
+           
             res.status(500).json(
                 {
                     status:false,
@@ -562,7 +569,7 @@ class ProjectTeamController{
             const data = await projectTeamRepo. getProjectTeambyId(id)
        
             if (data.length === 0) {
-                res.status(422).json({
+                res.status(200).json({
                     status:false,
                     message:"No Project Team  Found",
                     data:[],
@@ -603,12 +610,12 @@ class ProjectTeamController{
  *     tags: [ProjectTeams]
  *     requestBody:
  *       required: true
- *       content:
+ *       content: 
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               employeeid:
+ *               employeeId:
  *                 type: string
  *                 description: The unique ID of the employee whose projects are to be fetched.
  *                 example: "6746a63bf79ea71d30770de9"
@@ -696,13 +703,15 @@ class ProjectTeamController{
 
     async getEmployeeProjects(req,res)
     {
-        const{employeeid}=req.body
+        const{employeeId, page = 1, limit = 10 }=req.body
+		const pageNumber = parseInt(page);
+		const limitNumber = parseInt(limit);
         try
         {
-            const data=await projectTeamRepo.getProjectsByEmployeeId(employeeid)
+            const {data,totalCount}=await projectTeamRepo.getProjectsByEmployeeId(employeeId,pageNumber, limitNumber)
             if(data.length===0)
             {
-                res.status(422).json({
+                res.status(400).json({
                     status:false,
                     message:"No Project Found",
                     data:[],
@@ -720,12 +729,18 @@ class ProjectTeamController{
                     status:true,
                     message:"Project Team data",
                     data:formattedData,
+                    pagination: {
+						currentPage: page,
+						itemsPerPage: limit,
+						totalItems: totalCount,
+						totalPages: Math.ceil(totalCount / limit)
+					}
                 })
             }
         }
         catch(error)
         {
-           
+           console.log(error)
             res.status(500).json(
                 {
                     status:false,
@@ -842,7 +857,7 @@ class ProjectTeamController{
             }
             else
             {
-                res.status(422).json({
+                res.status(400).json({
                     status:false,
                     message:"Failed to Activate User",
                     data:[],
@@ -1061,7 +1076,7 @@ async editProjectTeamController(req, res) {
                 data: data
             });
         } else {
-            res.status(422).json({
+            res.status(400).json({
                 status: false,
                 message: "Failed to Update Project Team",
                 data: []
@@ -1113,7 +1128,7 @@ async editProjectTeamController(req, res) {
             const data = await projectTeamRepo.getTeamMembersWithTimesheet(teamLeadId);
 
             if (data.data.length === 0) {
-                return res.status(422).json({
+                return res.status(400).json({
                     status: false,
                     message: "No team members with timesheets found",
                     data: [],

@@ -10,15 +10,13 @@ const UserRepo = new UserRepository()
  */
 const authenticateAdmin = async (req, res, next) => {
     const cookie = req.cookies
-    if(!cookie?.workfriar_intersection) {
+    if(!cookie?.workfriar_admin_intersection) {
         res.status(401).json({ message: 'Unauthorized' })
     } else {
-        const unSealedToken = await Unseal(cookie.workfriar_intersection)
+        const unSealedToken = await Unseal(cookie.workfriar_admin_intersection)
 
         const token = unSealedToken.data.token
         // const token = unSealedToken.data.token.split(' ')[1]
-
-
         if (token) {
             // if(await isTokenBlacklisted(token)) {
             //     res.status(401).json({ message: 'Unauthorized' })
@@ -28,7 +26,6 @@ const authenticateAdmin = async (req, res, next) => {
                 if (decoded) {
                     const { userId } = decoded
                     const user = await UserRepo.getUserById(userId)
-                    
                     req.session.user = user
 
                     if (err || !decoded.isAdmin || !user.isAdmin) {

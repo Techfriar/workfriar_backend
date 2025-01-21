@@ -10,10 +10,11 @@ const UserRepo = new UserRepository()
  */
 const authenticateEmployee = async (req, res, next) => {
     const cookie = req.cookies
-    if(!cookie?.workfriar_intersection) {
-        res.status(401).json({ message: 'Unauthorized' })
-    } else {
-        const unSealedToken = await Unseal(cookie.workfriar_intersection)
+    if (!cookie?.workfriar_user_intersection && !cookie?.workfriar_admin_intersection) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    else {
+        const unSealedToken = await Unseal(cookie.workfriar_user_intersection ?? cookie.workfriar_admin_intersection)
 
         const token = unSealedToken.data.token
         // const token = unSealedToken.data.token.split(' ')[1]

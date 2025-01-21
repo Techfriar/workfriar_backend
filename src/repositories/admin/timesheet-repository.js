@@ -345,6 +345,31 @@ export default class TimesheetRepository {
 		}
 	}
 
+	// get all timesheets for review
+	async getAllWeeklyTimesheetsForReview(user_id, startDate, endDate) {
+		try {
+		  const query = {
+			user_id,
+			status: { $ne: "saved" }, // Exclude status "saved"
+			$or: [
+			  { startDate: { $gte: startDate, $lte: endDate } },
+			  { endDate: { $gte: startDate, $lte: endDate } },
+			  { startDate: { $lte: startDate }, endDate: { $gte: endDate } }
+			]
+		  };
+	  
+		  const timesheets = await Timesheet.find(query)
+			.populate('project_id', 'project_name')
+			.populate('task_category_id', 'category')
+			.lean();
+	  
+		  return timesheets;
+		} catch (error) {
+		  throw new Error(error.message);
+		}
+	  }
+	  
+
 	// FILEPATH: c:/Users/LENOVO/Desktop/MERN(A)/TECHFRIAR/workfriar_backend/src/repositories/admin/timesheet-repository.js
 
 	async checkSavedTimesheetsAroundRange(user_id, startDate, endDate) {
@@ -684,13 +709,21 @@ export default class TimesheetRepository {
 	 * @param {string} status
 	 * @returns {Promise<Timesheet>} 
 	 */
-	async updateAllTimesheetStatus(startDate, endDate, status) {
+	async updateAllTimesheetStatus(startDate, endDate, status, userid) {
 		try {
-			const timesheets = await Timesheet.updateMany({ startDate: { $gte: startDate, $lte: endDate }, status: { $ne: status } }, { status: status });
+			const timesheets = await Timesheet.updateMany(
+				{
+					startDate: { $gte: startDate, $lte: endDate },
+					status: { $ne: status },
+					user_id: userid 
+				},
+				{ status: status }
+			);
 			return timesheets;
 		} catch (error) {
-			throw new Error(error);
+			throw new Error(error.message);
 		}
 	}
+	
 }
 
