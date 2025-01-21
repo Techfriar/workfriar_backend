@@ -4,6 +4,7 @@ import {
   checkPermissions,
 } from "../middlewares/check-permission.js";
 import ProjectController from "../controllers/admin/project-controller.js";
+import { authenticateAdmin } from "../middlewares/authenticate-admin.js";
 
 const projectRouter = express.Router();
 
@@ -15,6 +16,7 @@ const upload = multer();
 projectRouter
   .route("/add")
   .post(
+    authenticateAdmin,
     upload.fields([{ name: "project_logo", maxCount: 1 }]),
     project.addProject
   );
@@ -32,11 +34,12 @@ projectRouter
   projectRouter
   .route("/update/:id")
   .post(
+    authenticateAdmin,
     upload.fields([{ name: "project_logo", maxCount: 1 }]),
     project.updateProject
   );
-  projectRouter.route("/changetimeentry").post(project.updateTimeEntry)
-  projectRouter.route("/updatestatus").post(project.upddatestatus)
+  projectRouter.route("/changetimeentry").post(authenticateAdmin, project.updateTimeEntry)
+  projectRouter.route("/updatestatus").post(authenticateAdmin, project.upddatestatus)
 
   /**
    * List all open projects where the user is included in the project team

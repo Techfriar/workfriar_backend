@@ -252,83 +252,83 @@ export default class HolidayController {
   }
 
   /**
- * Get Next Holidays
- *
- * @swagger
- * /holiday/dashboard-holiday:
- *   post:
- *     tags:
- *       - Holiday
- *     summary: Get the next holidays based on today's date
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               location:
- *                 type: string
- *                 enum: ["India", "Dubai"]
- *                 description: Filter holidays by location (optional)
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   description: Indicates if the request was successful
- *                 message:
- *                   type: string
- *                   description: Response message
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       holiday_name:
- *                         type: string
- *                         description: Name of the holiday
- *                       holiday_type:
- *                         type: string
- *                         enum: ["National Holiday", "Public Holiday", "Restricted Holiday", "Office Shutdown"]
- *                         description: Type of the holiday
- *                       start_date:
- *                         type: string
- *                         format: date
- *                         description: Start date of the holiday
- *                       end_date:
- *                         type: string
- *                         format: date
- *                         description: End date of the holiday
- *                       location:
- *                         type: array
- *                         items:
- *                           type: string
- *                           enum: ["India", "Dubai"]
- *                         description: Location where the holiday is applicable
- *       500:
- *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: boolean
- *                   description: Indicates if the request was successful
- *                 message:
- *                   type: string
- *                   description: Error message
- *                 errors:
- *                   type: string
- *                   description: Detailed error information
- */
+   * Get Next Holidays
+   *
+   * @swagger
+   * /holiday/dashboard-holiday:
+   *   post:
+   *     tags:
+   *       - Holiday
+   *     summary: Get the next holidays based on today's date
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               location:
+   *                 type: string
+   *                 enum: ["India", "Dubai"]
+   *                 description: Filter holidays by location (optional)
+   *     responses:
+   *       200:
+   *         description: Success
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   description: Indicates if the request was successful
+   *                 message:
+   *                   type: string
+   *                   description: Response message
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       holiday_name:
+   *                         type: string
+   *                         description: Name of the holiday
+   *                       holiday_type:
+   *                         type: string
+   *                         enum: ["National Holiday", "Public Holiday", "Restricted Holiday", "Office Shutdown"]
+   *                         description: Type of the holiday
+   *                       start_date:
+   *                         type: string
+   *                         format: date
+   *                         description: Start date of the holiday
+   *                       end_date:
+   *                         type: string
+   *                         format: date
+   *                         description: End date of the holiday
+   *                       location:
+   *                         type: array
+   *                         items:
+   *                           type: string
+   *                           enum: ["India", "Dubai"]
+   *                         description: Location where the holiday is applicable
+   *       500:
+   *         description: Internal Server Error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   description: Indicates if the request was successful
+   *                 message:
+   *                   type: string
+   *                   description: Error message
+   *                 errors:
+   *                   type: string
+   *                   description: Detailed error information
+   */
   async getNextHolidays(req, res) {
     try {
       const currentDate = new Date();
@@ -346,6 +346,119 @@ export default class HolidayController {
       return res.status(500).json({
         status: false,
         message: "Failed to retrieve next holidays.",
+        errors: error.message,
+      });
+    }
+  }
+
+  /**
+   * Delete Holiday
+   *
+   * @swagger
+   * /holiday/delete/{id}:
+   *   delete:
+   *     tags:
+   *       - Holiday
+   *     summary: Delete a holiday by ID
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The ID of the holiday to delete
+   *     responses:
+   *       200:
+   *         description: Success
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   description: Indicates if the request was successful
+   *                 message:
+   *                   type: string
+   *                   description: Response message
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     holiday_name:
+   *                       type: string
+   *                       description: Name of the deleted holiday
+   *                     holiday_type:
+   *                       type: string
+   *                       description: Type of the deleted holiday
+   *                     start_date:
+   *                       type: string
+   *                       format: date
+   *                       description: Start date of the holiday
+   *                     end_date:
+   *                       type: string
+   *                       format: date
+   *                       description: End date of the holiday
+   *                     location:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                         description: Location(s) of the holiday
+   *       404:
+   *         description: Holiday not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   description: Indicates if the request was successful
+   *                 message:
+   *                   type: string
+   *                   description: Error message
+   *       500:
+   *         description: Internal Server Error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: boolean
+   *                   description: Indicates if the request was successful
+   *                 message:
+   *                   type: string
+   *                   description: Error message
+   *                 errors:
+   *                   type: string
+   *                   description: Detailed error information
+   */
+  async deleteHoliday(req, res) {
+    try {
+      const holidayId = req.params.id;
+
+      const deletedHoliday = await holidayRepo.deleteHoliday(holidayId);
+
+      if (!deletedHoliday) {
+        return res.status(404).json({
+          status: false,
+          message: "Holiday not found.",
+        });
+      }
+
+      const holidayData = await HolidayResponse.format(deletedHoliday);
+
+      return res.status(200).json({
+        status: true,
+        message: "Holiday deleted successfully.",
+        data: holidayData,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: "Failed to delete holiday.",
         errors: error.message,
       });
     }
