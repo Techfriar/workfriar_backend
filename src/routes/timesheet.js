@@ -1,6 +1,7 @@
 import express from 'express'
 import TimesheetController from '../controllers/admin/timesheet-controller.js'
 import TimeSheetSummaryController from '../controllers/timeSheet-summarycontroller.js'
+import { authenticateAdmin } from "../middlewares/authenticate-admin.js";
 
 
 const timesheetRouter = express.Router()
@@ -28,7 +29,7 @@ timesheetRouter
 
 timesheetRouter
     .route('/get-timesheet-report')
-    .post(timesheet.getTimesheetReport)
+    .post(authenticateAdmin, timesheet.getTimesheetReport)
 
 timesheetRouter
     .route('/get-timesheet-snapshot')
