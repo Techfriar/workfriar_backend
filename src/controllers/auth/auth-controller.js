@@ -62,7 +62,7 @@ export default class  AuthController {
     async googleCallback(req, res) {
         const userRepo = new UserRepository();
 
-        const front_end_url = process.env.FRONT_END_URL;
+        let front_end_url = process.env.USER_FRONT_END_URL;
         
         let token = null
         let error = null
@@ -80,6 +80,7 @@ export default class  AuthController {
                 if (!isValidAdmin) {
                     throw new Error('Authentication failed. User is not an admin.');                
                 }
+                front_end_url = process.env.ADMIN_FRONT_END_URL
             }
 
             // Generate JWT token
