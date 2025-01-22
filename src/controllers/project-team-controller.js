@@ -713,8 +713,11 @@ class ProjectTeamController{
             {
                 res.status(400).json({
                     status:false,
-                    message:"No Project Found",
                     data:[],
+                    pagination:{
+                        totalItems:0
+                    },
+                    message:"No Project Found",
                 })
                 return
             }
@@ -740,7 +743,6 @@ class ProjectTeamController{
         }
         catch(error)
         {
-           console.log(error)
             res.status(500).json(
                 {
                     status:false,
