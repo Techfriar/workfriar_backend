@@ -17,9 +17,9 @@ const configureRoutes = (app) => {
   app.use("/api/auth", authRouter);
   app.use("/api/admin", authenticateAdmin, adminRouter); // Admin API routes
   app.use("/api/user", authenticateEmployee, userRouter); // Customer API routes
-  app.use("/api/project", authenticateAdmin,projectRouter);
+  app.use("/api/project", authenticateEmployee,projectRouter);
   app.use("/api/project-status-report", authenticateAdmin,projectStatusRouter);
-  app.use("/api/holiday", authenticateAdmin,holidayRouter);
+  app.use("/api/holiday", authenticateEmployee,holidayRouter);
   app.use("/api/timesheet", authenticateEmployee, timesheetRouter);
   app.use("/api/subscription", authenticateAdmin,subscriptionRouter);
   app.use("/api/transaction", authenticateAdmin,transactionRouter);

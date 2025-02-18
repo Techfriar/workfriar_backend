@@ -24,6 +24,11 @@ holidayRouter
   .route("/dashboard-holiday")
   .post(
     holiday.getNextHolidays
-  )
+  );
+  holidayRouter
+  .route("/delete/:id")
+  .post(
+    holiday.deleteHoliday
+  );
 
 export default holidayRouter;

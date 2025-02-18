@@ -167,4 +167,25 @@ export default class HolidayRepository {
       throw new Error(`Error fetching next holidays: ${error.message}`);
     }
   }
+
+  /**
+   * Delete holiday by ID
+   * @param {String} holidayId - The ID of the holiday to delete
+   * @return {Promise<Object>} - The result of the deletion
+   */
+  async deleteHoliday(holidayId) {
+    try {
+      const deletedHoliday = await Holiday.findByIdAndDelete(holidayId);
+      if (!deletedHoliday) {
+        throw new Error("Holiday not found");
+      }
+      return {
+        success: true,
+        message: "Holiday deleted successfully",
+        deletedHoliday,
+      };
+    } catch (error) {
+      throw new Error(`Error deleting holiday: ${error.message}`);
+    }
+  }
 }
