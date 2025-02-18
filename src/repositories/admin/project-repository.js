@@ -243,7 +243,7 @@ export default class ProjectRepository {
       // Extract the count or default to 0 if no projects match
       return projects[0]?.count || 0;
     } catch (error) {
-      console.log(error, "error");
+      throw new Error(error, "error");
     }
   }
 
@@ -333,7 +333,6 @@ export default class ProjectRepository {
    */
   async getAllProjectsByUser(userId, skip, limit) {
     try {
-      // console.log(projects_, 'projects_')
       const projects = await Project.aggregate([
         {
           $lookup: {

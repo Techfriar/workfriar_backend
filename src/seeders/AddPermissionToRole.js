@@ -36,7 +36,7 @@ const addPermissionToRole = async (roleId, permissionId) => {
 
         // Check if the permission is already assigned to the role
         if (role.permissions.includes(permissionId)) {
-            console.log('Permission is already assigned to this role.');
+
             return;
         }
 
@@ -45,7 +45,7 @@ const addPermissionToRole = async (roleId, permissionId) => {
 
         // Save the updated role
         await role.save();
-        console.log(`Permission ${permissionId} successfully added to role ${role.role}`);
+
     } catch (error) {
         console.error('Error adding permission to role:', error.message);
     }

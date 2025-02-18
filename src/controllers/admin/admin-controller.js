@@ -579,8 +579,6 @@ export default class AdminController {
                     errors: error.errors,
                 })
             }
-            console.log(error);
-
             res.status(500).json({
                 status: false,
                 message: 'Failed to update employee role.',
@@ -764,8 +762,6 @@ export default class AdminController {
             })
         }
         catch (error) {
-            console.log(error);
-            
             res.status(500).json({
                 status: false,
                 message: 'Failed to get employees and projects.',

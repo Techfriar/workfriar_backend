@@ -618,7 +618,6 @@ class TimesheetApprovalController {
         const user = await userRepository.getUserById(user_id);
         user_location = user.location;
       }
-      console.log(user_id);
 
       let actualStartWeek, actualEndWeek;
       if (startDate && endDate) {

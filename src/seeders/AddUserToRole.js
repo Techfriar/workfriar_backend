@@ -36,7 +36,7 @@ const addUserToRole = async (roleId, userId) => {
 
         // Check if the user is already assigned to the role
         if (role.users.includes(userId)) {
-            console.log('User is already assigned to this role.');
+
             return;
         }
 
@@ -45,7 +45,7 @@ const addUserToRole = async (roleId, userId) => {
 
         // Save the updated role
         await role.save();
-        console.log(`User ${userId} successfully added to role ${role.role}`);
+
         process.exit();  // Exit after seeding is done
 
     } catch (error) {
