@@ -43,8 +43,6 @@ const checkPermissions = (requiredCategory, requiredAction) => async (req, res, 
     
             // Check permissions within the role            
             return role.permissions.some((permission) => {
-                console.log(permission, requiredCategory, requiredAction);
-                
                 return (
                     permission.category === requiredCategory &&
                     permission.actions.includes(requiredAction)

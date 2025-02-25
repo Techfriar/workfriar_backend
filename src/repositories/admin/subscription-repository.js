@@ -271,11 +271,11 @@ async getSubscriptionById(subscriptionId) {
    */
   async checkSubscriptionExists(subscription_name) {
     try {
-      console.log("Checking subscription existence:", subscription_name);
+
       const subscription = await Subscription.findOne({
         subscription_name: subscription_name,
       });
-      console.log("Found subscription:", subscription);
+
       return subscription;
     } catch (error) {
       console.error("Error in checkSubscriptionExists:", error);

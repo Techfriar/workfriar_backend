@@ -612,7 +612,6 @@ export default class RoleController {
                 data: formattedRole
             });
         } catch (error) {
-            console.log(error);
             if (error instanceof CustomValidationError) {
                 return res.status(400).json({
                     status: false,
@@ -1071,7 +1070,6 @@ export default class RoleController {
                 data: formattedEmployees || []
             });
         } catch (error) {
-            console.log(error, "error");
             if (error instanceof CustomValidationError) {
                 return res.status(400).json({
                     status: false,
