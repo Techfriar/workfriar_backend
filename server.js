@@ -14,7 +14,7 @@ import cookieParser from "cookie-parser";
 import configureRoutes from "./src/routes/routes.js";
 import seedCountries from "./src/seeders/CountrySeeder.js";
 import seedCurrencies from "./src/seeders/CurrencySeeder.js";
-import seed_super_admin from "./src/seeders/SuperAdminSeeder.js"
+import seedSuperAdmin from "./src/seeders/SuperAdminSeeder.js"
 
 dotenv.config();
 
@@ -115,7 +115,7 @@ app.use(
 configureRoutes(app);
 await seedCountries();
 await seedCurrencies();
-// await seed_super_admin()
+await seedSuperAdmin()
 
 // Set the folders as the location for serving static files
 app.use("/storage/invoices", express.static("storage/invoices"));
