@@ -12,19 +12,16 @@ const hashPassword = async (password) => {
 
 const seedSuperAdmin = async () => {
   try {
-    // // Connect to MongoDB (adjust URI as needed)
-    // await mongoose.connect('mongodb://localhost:27017/workfriar', {
-    //   useNewUrlParser: true,
-    //   useUnifiedTopology: true,
-    // });
-    // console.log('Database connected successfully!');
+    // Check if 'Super Admin' role already exists
+    const existingRole = await Role.findOne({ role: 'Super Admin' });
+    if (existingRole) {
+      return;
+    }
 
     // Clear existing data
     await Role.deleteMany({});
     await Permission.deleteMany({});
     await User.deleteMany({});
-
-    console.log('Existing data cleared!');
 
     // Seed permissions
     const permissions = [
@@ -39,7 +36,6 @@ const seedSuperAdmin = async () => {
     ];
 
     const permissionDocs = await Permission.insertMany(permissions);
-    console.log('Permissions seeded:', permissionDocs);
 
     // Seed roles
     const roles = [
@@ -59,9 +55,7 @@ const seedSuperAdmin = async () => {
       full_name: 'Super Admin',
       email: 'info@workfriar.com',
       phone_number: '872312431235',
-      password: await hashPassword('superadminpassword'),
       location: 'India',
-      role: roleDocs[0]._id,
       isAdmin: true,
     });
 
@@ -70,11 +64,8 @@ const seedSuperAdmin = async () => {
 
     // Add user to role
     await Role.findByIdAndUpdate(roleDocs[0]._id, { $push: { users: savedUser._id } });
-    console.log('User added to role');
+    console.log('User added to Super Admin');
 
-    // // Disconnect from database
-    // await mongoose.disconnect();
-    // console.log('Database disconnected!');
   } catch (error) {
     console.error('Error seeding data:', error);
     process.exit(1); // Exit with error
