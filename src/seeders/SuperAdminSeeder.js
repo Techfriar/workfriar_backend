@@ -57,7 +57,7 @@ const seedSuperAdmin = async () => {
     // Create Super Admin user
     const superAdmin = new User({
       full_name: 'Super Admin',
-      email: 'rhmanshamil@gmail.com',
+      email: 'info@workfriar.com',
       phone_number: '872312431235',
       password: await hashPassword('superadminpassword'),
       location: 'India',
