@@ -43,6 +43,10 @@ const UserSchema = new mongoose.Schema(
             ref: 'User',
             required: false
         },
+        password: {
+            type: String,
+            required: false,
+        },
     },
     {
         timestamps: true,

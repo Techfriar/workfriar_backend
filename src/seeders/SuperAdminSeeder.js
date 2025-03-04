@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import User from '../models/user.js';  // Adjust the path to your User model file
 import Role from '../models/role.js'; // Adjust the path
@@ -49,7 +48,6 @@ const seedSuperAdmin = async () => {
 
     const roleDocs = await Role.insertMany(roles);
     console.log('Roles seeded:', roleDocs);
-
     // Create Super Admin user
     const superAdmin = new User({
       full_name: 'Super Admin',
@@ -57,6 +55,7 @@ const seedSuperAdmin = async () => {
       phone_number: '872312431235',
       location: 'India',
       isAdmin: true,
+      password: await hashPassword('password123') // Replace 'your_secure_password' with the desired password
     });
 
     const savedUser = await superAdmin.save();

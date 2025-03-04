@@ -31,9 +31,9 @@ authRouter
     .route('/verify-user')
     .post(auth.verifyUser)
 
-/**
- * logout route
-  */
+authRouter
+    .route('/login-with-password')
+    .post(auth.loginWithPassword)
 authRouter
     .route('/logout')
     .post(auth.logout)
