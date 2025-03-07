@@ -1,8 +1,9 @@
 import UserRepository from '../../repositories/user-repository.js';
 import passport from '../../config/passport-config.js'
 import jwt from 'jsonwebtoken'
+import jwtService from '../../utils/jwt-service.js';
 import { isTokenBlacklisted } from '../../services/blackListToken.js';
-
+import bcrypt from 'bcryptjs';
 
 /**
  * @swagger
@@ -423,6 +424,136 @@ export default class  AuthController {
             console.error('Error in verifyUser:', error);
             return AuthController.handleError(res, 'Internal Server Error during user verification.', 500);
         }
-    }   
+    }  
+    
+    /**
+     * @swagger
+     * /auth/login-with-password:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Login with email and password
+     *     description: Authenticates user with email and password and returns a JWT token.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               email:
+     *                 type: string
+     *                 description: User's email
+     *               password:
+     *                 type: string
+     *                 description: User's password
+     *     responses:
+     *       200:
+     *         description: Login successful
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: Login successful
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     token:
+     *                       type: string
+     *                       description: JWT token
+     *       400:
+     *         description: Email and password are required
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: Email and password are required
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     token:
+     *                       type: string
+     *                       example: null
+     *       401:
+     *         description: Invalid email or password
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: Invalid email or password
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     token:
+     *                       type: string
+     *                       example: null
+     *       500:
+     *         description: Internal Server Error during login
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 status:
+     *                   type: boolean
+     *                   example: false
+     *                 message:
+     *                   type: string
+     *                   example: Internal Server Error during login
+     *                 data:
+     *                   type: object
+     *                   properties:
+     *                     token:
+     *                       type: string
+     *                       example: null
+     */
+    async loginWithPassword(req, res) {
+        const userRepo = new UserRepository();
+        try {
+            const { email, password } = req.body;
+            if (!email || !password) {
+                return AuthController.handleError(res, 'Email and password are required', 400);
+            }
+            const user = await userRepo.getUserByEmail(email);
+            if (!user) {
+                return AuthController.handleError(res, 'Invalid email or password', 401);
+            }
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return AuthController.handleError(res, 'Invalid email or password', 401);
+            }
+            // Generate a JWT token
+            const token = jwtService.createToken({
+                email: user.email,
+                userId: user._id,
+                isAdmin: user.isAdmin,
+            });
+            return res.status(200).json({
+                status: true,
+                message: 'Login successful',
+                data: { token }
+            });
+        } catch (error) {
+            return AuthController.handleError(res, 'Internal Server Error during login.', 500);
+        }
+    }
    
 }
